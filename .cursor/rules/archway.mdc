@@ -1,0 +1,64 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Archway Rules
+
+These rules apply to my grad project, "Archway" (aka Interior Design Portfolio Platform with Admin, 3D/360 Visualization, Chatbot, and Enhanced Features), built with Next.js (frontend), Django (backend), PostgreSQL (database), and Docker for testing/deployment. Follow these conventions to ensure maintainability, scalability, and consistency across all phases of development.
+
+## General Guidelines
+- Write modular, reusable code with clear separation of concerns (e.g., UI vs. API logic).
+- Use descriptive names for variables, functions, and classes (e.g., `ProjectCard` for a component, `filter_projects` for a service).
+- Include concise comments to explain non-obvious logic (e.g., `// Fetch projects with pagination`).
+- Adhere to Next.js and Django best practices for structure, performance, and security.
+- Avoid complex or deeply nested structures—favor simplicity and clarity.
+- Optimize for performance (e.g., lazy-load 3D assets) and security (e.g., sanitize inputs).
+- Split code into separate files with meaningful names; keep files under 300 lines when possible.
+
+## Frontend (Next.js) Conventions
+- **Styling:** Use Tailwind CSS exclusively for styling and animations. Apply Tailwind classes directly in components (e.g., `<div className="p-4 bg-brand-blue text-white animate-fade-in">`).
+- **Structure:** Follow this folder structure:
+  - `/components/` (e.g., `common/Navbar.js`, `portfolio/ProjectCard.js`, `chatbot/ChatbotWidget.js`, `3d/ModelViewer.js`, `user/FavoritesList.js`)
+  - `/hooks/` (e.g., `useProjects.js` for fetching projects, `useAuth.js` for user auth)
+  - `/lib/` (e.g., `api.js` for API calls, `threejs.js` for 3D setup)
+  - `/pages/` (e.g., `index.js` for Home, `portfolio/[slug].js` for Project Detail)
+  - `/styles/` (e.g., `global.css` with Tailwind imports, `animations.css` for custom animations)
+  - `/public/` (e.g., `images/` for static assets, `3d/` for placeholder 3D files)
+- **Tailwind Config:** Use the custom theme in `tailwind.config.js` (e.g., `brand-blue: #1E3A8A`, `animate-fade-in` for animations).
+- **Modularity:** Create reusable components (e.g., `Navbar`, `Button`) in `components/common/` and feature-specific components in subfolders (e.g., `portfolio/`).
+- **Performance:** Use Next.js `Image` for optimized images and `dynamic` imports for heavy libraries (e.g., Three.js, Pannellum).
+- **Security:** Include CSRF tokens in forms and sanitize inputs before API calls.
+
+## Backend (Django) Conventions
+- **Structure:** Follow this folder structure:
+  - `/interior_platform/` (e.g., `settings.py`, `urls.py`)
+  - `/apps/` (e.g., `projects/`, `users/`, `chatbot/`, `bookings/`, `jobs/`, `blog/`, `analytics/`)
+  - `/utils/` (e.g., `security.py` for signed URLs, `email.py` for email logic, `helpers.py` for misc utilities)
+  - Each app has `models.py`, `serializers.py`, `services.py`, `views.py`, `admin.py`.
+- **Modularity:** Keep business logic in `services.py` (e.g., `projects/services.py: filter_projects()`), models clean, and views focused on API handling.
+- **Security:** 
+  - Set `SESSION_COOKIE_SECURE=True` and `CSRF_COOKIE_SECURE=True` in `settings.py`.
+  - Encrypt sensitive fields (e.g., emails) with `django-encrypted-fields`.
+  - Use DRF serializers for input validation.
+- **Database:** Use PostgreSQL and define models with clear fields (e.g., `Project` with `title`, `category`, `tags`).
+- **APIs:** Use Django REST Framework (DRF) with JWT auth (`djangorestframework-simplejwt`) for secure endpoints.
+
+## Docker Conventions
+- Use Docker for local testing with separate services: frontend (Next.js on port 3000), backend (Django on 8000), db (PostgreSQL on 5432).
+- Store secrets in `.env` files (e.g., `DATABASE_URL`) and reference them in `docker-compose.yml`.
+- Ensure hot reloading works for development (e.g., volume mounts for code changes).
+
+## Documentation
+- Add comments in code for non-obvious logic (e.g., `// Configure Tailwind with custom theme`).
+- Update `README.md` with setup steps, Docker instructions, and how to extend the project (e.g., “To add a new page, create a file in `/pages/`”).
+- Create placeholder files like `wireframes.md`, `erd.md`, and `api-spec.md` for planning.
+
+## Phase 1 Focus
+- Set up the project skeleton with the above structure.
+- Initialize Next.js with Tailwind CSS and create 1-2 placeholder pages (e.g., Home, Portfolio) styled with Tailwind.
+- Initialize Django with the `projects` app, a basic `Project` model, and secure settings.
+- Configure Docker for local testing with `docker-compose.yml`.
+- Add placeholder files for wireframes, ERD, and API specs.
+
+Follow these rules for all prompts to ensure consistency. After planning, wait for my confirmation before generating code.

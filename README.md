@@ -32,7 +32,7 @@ Archway is a comprehensive portfolio platform for an interior design company in 
 - HTTPS
 - JWT authentication (coming in Phase 3)
 - CSRF protection
-- Rate limiting
+- Rate limiting (100 requests/hour for contact form)
 - GDPR compliance
 
 ## Getting Started
@@ -74,6 +74,9 @@ CORS_ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
 
 # Email (SendGrid)
 SENDGRID_API_KEY=your_sendgrid_api_key
+
+# Next.js
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 ```
 
 4. Start the services with Docker Compose:
@@ -128,6 +131,8 @@ backend/
 ├── interior_platform/ # Django project settings
 ├── templates/         # HTML templates
 │   └── contact/       # Email templates
+├── media/             # User uploaded files
+│   └── projects/      # Project images
 └── locale/            # Translation files
     ├── en/            # English translations
     └── ar/            # Arabic translations
@@ -159,6 +164,32 @@ cd backend
 python manage.py createsuperuser
 ```
 
+## Translation System
+
+The project supports both English and Arabic with a complete translation system:
+
+### Frontend
+- Uses next-i18next for internationalization
+- Translation files in JSON format at `public/locales/{lang}/common.json`
+- Components use the `useTranslation` hook with `t('key.subkey')` pattern
+- Cairo font for Arabic text with automatic RTL layout
+- Language switcher in the navbar
+
+### Backend
+- Django's built-in translation framework
+- Models store content in both languages (e.g., `title_en`, `title_ar`)
+- APIs return translated content based on the user's language preference
+- Language detection via request headers or explicit `lang` parameter
+
+## Media File Handling
+
+The project stores and serves media files as follows:
+
+- Project images are stored in `media/projects/` and `media/projects/covers/`
+- Served via Django during development and a CDN in production
+- Accessed via the models with appropriate ImageField setup
+- Frontend accesses images via API endpoints
+
 ## Project Status and Roadmap
 
 ### Phase 1: Project Setup & Structure ✅
@@ -176,6 +207,16 @@ python manage.py createsuperuser
 - Set up projects and testimonials APIs
 - Configure contact form with email notifications
 - Implement security features (CSRF, rate limiting)
+
+### Phase 2 Fixes ✅
+- Completed translations for all UI text in English and Arabic
+- Enabled RTL support using tailwindcss-rtl plugin
+- Added Cairo font for Arabic text
+- Connected frontend to backend API
+- Added CSRF protection for forms
+- Implemented rate limiting (100 requests/hour) for Contact API
+- Added guest user handling for favorites feature
+- Added complete image handling via Django's media system
 
 ### Phase 3: User Authentication & Portfolio Features 🔄
 - Implement JWT authentication

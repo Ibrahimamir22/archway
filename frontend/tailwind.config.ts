@@ -20,8 +20,10 @@ const config: Config = {
         'brand-gray': '#718096',
       },
       fontFamily: {
-        heading: ['Playfair Display', 'serif'],
-        body: ['Inter', 'sans-serif'],
+        heading: ['Playfair Display', 'Noto Serif Arabic', 'serif'],
+        body: ['Nunito Sans', 'Noto Sans Arabic', 'sans-serif'],
+        cairo: ['Cairo', 'sans-serif'],
+        tajawal: ['Tajawal', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
@@ -46,8 +48,7 @@ const config: Config = {
     },
   },
   plugins: [
-    // Temporarily commented out until we can resolve the dependency issue
-    // require('tailwindcss-rtl'),
+    require('tailwindcss-rtl'),
   ],
 };
 export default config; 

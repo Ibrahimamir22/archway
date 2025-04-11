@@ -1,6 +1,7 @@
+import '../app/globals.css';
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
-import '../app/globals.css';
+import { appWithTranslation } from 'next-i18next';
 import Navbar from '@/components/common/Navbar';
 import Footer from '@/components/common/Footer';
 
@@ -10,7 +11,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
 
   return (
-    <div dir={dir} className={`min-h-screen flex flex-col ${locale === 'ar' ? 'font-arabic' : 'font-body'}`}>
+    <div dir={dir} className={`min-h-screen flex flex-col ${locale === 'ar' ? 'font-cairo' : 'font-body'}`}>
       <Navbar />
       <main className="flex-grow">
         <Component {...pageProps} />
@@ -20,4 +21,4 @@ function MyApp({ Component, pageProps }: AppProps) {
   );
 }
 
-export default MyApp; 
+export default appWithTranslation(MyApp); 

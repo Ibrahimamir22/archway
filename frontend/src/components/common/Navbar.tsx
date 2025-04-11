@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
 
 const Navbar = () => {
@@ -11,33 +12,10 @@ const Navbar = () => {
   const router = useRouter();
   const { locale } = router;
   const isRtl = locale === 'ar';
+  const { t } = useTranslation('common');
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
-  };
-
-  // Simplified translation function
-  const t = (key: string) => {
-    const translations: Record<string, Record<string, string>> = {
-      en: {
-        'header.home': 'Home',
-        'header.portfolio': 'Portfolio',
-        'header.services': 'Services',
-        'header.about': 'About',
-        'header.contact': 'Contact',
-        'header.getQuote': 'Get a Quote'
-      },
-      ar: {
-        'header.home': 'الرئيسية',
-        'header.portfolio': 'المشاريع',
-        'header.services': 'الخدمات',
-        'header.about': 'من نحن',
-        'header.contact': 'اتصل بنا',
-        'header.getQuote': 'احصل على عرض سعر'
-      }
-    };
-
-    return translations[locale || 'en'][key] || key;
   };
 
   return (

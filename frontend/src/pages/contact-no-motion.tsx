@@ -10,18 +10,8 @@ import Link from 'next/link';
 import FormInput from '@/components/common/FormInput';
 import Button from '@/components/common/Button';
 
-// Replace the API_BASE_URL with a more direct approach
-const API_BASE_URL = typeof window !== 'undefined'
-  ? '/api/proxy' // Use Next.js API route to proxy the request
-  : 'http://backend:8000/api/v1';
-
-// For debugging
-console.log('Using API base URL:', API_BASE_URL);
-
-// This is needed for proper Docker networking - when inside a container, we need to use the container name
-const FRONTEND_API_BASE_URL = typeof window !== 'undefined' ? 
-  (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1') : 
-  'http://backend:8000/api/v1';
+// API base URL - use direct backend URL
+const API_BASE_URL = 'http://backend:8000/api/v1';
 
 interface ContactFormData {
   name: string;
@@ -81,42 +71,31 @@ const ContactPage: NextPage = () => {
   useEffect(() => {
     const fetchContactInfo = async () => {
       setLoading(true);
-      setErrorMessage('');
-      
-      // Use hardcoded contact info as default
-      const hardcodedInfo = {
-        address_en: 'Villa 65, Ground Floor Near El Banafseg 5 New Cairo Cairo, Egypt',
-        address_ar: 'فيلا 65، الدور الأرضي بالقرب من البنفسج 5 القاهرة الجديدة القاهرة، مصر',
-        email: 'info@archwaydesign.com',
-        phone: '+20 11 50000183',
-        facebook_url: 'https://facebook.com/archwaydesign',
-        instagram_url: 'https://instagram.com/archwaydesign'
-      };
-      
       try {
-        // Use our Next.js API route instead of direct connection
-        console.log('Fetching contact info via API route');
-        const response = await fetch('/api/test-backend');
+        // Use the container URL inside Docker
+        const url = `http://backend:8000/api/v1/contact-info/`;
+        console.log('Fetching contact info from:', url);
+
+        const response = await axios.get(url);
+        console.log('Contact info response:', response.data);
         
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Contact API route response:', data);
-          
-          if (data.success && data.backendConnectivity && data.backendConnectivity.data) {
-            // Use the data that came from the backend
-            setContactInfo(data.backendConnectivity.data);
-            setLoading(false);
-            return;
-          }
+        // The response should now be a direct object, not paginated
+        if (response.data && response.data.email) {
+          console.log('Setting contact info from direct object');
+          setContactInfo(response.data);
+        } else if (response.data && response.data.results && response.data.results.length > 0) {
+          console.log('Setting contact info from results array');
+          setContactInfo(response.data.results[0]);
+        } else if (Array.isArray(response.data) && response.data.length > 0) {
+          console.log('Setting contact info from array');
+          setContactInfo(response.data[0]);
+        } else {
+          console.log('No valid contact info found in response');
+          setErrorMessage('Failed to load contact information properly');
         }
-        
-        // If we get here, API fetch failed or returned invalid data
-        throw new Error('API fetch failed or returned invalid data');
-        
       } catch (error) {
-        console.log('Using hardcoded contact info fallback due to:', error);
-        // Always fallback to hardcoded data
-        setContactInfo(hardcodedInfo);
+        console.error('Error fetching contact info:', error);
+        setErrorMessage('Error fetching contact information. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -125,93 +104,41 @@ const ContactPage: NextPage = () => {
     fetchContactInfo();
   }, [router.locale]);
   
-  // Replace the existing onSubmit function with this simpler version that uses our server-side API endpoint
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     setSubmitStatus(null);
     
-    console.log('Form submission started with data:', data);
-    
     try {
-      // Use our ultra-simplified API endpoint to avoid any issues
-      const response = await fetch('/api/simple-submit', {
+      console.log('Submitting form data:', data);
+      
+      // Use a simpler fetch approach
+      const response = await fetch('http://backend:8000/api/v1/contact/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
         },
-        body: JSON.stringify({
-          name: data.name,
-          email: data.email,
-          phone: data.phone || '',
-          message: data.message
-        })
+        body: JSON.stringify(data)
       });
       
-      console.log('Server response status:', response.status);
-      const responseText = await response.text();
-      console.log('Raw response text:', responseText);
+      const responseData = await response.json();
+      console.log('Form submission response:', response.status, responseData);
       
-      // Try to parse as JSON if possible
-      let responseData;
-      try {
-        responseData = JSON.parse(responseText);
-        console.log('Parsed response data:', responseData);
-      } catch (e) {
-        console.log('Response is not valid JSON');
-      }
-      
-      if (response.ok) {
-        console.log('Form submission successful');
+      if (response.status === 201) {
         setSubmitStatus('success');
-        reset();
-      } else {
-        console.error('Form submission failed with status:', response.status);
-        setSubmitStatus('error');
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      setSubmitStatus('error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  // Add another option to let users try an alternative method
-  const handleAlternativeSubmit = async () => {
-    try {
-      // Get current form values
-      const formValues = watch();
-      setIsSubmitting(true);
-      
-      console.log('Trying alternative submission with:', formValues);
-      
-      // Try using axios instead
-      const result = await axios.post(
-        `${window.location.protocol}//${window.location.hostname}:8000/api/v1/contact/`,
-        {
-          name: formValues.name,
-          email: formValues.email,
-          phone: formValues.phone || "",
-          message: formValues.message
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
-      console.log('Alternative submission response:', result);
-      
-      if (result.status === 201 || result.status === 200) {
-        setSubmitStatus('success');
-        reset();
+        reset(); // Clear form on success
       } else {
         setSubmitStatus('error');
       }
-    } catch (error) {
-      console.error('Alternative submission failed:', error);
-      setSubmitStatus('error');
+    } catch (error: any) {
+      console.error('Error submitting contact form:', error);
+      
+      // Check if error is due to rate limiting
+      if (error.response && error.response.status === 429) {
+        setSubmitStatus('rate-limit');
+      } else {
+        setSubmitStatus('error');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -250,10 +177,6 @@ const ContactPage: NextPage = () => {
     
     const address = isRtl ? contactInfo.address_ar : contactInfo.address_en;
     
-    // Format address for Google Maps query
-    const formattedAddress = encodeURIComponent(address.replace(/\r\n|\n/g, ' '));
-    const googleMapsUrl = `https://maps.google.com/?q=${formattedAddress}`;
-    
     return (
       <div className="space-y-6">
         <div className="flex items-start">
@@ -264,21 +187,8 @@ const ContactPage: NextPage = () => {
             </svg>
           </div>
           <div>
-            <p className="font-medium">Address</p>
-            <a 
-              href={googleMapsUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-brand-light hover:text-brand-accent transition-colors"
-              aria-label="View location on Google Maps"
-            >
-              {address.split('\r\n').map((line, i) => (
-                <React.Fragment key={i}>
-                  {line}
-                  {i < address.split('\r\n').length - 1 && <br />}
-                </React.Fragment>
-              ))}
-            </a>
+            <p className="font-medium">{t('footer.address')}</p>
+            <p className="text-brand-light">{address}</p>
           </div>
         </div>
         
@@ -289,14 +199,12 @@ const ContactPage: NextPage = () => {
             </svg>
           </div>
           <div>
-            <p className="font-medium">Email</p>
-            <a 
-              href={`mailto:${contactInfo.email}`} 
-              className="text-brand-light hover:text-brand-accent transition-colors"
-              aria-label="Send email"
-            >
-              {contactInfo.email}
-            </a>
+            <p className="font-medium">{t('footer.email')}</p>
+            <p className="text-brand-light">
+              <a href={`mailto:${contactInfo.email}`} className="hover:text-brand-accent transition-colors">
+                {contactInfo.email}
+              </a>
+            </p>
           </div>
         </div>
         
@@ -307,29 +215,27 @@ const ContactPage: NextPage = () => {
             </svg>
           </div>
           <div>
-            <p className="font-medium">Phone</p>
-            <a 
-              href={`tel:${contactInfo.phone.replace(/\s+/g, '')}`} 
-              className="text-brand-light hover:text-brand-accent transition-colors"
-              aria-label="Call phone number"
-            >
-              {contactInfo.phone}
-            </a>
+            <p className="font-medium">{t('footer.phone')}</p>
+            <p className="text-brand-light">
+              <a href={`tel:${contactInfo.phone}`} className="hover:text-brand-accent transition-colors">
+                {contactInfo.phone}
+              </a>
+            </p>
           </div>
         </div>
         
         <div className={`mt-12`}>
-          <h3 className={`text-xl font-medium mb-4 ${isRtl ? 'text-right' : ''}`}>Follow Us</h3>
+          <h3 className={`text-xl font-medium mb-4 ${isRtl ? 'text-right' : ''}`}>{t('footer.followUs')}</h3>
           <div className={`flex ${isRtl ? 'space-x-reverse' : ''} space-x-4`}>
             {contactInfo.facebook_url && (
-              <a href={contactInfo.facebook_url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-blue-500 transition-colors" aria-label="Facebook">
+              <a href={contactInfo.facebook_url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-brand-accent transition-colors" aria-label="Facebook">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
               </a>
             )}
             {contactInfo.instagram_url && (
-              <a href={contactInfo.instagram_url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-pink-500 transition-colors" aria-label="Instagram">
+              <a href={contactInfo.instagram_url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-brand-accent transition-colors" aria-label="Instagram">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
                 </svg>
@@ -348,7 +254,7 @@ const ContactPage: NextPage = () => {
         <meta name="description" content="Get in touch with Archway Interior Design for your next project. We'd love to hear from you!" />
       </Head>
       
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-12 opacity-100 transition-opacity duration-500">
         {/* Hero Section */}
         <div className={`text-center mb-16 ${isRtl ? 'rtl' : ''}`}>
           <h1 className="text-4xl font-heading font-bold mb-4">{t('contact.title')}</h1>
@@ -360,7 +266,7 @@ const ContactPage: NextPage = () => {
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2">
               {/* Contact Info */}
-              <div className="bg-brand-blue text-white p-8">
+              <div className="bg-brand-blue text-white p-8 transform transition-transform duration-500">
                 <h2 className={`text-2xl font-heading font-semibold mb-6 ${isRtl ? 'text-right' : ''}`}>
                   Archway Design
                 </h2>
@@ -371,13 +277,13 @@ const ContactPage: NextPage = () => {
               </div>
               
               {/* Contact Form */}
-              <div className="p-8">
+              <div className="p-8 transform transition-transform duration-500">
                 <h2 className={`text-2xl font-heading font-semibold mb-6 ${isRtl ? 'text-right' : ''}`}>
                   {t('contact.title')}
                 </h2>
                 
                 {submitStatus === 'success' ? (
-                  <div className="text-center py-8">
+                  <div className="text-center py-8 transition-opacity duration-500 opacity-100">
                     <div className="bg-green-50 border border-green-200 text-green-800 rounded-lg p-4 mb-6" role="alert">
                       <p className={`font-medium ${isRtl ? 'text-right' : ''}`}>{t('contact.success')}</p>
                     </div>
@@ -480,19 +386,6 @@ const ContactPage: NextPage = () => {
                           t('contact.submit')
                         )}
                       </Button>
-                      
-                      {submitStatus === 'error' && (
-                        <div className="mt-4">
-                          <button 
-                            type="button"
-                            onClick={handleAlternativeSubmit}
-                            className="mt-2 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
-                            disabled={isSubmitting}
-                          >
-                            Try Alternative Method
-                          </button>
-                        </div>
-                      )}
                     </div>
                     
                     {submitStatus === 'error' && (

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -21,6 +21,25 @@ const PortfolioPage: NextPage = () => {
   const isRtl = router.locale === 'ar';
   
   const [filters, setFilters] = useState<FilterOptions>({});
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Check auth state on mount
+  useEffect(() => {
+    // In a real application, this would check JWT token or session
+    // For now, we'll use localStorage as a simple simulation
+    const checkAuth = () => {
+      const authToken = localStorage.getItem('authToken');
+      setIsAuthenticated(!!authToken);
+    };
+    
+    checkAuth();
+    // Listen for storage events (for multi-tab authentication)
+    window.addEventListener('storage', checkAuth);
+    
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+    };
+  }, []);
   
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -28,11 +47,15 @@ const PortfolioPage: NextPage = () => {
   
   const { projects, loading, error } = useProjects(filters);
   
-  // Simulating a save to favorites function
+  // Save to favorites function
   const handleSaveToFavorites = (projectId: string) => {
-    console.log('Saved project to favorites:', projectId);
+    if (!isAuthenticated) {
+      // Handled by the ProjectCard component
+      return;
+    }
+    
     // In actual implementation, this would make an API call to save to user's favorites
-    // For now, we'll just show the guest user modal since isAuthenticated is false
+    console.log('Saved project to favorites:', projectId);
   };
   
   return (
@@ -44,7 +67,7 @@ const PortfolioPage: NextPage = () => {
       
       <div className="container mx-auto px-4 py-12">
         {/* Hero Section */}
-        <div className="text-center mb-16">
+        <div className={`text-center mb-16 ${isRtl ? 'rtl' : ''}`}>
           <h1 className="text-4xl font-heading font-bold mb-4">{t('portfolio.title')}</h1>
           <p className="text-xl text-gray-600">{t('portfolio.subtitle')}</p>
           <div className="w-24 h-1 bg-brand-accent mx-auto mt-8"></div>
@@ -78,7 +101,7 @@ const PortfolioPage: NextPage = () => {
                 key={project.id}
                 project={project}
                 onSaveToFavorites={handleSaveToFavorites}
-                isAuthenticated={false} // Will integrate with auth in Phase 3
+                isAuthenticated={isAuthenticated} // Now uses the actual auth state
               />
             ))}
           </div>

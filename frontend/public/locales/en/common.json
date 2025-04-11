@@ -10,12 +10,35 @@
   "footer": {
     "copyright": "© 2023 Archway. All rights reserved.",
     "privacyPolicy": "Privacy Policy",
-    "termsOfService": "Terms of Service"
+    "termsOfService": "Terms of Service",
+    "quickLinks": "Quick Links",
+    "consultancy": "Design Consultancy",
+    "renovation": "Renovation",
+    "address": "Address",
+    "email": "Email",
+    "phone": "Phone",
+    "followUs": "Follow Us"
   },
   "home": {
     "heroTitle": "Transform Your Space",
     "heroSubtitle": "Creating beautiful and functional interiors for homes and businesses",
-    "ctaButton": "View Our Work"
+    "ctaButton": "View Our Work",
+    "servicesTitle": "Our Services",
+    "servicesSubtitle": "We offer a comprehensive range of interior design services to meet your every need",
+    "learnMore": "Learn More",
+    "residentialTitle": "Residential Design",
+    "residentialDesc": "Transform your home into a personalized sanctuary that reflects your style and meets your needs",
+    "commercialTitle": "Commercial Design",
+    "commercialDesc": "Create functional and inspiring workspaces that enhance productivity and impress clients",
+    "visualizationTitle": "3D Visualization",
+    "visualizationDesc": "Experience your design before construction with realistic 3D renders and virtual walkthroughs",
+    "projectsTitle": "Featured Projects",
+    "projectsSubtitle": "Explore some of our recent work and get inspired for your next project",
+    "viewProject": "View Project",
+    "viewAllProjects": "View All Projects",
+    "ctaSectionTitle": "Ready to Transform Your Space?",
+    "ctaSectionSubtitle": "Contact us today to schedule a consultation and take the first step toward your dream interior",
+    "getStarted": "Get Started"
   },
   "about": {
     "title": "About Us",
@@ -34,8 +57,12 @@
     "phone": "Phone Number",
     "message": "Your Message",
     "submit": "Send Message",
+    "sending": "Sending...",
     "success": "Your message has been sent successfully!",
-    "error": "There was an error sending your message. Please try again."
+    "error": "There was an error sending your message. Please try again.",
+    "rateLimitError": "Too many requests. Please try again later.",
+    "backToHome": "Back to Home",
+    "infoUnavailable": "Contact information is currently unavailable."
   },
   "portfolio": {
     "title": "Our Portfolio",
@@ -44,7 +71,17 @@
     "all": "All",
     "search": "Search projects...",
     "saveToFavorites": "Save to Favorites",
-    "signupPrompt": "Sign up to save projects to your favorites!"
+    "signupPrompt": "Sign up to save projects to your favorites!",
+    "noProjects": "No projects found matching your criteria",
+    "noSearchResults": "No projects found matching '{search}'",
+    "viewDetails": "View Details",
+    "projectDetails": "Project Details",
+    "projectInfo": "Project Information",
+    "client": "Client",
+    "location": "Location",
+    "area": "Area",
+    "completedDate": "Completed Date",
+    "relatedProjects": "Related Projects"
   },
   "auth": {
     "login": "Log In",
@@ -72,5 +109,17 @@
     "passwordMinLength": "Password must be at least 8 characters long",
     "passwordMatch": "Passwords do not match",
     "invalidPhone": "Please enter a valid Egyptian phone number"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "save": "Save",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "back": "Back",
+    "category": "Category",
+    "tag": "Tag",
+    "clearFilters": "Clear Filters"
   }
 } 

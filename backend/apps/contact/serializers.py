@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ContactMessage
+from .models import ContactMessage, ContactInfo
 import re
 
 class ContactMessageSerializer(serializers.ModelSerializer):
@@ -37,4 +37,25 @@ class ContactMessageSerializer(serializers.ModelSerializer):
                 
             validated_data['ip_address'] = ip_address
             
-        return super().create(validated_data) 
+        return super().create(validated_data)
+
+class ContactInfoSerializer(serializers.ModelSerializer):
+    """Serializer for company contact information"""
+    class Meta:
+        model = ContactInfo
+        fields = [
+            'address_en', 'address_ar', 'email', 
+            'phone', 'facebook_url', 'instagram_url'
+        ]
+    
+    def to_representation(self, instance):
+        """Customize output based on language preference"""
+        data = super().to_representation(instance)
+        request = self.context.get('request')
+        
+        # Handle language preference if available
+        if request and request.query_params.get('lang') == 'ar':
+            # For Arabic, we might want to reorder fields or make other adjustments
+            pass
+        
+        return data 

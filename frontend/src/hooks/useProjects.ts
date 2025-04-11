@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 
+// API base URL
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+
 export interface Project {
   id: string;
   title: string;
@@ -17,6 +20,14 @@ export interface Project {
   updated_at: string;
   tags: Tag[];
   cover_image?: string;
+  images?: ProjectImage[];
+}
+
+export interface ProjectImage {
+  id: string;
+  image: string;
+  alt_text: string;
+  is_cover: boolean;
 }
 
 export interface Category {
@@ -52,11 +63,45 @@ export const useProjects = (options: UseProjectsOptions = {}) => {
       setError(null);
       
       try {
-        // In actual implementation, this would fetch from the API
-        // For now, let's simulate an API call with a timeout
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Build query parameters
+        const params = new URLSearchParams();
         
-        // Simulated data - will be replaced with actual API call
+        if (options.category) {
+          params.append('category__slug', options.category);
+        }
+        
+        if (options.tag) {
+          params.append('tags__slug', options.tag);
+        }
+        
+        if (options.search) {
+          params.append('search', options.search);
+        }
+        
+        if (options.featured) {
+          params.append('is_featured', 'true');
+        }
+        
+        if (options.limit) {
+          params.append('limit', options.limit.toString());
+        }
+        
+        // Add language parameter
+        params.append('lang', locale || 'en');
+        
+        // Fetch data from API
+        const response = await axios.get(`${API_BASE_URL}/projects/?${params.toString()}`);
+        
+        // For Pagination response structure
+        let projectsData = response.data;
+        if (response.data.results) {
+          projectsData = response.data.results;
+        }
+        
+        setProjects(projectsData);
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        // Fallback to mock data if API is not available (for development)
         const mockProjects: Project[] = [
           {
             id: '1',
@@ -111,7 +156,7 @@ export const useProjects = (options: UseProjectsOptions = {}) => {
           }
         ];
         
-        // Filter projects based on options
+        // Filter the mock data based on options
         let filteredProjects = [...mockProjects];
         
         if (options.category) {
@@ -145,9 +190,7 @@ export const useProjects = (options: UseProjectsOptions = {}) => {
         }
         
         setProjects(filteredProjects);
-      } catch (err) {
-        setError('Failed to fetch projects. Please try again later.');
-        console.error('Error fetching projects:', err);
+        setError(locale === 'ar' ? "جاري استخدام بيانات تجريبية - فشل الاتصال بواجهة برمجة التطبيقات" : "Using mock data - API connection failed");
       } finally {
         setLoading(false);
       }
@@ -172,10 +215,23 @@ export const useProjectCategories = () => {
       setError(null);
       
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 800));
+        // Add language parameter
+        const params = new URLSearchParams();
+        params.append('lang', locale || 'en');
         
-        // Mock data - will be replaced with actual API call
+        // Fetch data from API
+        const response = await axios.get(`${API_BASE_URL}/projects/categories/?${params.toString()}`);
+        
+        // For Pagination response structure
+        let categoriesData = response.data;
+        if (response.data.results) {
+          categoriesData = response.data.results;
+        }
+        
+        setCategories(categoriesData);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        // Fallback to mock data
         const mockCategories: Category[] = [
           { id: '1', name: locale === 'ar' ? 'سكني' : 'Residential', slug: 'residential' },
           { id: '2', name: locale === 'ar' ? 'تجاري' : 'Commercial', slug: 'commercial' },
@@ -184,9 +240,7 @@ export const useProjectCategories = () => {
         ];
         
         setCategories(mockCategories);
-      } catch (err) {
-        setError('Failed to fetch categories. Please try again later.');
-        console.error('Error fetching categories:', err);
+        setError(locale === 'ar' ? "جاري استخدام بيانات تجريبية - فشل الاتصال بواجهة برمجة التطبيقات" : "Using mock data - API connection failed");
       } finally {
         setLoading(false);
       }
@@ -211,10 +265,23 @@ export const useProjectTags = () => {
       setError(null);
       
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 800));
+        // Add language parameter
+        const params = new URLSearchParams();
+        params.append('lang', locale || 'en');
         
-        // Mock data - will be replaced with actual API call
+        // Fetch data from API
+        const response = await axios.get(`${API_BASE_URL}/projects/tags/?${params.toString()}`);
+        
+        // For Pagination response structure
+        let tagsData = response.data;
+        if (response.data.results) {
+          tagsData = response.data.results;
+        }
+        
+        setTags(tagsData);
+      } catch (err) {
+        console.error('Error fetching tags:', err);
+        // Fallback to mock data
         const mockTags: Tag[] = [
           { id: '1', name: locale === 'ar' ? 'حديث' : 'Modern', slug: 'modern' },
           { id: '2', name: locale === 'ar' ? 'ساحلي' : 'Coastal', slug: 'coastal' },
@@ -225,9 +292,7 @@ export const useProjectTags = () => {
         ];
         
         setTags(mockTags);
-      } catch (err) {
-        setError('Failed to fetch tags. Please try again later.');
-        console.error('Error fetching tags:', err);
+        setError(locale === 'ar' ? "جاري استخدام بيانات تجريبية - فشل الاتصال بواجهة برمجة التطبيقات" : "Using mock data - API connection failed");
       } finally {
         setLoading(false);
       }

@@ -14,11 +14,11 @@ class MyDocument extends Document {
       <Html lang={locale} dir={dir}>
         <Head>
           <link 
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" 
+            href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Nunito+Sans:wght@300;400;500;600;700&family=Noto+Serif+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Tajawal:wght@300;400;500;700&family=Cairo:wght@300;400;500;600;700&display=swap" 
             rel="stylesheet" 
           />
         </Head>
-        <body className="font-body">
+        <body className={`font-body ${locale === 'ar' ? 'font-tajawal' : ''}`}>
           <Main />
           <NextScript />
         </body>

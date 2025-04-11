@@ -71,6 +71,7 @@ class Project(models.Model):
     area = models.FloatField(help_text="Area in square meters", null=True, blank=True)
     completed_date = models.DateField(null=True, blank=True)
     is_featured = models.BooleanField(default=False)
+    cover_image = models.ImageField(upload_to='projects/covers/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     tags = models.ManyToManyField(Tag, blank=True, related_name='projects')

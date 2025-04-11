@@ -103,6 +103,23 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               </span>
             ))}
           </div>
+          
+          <div className={`mt-4 ${isRtl ? 'text-right' : ''}`}>
+            <Link 
+              href={`/portfolio/${project.slug}`} 
+              className="text-brand-blue-light font-medium hover:underline inline-flex items-center"
+            >
+              {isRtl ? (
+                <>
+                  {t('portfolio.viewDetails')} <span className="ms-1">←</span>
+                </>
+              ) : (
+                <>
+                  {t('portfolio.viewDetails')} <span className="ms-1">→</span>
+                </>
+              )}
+            </Link>
+          </div>
         </div>
       </div>
       
@@ -115,11 +132,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       >
         <div className={isRtl ? 'text-right' : ''}>
           <p className="mb-6">{t('portfolio.signupPrompt')}</p>
-          <div className="flex justify-end">
+          <div className={`flex ${isRtl ? 'justify-start' : 'justify-end'}`}>
             <Button
               onClick={closeModal}
               variant="outline"
-              className="mr-2"
+              className={isRtl ? 'ms-2' : 'me-2'}
             >
               {t('common.cancel')}
             </Button>

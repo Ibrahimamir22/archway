@@ -20,4 +20,22 @@ class ContactMessage(models.Model):
         verbose_name_plural = "Contact Messages"
 
     def __str__(self):
-        return f"Message from {self.name} ({self.email})" 
+        return f"Message from {self.name} ({self.email})"
+
+class ContactInfo(models.Model):
+    """Company contact information"""
+    address_en = models.TextField(verbose_name="Address (English)")
+    address_ar = models.TextField(verbose_name="Address (Arabic)")
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    facebook_url = models.URLField(blank=True, verbose_name="Facebook URL")
+    instagram_url = models.URLField(blank=True, verbose_name="Instagram URL")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Contact Information"
+        verbose_name_plural = "Contact Information"
+    
+    def __str__(self):
+        return f"Contact Information (Last updated: {self.updated_at.strftime('%Y-%m-%d')})" 

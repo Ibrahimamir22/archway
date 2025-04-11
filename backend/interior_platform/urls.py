@@ -22,7 +22,7 @@ from django.conf.urls.i18n import i18n_patterns
 from rest_framework import routers
 from apps.projects.views import ProjectViewSet, CategoryViewSet, TagViewSet
 from apps.testimonials.views import TestimonialViewSet
-from apps.contact.views import ContactViewSet
+from apps.contact.views import ContactViewSet, ContactInfoViewSet
 
 # Default router for API endpoints
 router = routers.DefaultRouter()
@@ -31,6 +31,7 @@ router.register(r'projects/categories', CategoryViewSet)
 router.register(r'projects/tags', TagViewSet)
 router.register(r'testimonials', TestimonialViewSet)
 router.register(r'contact', ContactViewSet, basename='contact')
+router.register(r'contact-info', ContactInfoViewSet, basename='contact-info')
 
 # API URLs
 api_patterns = [

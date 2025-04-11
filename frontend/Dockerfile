@@ -7,7 +7,7 @@ COPY package*.json ./
 
 # Install dependencies
 RUN npm install
-RUN npm install --save react-i18next i18next 
+RUN npm install --save react-i18next i18next framer-motion
 RUN npm install --save-dev tailwindcss-rtl
 
 # Copy the application files

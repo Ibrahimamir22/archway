@@ -1,7 +1,31 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 export default function Home() {
+  const router = useRouter();
+  const { locale } = router;
+
+  // Simplified translation function
+  const t = (key: string) => {
+    const translations: Record<string, Record<string, string>> = {
+      en: {
+        'home.heroTitle': 'Transform Your Space',
+        'home.heroSubtitle': 'Elevate Your Life',
+        'home.ctaButton': 'View Our Work',
+        'contact.title': 'Get in Touch'
+      },
+      ar: {
+        'home.heroTitle': 'حول مساحتك',
+        'home.heroSubtitle': 'ارتقِ بحياتك',
+        'home.ctaButton': 'مشاهدة أعمالنا',
+        'contact.title': 'تواصل معنا'
+      }
+    };
+
+    return translations[locale || 'en'][key] || key;
+  };
+
   return (
     <div>
       {/* Hero Section */}
@@ -10,17 +34,17 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-12">
             <div className="animate-fade-in">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-brand-dark mb-6">
-                Transform Your <span className="text-brand-blue-light">Space</span>, Elevate Your Life
+                {t('home.heroTitle')} <span className="text-brand-blue-light">{t('home.heroSubtitle')}</span>
               </h1>
               <p className="text-lg text-gray-600 mb-8">
                 Archway Design brings your interior vision to life with exceptional design, 3D visualization, and personalized consultations.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link href="/portfolio" className="btn btn-primary">
-                  View Our Work
+                  {t('home.ctaButton')}
                 </Link>
                 <Link href="/contact" className="btn btn-secondary">
-                  Get in Touch
+                  {t('contact.title')}
                 </Link>
               </div>
             </div>
@@ -38,7 +62,7 @@ export default function Home() {
       </section>
 
       {/* Services Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-16 md:py-24" id="services">
         <div className="container-custom">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Our Services</h2>
@@ -59,7 +83,7 @@ export default function Home() {
               <p className="text-gray-600 mb-4">
                 Transform your home into a personalized sanctuary that reflects your style and meets your needs.
               </p>
-              <Link href="/services/residential" className="text-brand-blue-light font-medium hover:underline">
+              <Link href="/services#residential" className="text-brand-blue-light font-medium hover:underline">
                 Learn More →
               </Link>
             </div>
@@ -74,7 +98,7 @@ export default function Home() {
               <p className="text-gray-600 mb-4">
                 Create functional and inspiring workspaces that enhance productivity and impress clients.
               </p>
-              <Link href="/services/commercial" className="text-brand-blue-light font-medium hover:underline">
+              <Link href="/services#commercial" className="text-brand-blue-light font-medium hover:underline">
                 Learn More →
               </Link>
             </div>
@@ -89,7 +113,7 @@ export default function Home() {
               <p className="text-gray-600 mb-4">
                 Experience your design before construction with realistic 3D renders and virtual walkthroughs.
               </p>
-              <Link href="/services/3d-visualization" className="text-brand-blue-light font-medium hover:underline">
+              <Link href="/services#visualization" className="text-brand-blue-light font-medium hover:underline">
                 Learn More →
               </Link>
             </div>
@@ -186,4 +210,4 @@ export default function Home() {
       </section>
     </div>
   );
-}
+} 

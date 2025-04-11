@@ -1,0 +1,17 @@
+NEW CONTACT MESSAGE
+
+You have received a new contact message from the Archway Interior Design website:
+
+Name: {{ name }}
+Email: {{ email }}
+{% if phone %}Phone: {{ phone }}{% endif %}
+Date: {{ created_at|date:"F j, Y, g:i a" }}
+
+Message:
+{{ message }}
+
+You can view and manage this message in the admin panel:
+https://archwaydesign.com/admin/contact/contactmessage/
+
+---
+This is an automated email from the Archway Interior Design website. 

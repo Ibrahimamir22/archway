@@ -3,17 +3,46 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const router = useRouter();
+  const { locale } = router;
+  const isRtl = locale === 'ar';
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // Simplified translation function
+  const t = (key: string) => {
+    const translations: Record<string, Record<string, string>> = {
+      en: {
+        'header.home': 'Home',
+        'header.portfolio': 'Portfolio',
+        'header.services': 'Services',
+        'header.about': 'About',
+        'header.contact': 'Contact',
+        'header.getQuote': 'Get a Quote'
+      },
+      ar: {
+        'header.home': 'الرئيسية',
+        'header.portfolio': 'المشاريع',
+        'header.services': 'الخدمات',
+        'header.about': 'من نحن',
+        'header.contact': 'اتصل بنا',
+        'header.getQuote': 'احصل على عرض سعر'
+      }
+    };
+
+    return translations[locale || 'en'][key] || key;
+  };
+
   return (
-    <nav className="bg-white shadow-md">
-      <div className="container-custom py-4">
+    <nav className="bg-white shadow-md" dir={isRtl ? 'rtl' : 'ltr'}>
+      <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link href="/" className="flex items-center">
@@ -29,28 +58,32 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-8">
+          <div className="hidden md:flex space-x-8 rtl:space-x-reverse">
             <Link href="/" className="font-medium hover:text-brand-blue">
-              Home
+              {t('header.home')}
             </Link>
             <Link href="/portfolio" className="font-medium hover:text-brand-blue">
-              Portfolio
+              {t('header.portfolio')}
             </Link>
             <Link href="/services" className="font-medium hover:text-brand-blue">
-              Services
+              {t('header.services')}
             </Link>
             <Link href="/about" className="font-medium hover:text-brand-blue">
-              About
+              {t('header.about')}
             </Link>
             <Link href="/contact" className="font-medium hover:text-brand-blue">
-              Contact
+              {t('header.contact')}
             </Link>
           </div>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <Link href="/contact" className="btn btn-primary">
-              Get a Quote
+          {/* CTA Button and Language Switcher */}
+          <div className="hidden md:flex items-center space-x-4 rtl:space-x-reverse">
+            <LanguageSwitcher />
+            <Link 
+              href="/contact" 
+              className="bg-brand-blue text-white px-4 py-2 rounded hover:bg-brand-blue-light transition-colors"
+            >
+              {t('header.getQuote')}
             </Link>
           </div>
 
@@ -90,23 +123,29 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden pt-4 pb-2 space-y-4 animate-fade-in">
             <Link href="/" className="block font-medium hover:text-brand-blue py-2">
-              Home
+              {t('header.home')}
             </Link>
             <Link href="/portfolio" className="block font-medium hover:text-brand-blue py-2">
-              Portfolio
+              {t('header.portfolio')}
             </Link>
             <Link href="/services" className="block font-medium hover:text-brand-blue py-2">
-              Services
+              {t('header.services')}
             </Link>
             <Link href="/about" className="block font-medium hover:text-brand-blue py-2">
-              About
+              {t('header.about')}
             </Link>
             <Link href="/contact" className="block font-medium hover:text-brand-blue py-2">
-              Contact
+              {t('header.contact')}
             </Link>
-            <Link href="/contact" className="btn btn-primary mt-4 block text-center">
-              Get a Quote
-            </Link>
+            <div className="flex items-center justify-between py-2">
+              <LanguageSwitcher />
+              <Link 
+                href="/contact" 
+                className="bg-brand-blue text-white px-4 py-2 rounded hover:bg-brand-blue-light transition-colors"
+              >
+                {t('header.getQuote')}
+              </Link>
+            </div>
           </div>
         )}
       </div>

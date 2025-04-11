@@ -10,11 +10,9 @@ django-ratelimit==4.1.0
 
 # Utilities
 django-filter==23.5
-django-encrypted-fields==1.1.2
 gunicorn==21.2.0
 
 # Email
-sendgrid==6.10.0
 
 # For future phases
 # djangorestframework-simplejwt==5.3.1

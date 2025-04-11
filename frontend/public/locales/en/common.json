@@ -1,0 +1,76 @@
+{
+  "header": {
+    "home": "Home",
+    "portfolio": "Portfolio",
+    "services": "Services",
+    "about": "About",
+    "contact": "Contact",
+    "getQuote": "Get a Quote"
+  },
+  "footer": {
+    "copyright": "© 2023 Archway. All rights reserved.",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
+  },
+  "home": {
+    "heroTitle": "Transform Your Space",
+    "heroSubtitle": "Creating beautiful and functional interiors for homes and businesses",
+    "ctaButton": "View Our Work"
+  },
+  "about": {
+    "title": "About Us",
+    "mission": "Our Mission",
+    "missionText": "At Archway, we believe that spaces should reflect the personalities and needs of those who inhabit them. Our mission is to create harmonious environments that blend aesthetics with functionality.",
+    "vision": "Our Vision",
+    "visionText": "To become Egypt's leading interior design firm known for innovative, sustainable designs that enhance quality of life.",
+    "team": "Our Team",
+    "testimonials": "What Our Clients Say"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "We'd love to hear from you",
+    "name": "Your Name",
+    "email": "Your Email",
+    "phone": "Phone Number",
+    "message": "Your Message",
+    "submit": "Send Message",
+    "success": "Your message has been sent successfully!",
+    "error": "There was an error sending your message. Please try again."
+  },
+  "portfolio": {
+    "title": "Our Portfolio",
+    "subtitle": "Explore our latest projects",
+    "filter": "Filter by",
+    "all": "All",
+    "search": "Search projects...",
+    "saveToFavorites": "Save to Favorites",
+    "signupPrompt": "Sign up to save projects to your favorites!"
+  },
+  "auth": {
+    "login": "Log In",
+    "signup": "Sign Up",
+    "fullName": "Full Name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "phoneNumber": "Phone Number (optional)",
+    "location": "Location (optional)",
+    "rememberMe": "Remember Me",
+    "forgotPassword": "Forgot Password?",
+    "gdprConsent": "I agree to the processing of my personal data according to the",
+    "termsAndPrivacy": "Terms of Service and Privacy Policy",
+    "alreadyHaveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?",
+    "loginSuccess": "Logged in successfully!",
+    "signupSuccess": "Account created successfully!",
+    "loginError": "Invalid email or password",
+    "signupError": "Error creating account"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "passwordMinLength": "Password must be at least 8 characters long",
+    "passwordMatch": "Passwords do not match",
+    "invalidPhone": "Please enter a valid Egyptian phone number"
+  }
+} 

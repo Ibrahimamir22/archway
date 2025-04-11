@@ -15,8 +15,42 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from django.conf.urls.i18n import i18n_patterns
+from rest_framework import routers
+from apps.projects.views import ProjectViewSet, CategoryViewSet, TagViewSet
+from apps.testimonials.views import TestimonialViewSet
+from apps.contact.views import ContactViewSet
+
+# Default router for API endpoints
+router = routers.DefaultRouter()
+router.register(r'projects', ProjectViewSet)
+router.register(r'projects/categories', CategoryViewSet)
+router.register(r'projects/tags', TagViewSet)
+router.register(r'testimonials', TestimonialViewSet)
+router.register(r'contact', ContactViewSet, basename='contact')
+
+# API URLs
+api_patterns = [
+    path('v1/', include(router.urls)),
+    path('auth/', include('rest_framework.urls')),
+]
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include(api_patterns)),
+    path('i18n/', include('django.conf.urls.i18n')),
 ]
+
+# Add internationalization to core patterns (except API and admin)
+urlpatterns += i18n_patterns(
+    # Add localized views here if needed
+    prefix_default_language=True,
+)
+
+# Serve media files in development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

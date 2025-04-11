@@ -1,97 +1,213 @@
 # Archway - Interior Design Portfolio Platform
 
-A comprehensive platform for interior designers to showcase their work with advanced visualization, client interaction, and project management features.
+Archway is a comprehensive portfolio platform for an interior design company in Egypt, featuring admin capabilities, 3D/360° visualization, a chatbot, and enhanced user engagement features.
 
-## Features
+## Project Overview
 
-- **Portfolio Showcase**: Display projects with images, descriptions, and 3D/360° visualizations
-- **Client Portal**: User accounts, favorites, mood boards, and project cost estimator
-- **Admin Dashboard**: Manage projects, bookings, and analytics
-- **Interactive Tools**: Voice-enabled chatbot, AR visualizations, and sustainability metrics
-- **Multi-language Support**: Internationalization for global reach
+### Frontend
+- Next.js with TypeScript and Tailwind CSS
+- Bilingual support (Arabic/English) with RTL layout for Arabic
+- 13 client-facing pages (Home, Portfolio, About, Contact, etc.)
+- PWA support (to be added)
+- Dark mode (to be added)
+- 3D/360°/AR visualization with Pannellum, Three.js, WebXR (to be added)
+- Voice-enabled chatbot (to be added)
 
-## Tech Stack
+### Backend
+- Django with Django REST Framework and PostgreSQL
+- 9 admin pages (Projects, Analytics, etc.)
+- Multiple apps for projects, users, bookings, etc.
+- Secure APIs with JWT authentication (coming in Phase 3)
+- Multi-language support (English and Arabic)
 
-- **Frontend**: Next.js with TypeScript and Tailwind CSS
-- **Backend**: Django with Django REST Framework
-- **Database**: PostgreSQL
-- **Deployment**: Docker, Vercel (frontend), DigitalOcean (backend)
+### Features
+- User accounts with favorites and mood boards
+- Cost estimator tool
+- Gamification elements
+- Multi-language support (Arabic and English)
+- Analytics dashboard
+- Sustainability metrics
 
-## Project Structure
+### Security
+- HTTPS
+- JWT authentication (coming in Phase 3)
+- CSRF protection
+- Rate limiting
+- GDPR compliance
 
-```
-archway/
-├── frontend/                # Next.js application
-│   ├── components/          # Reusable UI components
-│   ├── hooks/               # Custom React hooks
-│   ├── lib/                 # Utility functions
-│   ├── pages/               # Next.js pages
-│   ├── public/              # Static assets
-│   ├── styles/              # Global styles and Tailwind config
-│   └── tests/               # Frontend tests
-├── backend/                 # Django application
-│   ├── interior_platform/   # Django project settings
-│   ├── apps/                # Django apps (projects, users, etc.)
-│   ├── utils/               # Backend utilities
-│   └── tests/               # Backend tests
-└── docker/                  # Docker configuration
-```
-
-## Development Setup
+## Getting Started
 
 ### Prerequisites
-
 - Docker and Docker Compose
-- Node.js (16+)
-- Python (3.9+)
+- Node.js v18+ (for local development)
+- Python 3.11+ (for local development)
 
-### Running with Docker
+### Installation
 
 1. Clone the repository:
-   ```
-   git clone https://github.com/yourusername/archway.git
-   cd archway
-   ```
+```bash
+git clone https://github.com/yourusername/archway.git
+cd archway
+```
 
-2. Create your environment file from the example:
-   ```
-   cp .env.example .env
-   ```
+2. Create a `.env` file based on `.env.example`:
+```bash
+cp .env.example .env
+```
 
-3. Update the `.env` file with your secure credentials
+3. Configure environment variables in `.env` file:
+```
+# Database
+DB_NAME=archway_db
+DB_USER=archway_user
+DB_PASSWORD=your_strong_password
+DB_HOST=db
+DB_PORT=5432
 
-4. Start the Docker containers:
-   ```
-   docker-compose up
-   ```
+# Django 
+SECRET_KEY=your_secret_key
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# CORS
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
+
+# Email (SendGrid)
+SENDGRID_API_KEY=your_sendgrid_api_key
+```
+
+4. Start the services with Docker Compose:
+```bash
+docker-compose up -d
+```
 
 5. Access the services:
    - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000/api/
-   - Admin panel: http://localhost:8000/admin/
+   - Backend API: http://localhost:8000/api/v1
+   - Admin Panel: http://localhost:8000/admin
 
-### Environment Variables
+### Setting up SendGrid for Email Notifications
 
-The project uses environment variables for configuration. These are stored in a `.env` file in the root directory and are automatically loaded by Docker Compose. Key variables include:
+1. Sign up for a SendGrid account at https://sendgrid.com/
+2. Create an API key in the SendGrid dashboard
+3. Add the API key to your `.env` file:
+```
+SENDGRID_API_KEY=your_sendgrid_api_key
+```
+4. In production, uncomment and configure the SendGrid email settings in `backend/interior_platform/settings.py`
 
-- `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`: Database connection details
-- `SECRET_KEY`: Django secret key (generate a secure one for production)
-- `DEBUG`: Set to "True" for development, "False" for production
-- `ALLOWED_HOSTS`: Comma-separated list of allowed hosts
-- `CORS_ALLOWED_ORIGINS`: Allowed origins for CORS
+## Project Structure
 
-For security, the `.env` file is not committed to the repository. An example file (`.env.example`) is provided as a template.
+### Frontend (Next.js)
+```
+frontend/
+├── public/
+│   ├── images/
+│   └── locales/       # Translations for i18n
+│       ├── en/        # English translations
+│       └── ar/        # Arabic translations
+├── src/
+│   ├── app/           # Next.js app router
+│   ├── components/    # React components
+│   │   ├── common/    # Common UI components
+│   │   ├── portfolio/ # Portfolio-related components
+│   │   └── user/      # User-related components
+│   ├── hooks/         # Custom React hooks
+│   ├── lib/           # Utility functions
+│   └── pages/         # Next.js pages
+```
 
-### Local Development (Non-Docker)
+### Backend (Django)
+```
+backend/
+├── apps/              # Django applications
+│   ├── projects/      # Projects app
+│   ├── testimonials/  # Testimonials app
+│   ├── contact/       # Contact form app
+│   └── ...            # Other apps
+├── interior_platform/ # Django project settings
+├── templates/         # HTML templates
+│   └── contact/       # Email templates
+└── locale/            # Translation files
+    ├── en/            # English translations
+    └── ar/            # Arabic translations
+```
 
-See detailed instructions in the [Development Guide](docs/development.md).
+## Development Guidelines
 
-## Documentation
+1. Install frontend dependencies:
+```bash
+cd frontend
+npm install
+```
 
-- [Wireframes](wireframes.md)
-- [Database Schema](erd.md)
-- [API Specifications](api-spec.md)
+2. Install backend dependencies:
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+3. Run migrations:
+```bash
+cd backend
+python manage.py migrate
+```
+
+4. Create a superuser:
+```bash
+cd backend
+python manage.py createsuperuser
+```
+
+## Project Status and Roadmap
+
+### Phase 1: Project Setup & Structure ✅
+- Set up project structure
+- Initialize Next.js with TypeScript and Tailwind CSS
+- Create basic Home and Portfolio pages
+- Set up Django with PostgreSQL
+- Configure Docker for local development
+
+### Phase 2: Core Setup & Basic Frontend/Backend ✅
+- Implement bilingual support (English and Arabic) with RTL
+- Create About Us and Contact pages
+- Enhance Portfolio page with filters, search, and favorites
+- Add user authentication forms (signup/login)
+- Set up projects and testimonials APIs
+- Configure contact form with email notifications
+- Implement security features (CSRF, rate limiting)
+
+### Phase 3: User Authentication & Portfolio Features 🔄
+- Implement JWT authentication
+- Create user profile and dashboard
+- Build project detail page with image gallery
+- Add favorites functionality
+- Implement 3D/360° visualization
+
+### Phase 4: Advanced Features
+- Add mood board feature
+- Implement cost estimator
+- Add admin dashboard
+- Create booking system
+
+### Phase 5: Quality & Optimization
+- Performance optimization
+- SEO enhancements
+- Accessibility improvements
+- Cross-browser testing
+
+### Phase 6: Testing & Deployment
+- Unit and integration testing
+- End-to-end testing
+- Deploy to production
 
 ## License
 
-MIT 
+This project is proprietary and not licensed for public use.
+
+## Acknowledgments
+
+- [Next.js](https://nextjs.org/)
+- [Django](https://www.djangoproject.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [PostgreSQL](https://www.postgresql.org/) 

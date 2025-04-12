@@ -154,64 +154,19 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
         <title>{project.title} | Archway Interior Design</title>
         <meta name="description" content={project.description} />
         
-        {/* Preload project images */}
+        {/* Preload critical project images */}
         {project.images && project.images.length > 0 && (
           <>
-            {/* Direct image preloading with link tags */}
-            {project.images.map((image: any) => (
+            {/* Only preload the cover image, other images will be handled by OptimizedImage */}
+            {coverImage && (
               <link 
-                key={`preload-${image.id}`}
+                key={`preload-cover-${coverImage.id}`}
                 rel="preload" 
-                href={image.src} 
+                href={coverImage.src} 
                 as="image"
+                importance="high"
               />
-            ))}
-            
-            {/* Add custom script for aggressive preloading */}
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  (function() {
-                    try {
-                      // Preload all project images
-                      const images = ${JSON.stringify(project.images.map((img: any) => img.src))};
-                      
-                      // Create hidden div for preloading
-                      const preloadDiv = document.createElement('div');
-                      preloadDiv.style.position = 'absolute';
-                      preloadDiv.style.width = '0';
-                      preloadDiv.style.height = '0';
-                      preloadDiv.style.overflow = 'hidden';
-                      preloadDiv.setAttribute('aria-hidden', 'true');
-                      document.body.appendChild(preloadDiv);
-                      
-                      // Create actual image elements to ensure browser loads them
-                      images.forEach(function(src) {
-                        if (!src) return;
-                        
-                        // Create DOM element
-                        const img = document.createElement('img');
-                        img.src = src;
-                        preloadDiv.appendChild(img);
-                        
-                        // Also create Image object
-                        const imgObj = new Image();
-                        imgObj.src = src;
-                      });
-                      
-                      // Keep div for a while to ensure images stay cached
-                      setTimeout(function() {
-                        if (document.body.contains(preloadDiv)) {
-                          document.body.removeChild(preloadDiv);
-                        }
-                      }, 5000);
-                    } catch(e) {
-                      console.error('Error in image preload script:', e);
-                    }
-                  })();
-                `
-              }}
-            />
+            )}
           </>
         )}
       </Head>

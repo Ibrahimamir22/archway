@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
-import { Project } from '@/hooks/useProjects';
+import { Project, fixImageUrl } from '@/hooks/useProjects';
 import Modal from '@/components/common/Modal';
 import Button from '@/components/common/Button';
 import { useQueryClient } from 'react-query';
@@ -11,6 +11,7 @@ import OptimizedImage from '../common/OptimizedImage';
 
 // Track loaded images globally across all components
 const loadedImages = typeof window !== 'undefined' ? new Set<string>() : new Set();
+const preloadedProjects = typeof window !== 'undefined' ? new Set<string>() : new Set();
 
 // Helper function to get API base URL
 const getApiBaseUrl = () => {
@@ -51,7 +52,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
+  const [isPreloaded, setIsPreloaded] = useState(false);
   const queryClient = useQueryClient();
+  const preloadDivRef = useRef<HTMLDivElement | null>(null);
   
   const handleSaveClick = () => {
     if (isAuthenticated && onSaveToFavorites) {
@@ -68,79 +71,112 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const navigateToSignup = () => {
     router.push('/signup');
   };
-  
-  // Add aggressive preloading on hover
-  const handleMouseEnter = async () => {
-    setIsHovering(true);
+
+  // Preload images when the component mounts
+  useEffect(() => {
+    // Only run in browser environment
+    if (typeof window === 'undefined') return;
     
-    // Prefetch the project detail page
-    router.prefetch(`/portfolio/${project.slug}`);
-    
-    // Aggressive image preloading
-    try {
-      // Check if we already have the data
-      const cachedData = queryClient.getQueryData(['projectDetail', project.slug, router.locale]);
-      
-      if (!cachedData) {
-        console.log(`Preloading images for project: ${project.slug}`);
-        
-        // Create a hidden div for image preloading
-        const preloadDiv = document.createElement('div');
-        preloadDiv.style.position = 'absolute';
-        preloadDiv.style.width = '0';
-        preloadDiv.style.height = '0';
-        preloadDiv.style.overflow = 'hidden';
-        preloadDiv.style.opacity = '0';
-        document.body.appendChild(preloadDiv);
-        
-        // Fetch project data directly without waiting for navigation
-        const API_BASE_URL = getApiBaseUrl();
-        const locale = router.locale || 'en';
-        const response = await axios.get(`${API_BASE_URL}/projects/${project.slug}/?lang=${locale}`);
-        const data = response.data;
-        
-        if (data.images && Array.isArray(data.images)) {
-          // Preload all project images aggressively
-          data.images.forEach((img: any) => {
-            const imgSrc = img.image_url || img.image;
-            if (!imgSrc) return;
-            
-            // Create a normalized URL
-            let normalizedSrc = imgSrc;
-            if (normalizedSrc.includes('backend:8000')) {
-              normalizedSrc = normalizedSrc.replace(/backend:8000/g, 'localhost:8000');
-            } else if (normalizedSrc.startsWith('/media/')) {
-              normalizedSrc = `http://localhost:8000${normalizedSrc}`;
-            } else if (normalizedSrc.startsWith('media/')) {
-              normalizedSrc = `http://localhost:8000/${normalizedSrc}`;
-            }
-            
-            // Create a real image element to ensure browser caches it
-            const imgElement = document.createElement('img');
-            imgElement.src = normalizedSrc;
-            preloadDiv.appendChild(imgElement);
-            
-            // Also create an actual Image object for more reliable loading
-            const imageObj = new Image();
-            imageObj.src = normalizedSrc;
-            
-            console.log(`Preloading image ${normalizedSrc} for slug ${project.slug}`);
-          });
-          
-          // Cache the project data using React Query
-          queryClient.setQueryData(['projectDetail', project.slug, locale], data);
-        }
-        
-        // Keep preload div in the DOM to ensure images stay cached
-        setTimeout(() => {
-          if (document.body.contains(preloadDiv)) {
-            document.body.removeChild(preloadDiv);
-          }
-        }, 5000);
-      }
-    } catch (error) {
-      console.error('Error preloading project images:', error);
+    // Check if this project has already been preloaded
+    if (preloadedProjects.has(project.slug)) {
+      setIsPreloaded(true);
+      return;
     }
+
+    // Create a hidden div for preloading images that persists between renders
+    if (!preloadDivRef.current) {
+      const div = document.createElement('div');
+      div.style.position = 'absolute';
+      div.style.width = '0';
+      div.style.height = '0';
+      div.style.overflow = 'hidden';
+      div.style.opacity = '0';
+      div.setAttribute('aria-hidden', 'true');
+      div.dataset.projectSlug = project.slug;
+      document.body.appendChild(div);
+      preloadDivRef.current = div;
+    }
+
+    // Immediately preload cover image
+    if (project.cover_image_url || project.cover_image) {
+      // Create and add an image element to the hidden div
+      const imgElement = document.createElement('img');
+      imgElement.src = fixImageUrl(project.cover_image_url || project.cover_image || '');
+      imgElement.alt = "Preload cover";
+      preloadDivRef.current?.appendChild(imgElement);
+    }
+
+    // Prefetch the project data and preload all images
+    const prefetchProjectData = async () => {
+      try {
+        const cachedData = queryClient.getQueryData(['projectDetail', project.slug, router.locale]);
+        
+        if (!cachedData) {
+          // Prefetch the Next.js page
+          router.prefetch(`/portfolio/${project.slug}`);
+          
+          // Fetch project data directly
+          const API_BASE_URL = getApiBaseUrl();
+          const locale = router.locale || 'en';
+          const response = await axios.get(`${API_BASE_URL}/projects/${project.slug}/?lang=${locale}`);
+          const data = response.data;
+          
+          if (data.images && Array.isArray(data.images)) {
+            // Process and preload all images
+            data.images.forEach((img: any) => {
+              // Get normalized image URL
+              let imgSrc = img.image_url || img.image;
+              if (!imgSrc) return;
+              
+              // Use our consistent fixImageUrl function
+              const normalizedSrc = fixImageUrl(imgSrc);
+              
+              // Add to hidden div to ensure images are kept in cache
+              if (preloadDivRef.current) {
+                const imgElement = document.createElement('img');
+                imgElement.src = normalizedSrc;
+                imgElement.alt = "Preload";
+                preloadDivRef.current.appendChild(imgElement);
+              }
+            });
+            
+            // Store processed data in React Query cache to make it available on the detail page
+            const processedData = {
+              ...data,
+              images: data.images.map((img: any) => ({
+                ...img,
+                src: fixImageUrl(img.image_url || img.image || ''),
+                alt: img.alt_text || project.title,
+                isCover: img.is_cover
+              }))
+            };
+            
+            queryClient.setQueryData(['projectDetail', project.slug, locale], processedData);
+            preloadedProjects.add(project.slug);
+            setIsPreloaded(true);
+          }
+        } else {
+          setIsPreloaded(true);
+        }
+      } catch (error) {
+        console.error('Error preloading project data:', error);
+      }
+    };
+    
+    // Start preloading after a slight delay
+    const timerId = setTimeout(prefetchProjectData, 100);
+    
+    // Cleanup function
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [project.slug, project.cover_image, project.cover_image_url, queryClient, router]);
+  
+  // Add mouse enter/leave effects
+  const handleMouseEnter = () => {
+    setIsHovering(true);
+    // Immediately trigger navigation prefetch as a backup
+    router.prefetch(`/portfolio/${project.slug}`);
   };
   
   const handleMouseLeave = () => {
@@ -199,7 +235,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <Link href={`/portfolio/${project.slug}`}>
+        <Link href={`/portfolio/${project.slug}`} prefetch={true}>
           <div className="relative h-48 w-full">
             <OptimizedImage
               src={getImageSrc()}
@@ -208,7 +244,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover"
               onError={() => setImageError(true)}
-              priority={isHovering} // Add priority when hovering
+              priority={true} // Always use priority for these images
             />
             
             {isHovering && (
@@ -225,6 +261,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               <Link 
                 href={`/portfolio/${project.slug}`}
                 className="text-xl font-semibold text-gray-900 hover:text-brand-blue"
+                prefetch={true}
               >
                 {project.title}
               </Link>
@@ -273,6 +310,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <Link 
               href={`/portfolio/${project.slug}`}
               className="text-brand-blue-light font-medium hover:underline inline-flex items-center"
+              prefetch={true}
             >
               {isRtl ? (
                 <>

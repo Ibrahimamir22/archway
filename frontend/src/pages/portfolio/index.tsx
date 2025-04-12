@@ -121,94 +121,6 @@ const PortfolioPage: NextPage<PortfolioPageProps> = ({ initialCategories, initia
     console.log('Saved project to favorites:', projectId);
   };
 
-  // Function to prefetch project details
-  const prefetchProjectDetails = useCallback(
-    (slug: string) => {
-      // Don't prefetch if already loading another page
-      if (loading || isFetchingNextPage) return;
-      
-      // Skip if this project was already preloaded
-      if (preloadedProjects.has(slug)) {
-        console.log(`Project ${slug} already preloaded, skipping`);
-        return;
-      }
-      
-      console.log(`Starting prefetch for project: ${slug}`);
-      const locale = router.locale || 'en';
-      
-      // Create preload container early and keep reference
-      const preloadDiv = document.createElement('div');
-      preloadDiv.style.position = 'absolute';
-      preloadDiv.style.width = '0';
-      preloadDiv.style.height = '0';
-      preloadDiv.style.overflow = 'hidden';
-      preloadDiv.style.opacity = '0';
-      document.body.appendChild(preloadDiv);
-      
-      queryClient.prefetchQuery(
-        ['projectDetail', slug, locale],
-        async () => {
-          const params = new URLSearchParams();
-          params.append('lang', locale);
-          const API_BASE_URL = getApiBaseUrl();
-          
-          try {
-            const response = await axios.get(
-              `${API_BASE_URL}/projects/${slug}/?${params.toString()}`
-            );
-            
-            // Process image URLs before caching
-            const data = response.data;
-            if (data.images && Array.isArray(data.images)) {
-              // Mark as preloaded right away
-              preloadedProjects.add(slug);
-              
-              // Process and preload images
-              data.images.forEach((img: any) => {
-                // Get normalized image URL
-                let imgSrc = img.image_url || img.image;
-                if (!imgSrc) return;
-                
-                // Normalize URLs
-                if (imgSrc.includes('backend:8000')) {
-                  imgSrc = imgSrc.replace(/backend:8000/g, 'localhost:8000');
-                } else if (imgSrc.startsWith('/media/')) {
-                  imgSrc = `http://localhost:8000${imgSrc}`;
-                } else if (imgSrc.startsWith('media/')) {
-                  imgSrc = `http://localhost:8000/${imgSrc}`;
-                }
-                
-                // Create and add preload image
-                const imgElement = document.createElement('img');
-                imgElement.src = imgSrc;
-                imgElement.alt = 'preload';
-                imgElement.dataset.projectSlug = slug;
-                preloadDiv.appendChild(imgElement);
-                
-                console.log(`Preloading ${slug} image: ${imgSrc}`);
-              });
-              
-              // Add normalized data to cache
-              return data;
-            }
-            
-            return data;
-          } catch (error) {
-            console.error('Error prefetching project:', error);
-            return null;
-          }
-        },
-        {
-          staleTime: 300000, // 5 minutes
-          cacheTime: 600000, // 10 minutes
-        }
-      );
-      
-      // We intentionally don't remove the preload div to ensure images stay in browser cache
-    },
-    [queryClient, router.locale, loading, isFetchingNextPage]
-  );
-
   // Handle retry when API connection fails
   const handleRetry = () => {
     refetch();
@@ -270,20 +182,8 @@ const PortfolioPage: NextPage<PortfolioPageProps> = ({ initialCategories, initia
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {projects.map((project: Project) => (
-                <div 
-                  key={project.id}
-                  onMouseEnter={() => {
-                    prefetchProjectDetails(project.slug);
-                    // Also attempt to preload the cover image directly
-                    if (project.cover_image_url || project.cover_image) {
-                      const img = new Image();
-                      img.src = project.cover_image_url || project.cover_image || '';
-                      console.log('Preloading cover image:', img.src);
-                    }
-                  }}
-                >
+                <div key={project.id}>
                   <ProjectCard
-                    key={project.id}
                     project={project}
                     onSaveToFavorites={handleSaveToFavorites}
                     isAuthenticated={isAuthenticated}

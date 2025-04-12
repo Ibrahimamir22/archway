@@ -32,13 +32,13 @@ declare module 'axios' {
   export function get<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
   export function post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
   export function put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
-  export function delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
+  export function deleteRequest<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
 
   export default {
     get,
     post,
     put,
-    delete,
+    delete: deleteRequest,
   };
 }
 

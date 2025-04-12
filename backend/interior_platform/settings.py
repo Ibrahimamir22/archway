@@ -159,7 +159,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC' # For production
+TIME_ZONE = 'Europe/London' # For development and being in the UK
 
 USE_I18N = True
 

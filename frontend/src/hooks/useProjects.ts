@@ -43,12 +43,14 @@ export interface Project {
   tags: Tag[];
   cover_image?: string;
   cover_image_url?: string;
+  image?: string;
   images?: ProjectImage[];
 }
 
 export interface ProjectImage {
   id: string;
   image: string;
+  image_url?: string;
   alt_text: string;
   is_cover: boolean;
 }
@@ -250,56 +252,29 @@ export const useProjectTags = (prefetchedData?: Tag[]) => {
 
 // Improved utility function for fixing all image URLs
 export const fixImageUrl = (url: string | undefined): string => {
-  if (!url) return '/images/placeholder.jpg';
+  if (!url) return '';
   
-  // If it's already a fully qualified URL starting with http(s), leave it alone
-  // This handles external image sources and prevents double fixing
-  if (url.match(/^https?:\/\//)) {
-    return url;
+  // In Docker environment when SSR, keep backend:8000
+  // When in browser, replace with localhost:8000
+  const isBrowser = typeof window !== 'undefined';
+  
+  if (isBrowser && url.includes('backend:8000')) {
+    return url.replace(/backend:8000/g, 'localhost:8000');
   }
   
-  // Handle absolute URLs with /media/
+  // Handle media paths that start with /media or media/
   if (url.startsWith('/media/')) {
-    // Get the appropriate base URL depending on environment
-    const baseApiUrl = getApiBaseUrl();
-    // Extract the domain from the API URL (removes /api/v1 etc.)
-    const domainMatch = baseApiUrl.match(/^(https?:\/\/[^\/]+)/);
-    const domain = domainMatch ? domainMatch[1] : 'http://localhost:8000';
-    
-    return `${domain}${url}`;
-  }
-  
-  // Handle relative URLs starting with media/
-  if (url.startsWith('media/')) {
-    // Get the appropriate base URL depending on environment
-    const baseApiUrl = getApiBaseUrl();
-    // Extract the domain from the API URL (removes /api/v1 etc.)
-    const domainMatch = baseApiUrl.match(/^(https?:\/\/[^\/]+)/);
-    const domain = domainMatch ? domainMatch[1] : 'http://localhost:8000';
-    
-    return `${domain}/${url}`;
-  }
-  
-  // Handle backend:8000 in URLs (typical in Docker environments)
-  if (url.includes('backend:8000')) {
-    // If we're in browser context, replace backend with localhost
-    const isBrowser = typeof window !== 'undefined';
     return isBrowser 
-      ? url.replace('backend:8000', 'localhost:8000')
-      : url; // Keep as is for server-side rendering
+      ? `http://localhost:8000${url}` 
+      : `http://backend:8000${url}`;
   }
   
-  // Default: if it doesn't match any pattern but seems to be a relative path, 
-  // assume it's relative to the API server
-  if (!url.startsWith('/') && !url.includes('://')) {
-    const baseApiUrl = getApiBaseUrl();
-    const domainMatch = baseApiUrl.match(/^(https?:\/\/[^\/]+)/);
-    const domain = domainMatch ? domainMatch[1] : 'http://localhost:8000';
-    
-    return `${domain}/${url}`;
+  if (url.startsWith('media/')) {
+    return isBrowser 
+      ? `http://localhost:8000/${url}` 
+      : `http://backend:8000/${url}`;
   }
   
-  // Return as-is for any other cases
   return url;
 };
 
@@ -350,7 +325,7 @@ export const useProjectDetail = (slug: string) => {
     }
   };
 
-  // Use standard react-query with good caching settings
+  // Use standard react-query with better caching settings
   const { data, error, status, refetch } = useQuery(
     ['projectDetail', slug, locale],
     fetchProjectDetail,
@@ -358,8 +333,22 @@ export const useProjectDetail = (slug: string) => {
       enabled: !!slug,
       retry: 2,
       refetchOnWindowFocus: false,
-      staleTime: 300000, // 5 minutes
-      cacheTime: 600000, // 10 minutes
+      staleTime: 600000, // 10 minutes - increased from 5
+      cacheTime: 3600000, // 60 minutes - increased from 10 
+      onSuccess: (data) => {
+        // Preload images when data is successfully fetched 
+        if (typeof window !== 'undefined' && data?.images?.length) {
+          console.log(`Preloading ${data.images.length} images on successful fetch`);
+          
+          // Force browser to load images by creating elements
+          data.images.forEach((image: any) => {
+            if (image.src) {
+              const img = new Image();
+              img.src = image.src;
+            }
+          });
+        }
+      }
     }
   );
 

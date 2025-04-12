@@ -3,7 +3,6 @@ import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
-import Image from 'next/image';
 import Link from 'next/link';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { useRouter } from 'next/router';
@@ -11,6 +10,7 @@ import Button from '@/components/common/Button';
 import LoadingState from '@/components/common/LoadingState';
 import { useProjectDetail, fixImageUrl } from '@/hooks/useProjects';
 import axios from 'axios';
+import OptimizedImage from '@/components/common/OptimizedImage';
 
 interface ProjectDetail {
   id: string;
@@ -38,10 +38,10 @@ interface ProjectDetail {
   }>;
 }
 
-// Create full HTML of preload images to add to head
+// Update image preload function to use normalizedUrl
 export const createImagePreloadTags = (images: {id: string, src: string}[]) => {
   return images
-    .map(image => `<link rel="preload" href="${fixImageUrl(image.src)}" as="image" />`)
+    .map(image => `<link rel="preload" href="${image.src}" as="image" />`)
     .join('');
 };
 
@@ -71,19 +71,22 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
   // Get cover image
   const coverImage = project?.images?.find((img: {id: string, src: string, alt: string, isCover: boolean}) => img.isCover === true);
   
-  // Simple and reliable image source getter
+  // Update the getImageSrc function to ensure it always returns valid image URLs
   const getImageSrc = (image: {id: string, src: string}) => {
+    if (!image || !image.src) {
+      console.log(`Missing image source for image ${image?.id || 'unknown'}`);
+      return '/images/placeholder.jpg';
+    }
+    
     if (imageError[image.id]) {
-      console.log(`Using fallback for image ${image.id}`);
       // Use a numeric fallback
       const imageIndex = (parseInt(image.id) || 1) % 5 + 1;
       return `/images/project-${imageIndex}.jpg`;
     }
     
-    // Debug to see what URL is actually being used
-    const fixedUrl = fixImageUrl(image.src);
-    console.log(`Image ${image.id} using URL:`, fixedUrl);
-    return fixedUrl;
+    // Use the image URL as is - no special case handling needed
+    // The URLs are already normalized by the useProjectDetail hook
+    return image.src;
   };
   
   // If in fallback mode or still loading
@@ -110,11 +113,107 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
     );
   }
   
+  // Add useEffect for preloading images when page first loads
+  useEffect(() => {
+    // Preload all project images to ensure they're in browser cache
+    if (project?.images?.length) {
+      console.log(`Preloading ${project.images.length} images for ${project.slug}`);
+      
+      // Create a hidden div for preloading
+      const preloadDiv = document.createElement('div');
+      preloadDiv.style.position = 'absolute';
+      preloadDiv.style.width = '0';
+      preloadDiv.style.height = '0';
+      preloadDiv.style.overflow = 'hidden';
+      preloadDiv.style.opacity = '0';
+      document.body.appendChild(preloadDiv);
+      
+      // Preload all images
+      project.images.forEach((image: {id: string, src: string}) => {
+        if (image.src) {
+          const imgEl = document.createElement('img');
+          imgEl.src = image.src;
+          imgEl.alt = "Preloading";
+          preloadDiv.appendChild(imgEl);
+          console.log(`Preloading: ${image.src}`);
+        }
+      });
+      
+      // Remove preload div after images have loaded
+      return () => {
+        if (document.body.contains(preloadDiv)) {
+          document.body.removeChild(preloadDiv);
+        }
+      };
+    }
+  }, [project?.slug, project?.images]);
+  
   return (
     <>
       <Head>
         <title>{project.title} | Archway Interior Design</title>
         <meta name="description" content={project.description} />
+        
+        {/* Preload project images */}
+        {project.images && project.images.length > 0 && (
+          <>
+            {/* Direct image preloading with link tags */}
+            {project.images.map((image: any) => (
+              <link 
+                key={`preload-${image.id}`}
+                rel="preload" 
+                href={image.src} 
+                as="image"
+              />
+            ))}
+            
+            {/* Add custom script for aggressive preloading */}
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  (function() {
+                    try {
+                      // Preload all project images
+                      const images = ${JSON.stringify(project.images.map((img: any) => img.src))};
+                      
+                      // Create hidden div for preloading
+                      const preloadDiv = document.createElement('div');
+                      preloadDiv.style.position = 'absolute';
+                      preloadDiv.style.width = '0';
+                      preloadDiv.style.height = '0';
+                      preloadDiv.style.overflow = 'hidden';
+                      preloadDiv.setAttribute('aria-hidden', 'true');
+                      document.body.appendChild(preloadDiv);
+                      
+                      // Create actual image elements to ensure browser loads them
+                      images.forEach(function(src) {
+                        if (!src) return;
+                        
+                        // Create DOM element
+                        const img = document.createElement('img');
+                        img.src = src;
+                        preloadDiv.appendChild(img);
+                        
+                        // Also create Image object
+                        const imgObj = new Image();
+                        imgObj.src = src;
+                      });
+                      
+                      // Keep div for a while to ensure images stay cached
+                      setTimeout(function() {
+                        if (document.body.contains(preloadDiv)) {
+                          document.body.removeChild(preloadDiv);
+                        }
+                      }, 5000);
+                    } catch(e) {
+                      console.error('Error in image preload script:', e);
+                    }
+                  })();
+                `
+              }}
+            />
+          </>
+        )}
       </Head>
       
       <div className="container mx-auto px-4 py-12">
@@ -145,17 +244,23 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
             {/* Main Project Image */}
             <div className="relative h-[500px] w-full overflow-hidden rounded-lg mb-6 bg-gray-100">
               {coverImage ? (
-                <img
+                <OptimizedImage
                   src={getImageSrc(coverImage)}
                   alt={coverImage.alt || project.title}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
+                  priority={true}
                   onError={() => handleImageError(coverImage.id)}
                 />
               ) : project.images && project.images.length > 0 ? (
-                <img
+                <OptimizedImage
                   src={getImageSrc(project.images[0])}
                   alt={project.images[0].alt || project.title}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
+                  priority={true}
                   onError={() => handleImageError(project.images[0].id)}
                 />
               ) : (
@@ -222,10 +327,12 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {project.images.slice(1).map((image: {id: string, src: string, alt: string, isCover: boolean}, index: number) => (
                 <div key={image.id} className="relative h-64 rounded-lg overflow-hidden shadow-md bg-gray-100">
-                  <img 
+                  <OptimizedImage 
                     src={getImageSrc(image)}
                     alt={image.alt || `Project image ${index + 1}`}
-                    className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     onError={() => handleImageError(image.id)}
                   />
                 </div>
@@ -304,33 +411,93 @@ export const getStaticProps: GetStaticProps = async ({ params, locale = 'en' }) 
     const response = await axios.get(`${API_BASE_URL}/projects/${slug}/?${projectParams.toString()}`);
     const projectData = response.data;
     
-    // Process images properly at build time
+    // Log the raw image data for debugging
+    console.log(`[Server] Raw image data for ${slug}:`, 
+      projectData.images?.map((img: any) => ({ 
+        id: img.id, 
+        url: img.image_url || img.image
+      }))
+    );
+    
+    // Helper function to normalize image URLs with strict validation
+    const normalizeImageUrl = (url: string): string => {
+      if (!url) {
+        console.log('[Server] Empty image URL detected');
+        return '/images/placeholder.jpg';
+      }
+      
+      // Detect if URL contains a hash that might cause issues
+      const hashPattern = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/;
+      if (hashPattern.test(url)) {
+        console.log(`[Server] URL with problematic hash detected: ${url}`);
+      }
+      
+      // Clean URL for browser consumption
+      if (url.includes('backend:8000')) {
+        return url.replace(/backend:8000/g, 'localhost:8000');
+      }
+      
+      // Handle absolute media paths
+      if (url.startsWith('/media/')) {
+        return `http://localhost:8000${url}`;
+      }
+      
+      // Handle relative media paths
+      if (url.startsWith('media/')) {
+        return `http://localhost:8000/${url}`;
+      }
+      
+      // Log any URLs that don't match known patterns
+      if (!url.includes('http') && !url.includes('media')) {
+        console.log(`[Server] Unusual image URL format: ${url}`);
+        return '/images/placeholder.jpg';
+      }
+      
+      return url;
+    };
+    
+    // Process images properly at build time with normalized URLs
     const images = projectData.images || [];
-    const safeImages = images.map((img: any, index: number) => {
-      const imgSrc = img.image_url || img.image || `/images/project-${(index % 5) + 1}.jpg`;
+    let safeImages = images.map((img: any, index: number) => {
+      // Get image source with explicit fallback for missing sources
+      let imgSrc = img.image_url || img.image;
+      
+      // Log if image source is missing
+      if (!imgSrc) {
+        console.log(`[Server] No source for image ${index} in project ${slug}, using fallback`);
+        imgSrc = `/images/project-${(index % 5) + 1}.jpg`;
+      } else {
+        console.log(`[Server] Processing image for ${slug}: ${imgSrc}`);
+      }
+      
       return {
         id: img.id || `image-${index + 1}`,
-        src: fixImageUrl(imgSrc),
-        alt: img.alt_text || 'Project image',
+        src: normalizeImageUrl(imgSrc),
+        alt: img.alt_text || `${projectData.title} image ${index + 1}`,
         isCover: img.is_cover
       };
     });
     
+    // Log normalized images for verification
+    console.log(`[Server] Normalized images for ${slug}:`, 
+      safeImages.map((img: {id: string, src: string}) => ({ id: img.id, src: img.src }))
+    );
+    
     const project: ProjectDetail = {
-      id: projectData.id,
-      title: projectData.title,
-      slug: projectData.slug,
-      description: projectData.description,
+      id: projectData.id || slug,
+      title: projectData.title || 'Project',
+      slug: projectData.slug || slug,
+      description: projectData.description || 'No description available',
       category: {
-        name: projectData.category.name,
-        slug: projectData.category.slug
+        name: projectData.category?.name || 'Uncategorized',
+        slug: projectData.category?.slug || 'uncategorized'
       },
-      client: projectData.client,
-      location: projectData.location,
-      area: projectData.area,
-      completedDate: projectData.completed_date,
-      tags: projectData.tags,
-      images: safeImages
+      client: projectData.client || undefined,
+      location: projectData.location || undefined,
+      area: projectData.area || undefined,
+      completedDate: projectData.completed_date || undefined,
+      tags: Array.isArray(projectData.tags) ? projectData.tags : [],
+      images: safeImages || []
     };
     
     return {

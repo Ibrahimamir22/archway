@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
-import { Project, fixImageUrl } from '@/hooks/useProjects';
+import { Project } from '@/hooks/useProjects';
 import Modal from '@/components/common/Modal';
 import Button from '@/components/common/Button';
 import { useQueryClient } from 'react-query';
 import axios from 'axios';
+import OptimizedImage from '../common/OptimizedImage';
+
+// Track loaded images globally across all components
+const loadedImages = typeof window !== 'undefined' ? new Set<string>() : new Set();
 
 // Helper function to get API base URL
 const getApiBaseUrl = () => {
@@ -66,68 +69,126 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     router.push('/signup');
   };
   
-  // Prefetch project detail data and images on hover
-  const prefetchProjectDetails = async () => {
+  // Add aggressive preloading on hover
+  const handleMouseEnter = async () => {
+    setIsHovering(true);
+    
+    // Prefetch the project detail page
+    router.prefetch(`/portfolio/${project.slug}`);
+    
+    // Aggressive image preloading
     try {
-      const API_BASE_URL = getApiBaseUrl();
-      const locale = router.locale || 'en';
-      const params = new URLSearchParams();
-      params.append('lang', locale);
+      // Check if we already have the data
+      const cachedData = queryClient.getQueryData(['projectDetail', project.slug, router.locale]);
       
-      // First, fetch project details for caching
-      const projectData = await queryClient.fetchQuery(
-        ['projectDetail', project.slug, locale],
-        async () => {
-          const response = await axios.get(`${API_BASE_URL}/projects/${project.slug}/?${params.toString()}`);
-          return response.data;
-        },
-        { staleTime: 300000 }  // 5 minutes
-      );
-      
-      // Then preload all images
-      if (projectData && projectData.images) {
-        projectData.images.forEach(async (image: any) => {
-          const imgSrc = image.image_url || image.image;
-          if (imgSrc) {
-            const imgUrl = fixImageUrl(imgSrc);
-            // Use window.Image constructor to avoid TypeScript error
-            const img = new window.Image();
-            img.src = imgUrl;
+      if (!cachedData) {
+        console.log(`Preloading images for project: ${project.slug}`);
+        
+        // Create a hidden div for image preloading
+        const preloadDiv = document.createElement('div');
+        preloadDiv.style.position = 'absolute';
+        preloadDiv.style.width = '0';
+        preloadDiv.style.height = '0';
+        preloadDiv.style.overflow = 'hidden';
+        preloadDiv.style.opacity = '0';
+        document.body.appendChild(preloadDiv);
+        
+        // Fetch project data directly without waiting for navigation
+        const API_BASE_URL = getApiBaseUrl();
+        const locale = router.locale || 'en';
+        const response = await axios.get(`${API_BASE_URL}/projects/${project.slug}/?lang=${locale}`);
+        const data = response.data;
+        
+        if (data.images && Array.isArray(data.images)) {
+          // Preload all project images aggressively
+          data.images.forEach((img: any) => {
+            const imgSrc = img.image_url || img.image;
+            if (!imgSrc) return;
+            
+            // Create a normalized URL
+            let normalizedSrc = imgSrc;
+            if (normalizedSrc.includes('backend:8000')) {
+              normalizedSrc = normalizedSrc.replace(/backend:8000/g, 'localhost:8000');
+            } else if (normalizedSrc.startsWith('/media/')) {
+              normalizedSrc = `http://localhost:8000${normalizedSrc}`;
+            } else if (normalizedSrc.startsWith('media/')) {
+              normalizedSrc = `http://localhost:8000/${normalizedSrc}`;
+            }
+            
+            // Create a real image element to ensure browser caches it
+            const imgElement = document.createElement('img');
+            imgElement.src = normalizedSrc;
+            preloadDiv.appendChild(imgElement);
+            
+            // Also create an actual Image object for more reliable loading
+            const imageObj = new Image();
+            imageObj.src = normalizedSrc;
+            
+            console.log(`Preloading image ${normalizedSrc} for slug ${project.slug}`);
+          });
+          
+          // Cache the project data using React Query
+          queryClient.setQueryData(['projectDetail', project.slug, locale], data);
+        }
+        
+        // Keep preload div in the DOM to ensure images stay cached
+        setTimeout(() => {
+          if (document.body.contains(preloadDiv)) {
+            document.body.removeChild(preloadDiv);
           }
-        });
+        }, 5000);
       }
     } catch (error) {
-      console.error('Error prefetching project details:', error);
+      console.error('Error preloading project images:', error);
     }
-  };
-  
-  // Handle hover events 
-  const handleMouseEnter = () => {
-    setIsHovering(true);
-    prefetchProjectDetails();
   };
   
   const handleMouseLeave = () => {
     setIsHovering(false);
   };
   
-  // Simple and reliable image URL handling
-  const getImageUrl = () => {
-    if (imageError) {
-      return '/images/placeholder.jpg';
+  // Get image source for the project card with improved error handling
+  const getImageSrc = () => {
+    // Check for specific problematic hash patterns in image URLs
+    const containsUUIDHash = (url: string): boolean => {
+      if (!url) return false;
+      const hashPattern = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/;
+      return hashPattern.test(url);
+    };
+
+    // Prioritize cover_image_url if available and not containing problematic UUID
+    if (project.cover_image_url && !containsUUIDHash(project.cover_image_url)) {
+      return project.cover_image_url;
     }
     
-    // Use the absolute URL from the API if available
-    if (project.cover_image_url) {
-      return fixImageUrl(project.cover_image_url);
+    // Next try cover_image if available and not containing problematic UUID
+    if (project.cover_image && !containsUUIDHash(project.cover_image)) {
+      return project.cover_image;
     }
     
-    // If cover_image is available, use it
-    if (project.cover_image) {
-      return fixImageUrl(project.cover_image);
+    // If we have an image property without problematic UUID, use that
+    if (project.image && !containsUUIDHash(project.image)) {
+      return project.image;
     }
     
-    // Default fallback
+    // If we have images array, find a non-UUID one or use the first one
+    if (project.images && Array.isArray(project.images) && project.images.length > 0) {
+      // Try to find a non-UUID image first
+      const safeImage = project.images.find((img: any) => 
+        img.image_url && !containsUUIDHash(img.image_url)
+      );
+      
+      if (safeImage) {
+        return safeImage.image_url || safeImage.image;
+      }
+      
+      // If all have UUIDs, use the first one anyway
+      if (project.images[0].image_url || project.images[0].image) {
+        return project.images[0].image_url || project.images[0].image;
+      }
+    }
+    
+    // Last resort fallback
     return '/images/placeholder.jpg';
   };
   
@@ -140,11 +201,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       >
         <Link href={`/portfolio/${project.slug}`}>
           <div className="relative h-48 w-full">
-            <img
-              src={getImageUrl()}
+            <OptimizedImage
+              src={getImageSrc()}
               alt={project.title}
-              className="absolute inset-0 w-full h-full object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover"
               onError={() => setImageError(true)}
+              priority={isHovering} // Add priority when hovering
             />
             
             {isHovering && (
@@ -207,7 +271,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           
           <div className={`mt-4 ${isRtl ? 'text-right' : ''}`}>
             <Link 
-              href={`/portfolio/${project.slug}`} 
+              href={`/portfolio/${project.slug}`}
               className="text-brand-blue-light font-medium hover:underline inline-flex items-center"
             >
               {isRtl ? (

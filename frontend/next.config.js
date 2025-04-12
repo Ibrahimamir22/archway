@@ -6,14 +6,30 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   images: {
-    domains: ['localhost', 'backend', 'images.unsplash.com', 'localhost:8000', 'backend:8000'],
-    unoptimized: true, // Disable Next.js image optimization to troubleshoot
+    domains: [
+      'localhost', 
+      'backend', 
+      'images.unsplash.com', 
+      'localhost:8000',
+      '127.0.0.1:8000',
+      process.env.NEXT_PUBLIC_API_HOST || 'localhost', // Dynamically allow the configured API host
+    ],
+    unoptimized: process.env.NODE_ENV === 'development', // Only disable optimization in development
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840], // Better responsive image sizes
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384], // Additional sizes for smaller images
+    loader: 'custom',
+    loaderFile: './src/utils/image-loader.js',
   },
   async rewrites() {
     return [
       {
         source: '/api/:path*',
         destination: 'http://backend:8000/api/:path*',
+      },
+      // Add a rewrite for media files to prevent CORS issues
+      {
+        source: '/media/:path*',
+        destination: 'http://backend:8000/media/:path*',
       },
     ];
   },

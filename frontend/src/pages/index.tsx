@@ -1,12 +1,12 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
-import { useProjects, fixImageUrl, Project } from '../hooks/useProjects';
+import { useProjects, Project } from '../hooks/useProjects';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import OptimizedImage from '../components/common/OptimizedImage';
 
 // Define fallback project interface
 interface FallbackProject {
@@ -82,18 +82,18 @@ export default function Home({ initialProjects = [] }: HomeProps) {
     ? projects 
     : (locale === 'ar' ? fallbackProjectData.ar : fallbackProjectData.en);
 
-  // Function to get image source safely from either Project or FallbackProject
+  // Replace the getImageSrc function with a simpler version
   const getImageSrc = (project: Project | FallbackProject): string => {
     if ('cover_image_url' in project && project.cover_image_url) {
-      return fixImageUrl(project.cover_image_url);
+      return project.cover_image_url;
     }
     if ('cover_image' in project && project.cover_image) {
-      return fixImageUrl(project.cover_image);
+      return project.cover_image;
     }
     if ('image' in project && project.image) {
       return project.image;
     }
-    return '/images/placeholder.jpg';
+    return '';
   };
 
   return (
@@ -125,7 +125,7 @@ export default function Home({ initialProjects = [] }: HomeProps) {
                 </div>
               </div>
               <div className="relative h-[400px] md:h-[500px] rounded-lg overflow-hidden shadow-xl animate-fade-in">
-                <Image 
+                <OptimizedImage 
                   src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2400&auto=format&fit=crop"
                   alt="Modern interior design" 
                   fill
@@ -237,13 +237,13 @@ export default function Home({ initialProjects = [] }: HomeProps) {
                 displayProjects.map((project, index) => (
                   <div key={project.id || `project-${index}`} className="group overflow-hidden rounded-lg shadow-md bg-white">
                     <div className="relative h-64 overflow-hidden">
-                      <Image 
+                      <OptimizedImage 
                         src={getImageSrc(project)}
                         alt={project.title} 
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        priority={index < 3} // Prioritize loading first 3 images
+                        priority={index < 3}
                       />
                     </div>
                     <div className={`p-6 ${isRtl ? 'text-right' : ''}`}>
@@ -314,4 +314,4 @@ export async function getStaticProps({ locale }: { locale: string }) {
       revalidate: 60,
     };
   }
-} 
+}

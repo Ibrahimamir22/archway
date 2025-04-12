@@ -12,6 +12,9 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import axios from 'axios';
 import { useQueryClient } from 'react-query';
 
+// Global preload cache to keep track of which projects have been preloaded
+const preloadedProjects = typeof window !== 'undefined' ? new Set<string>() : new Set();
+
 // Smart detection of environment to handle both browser and container contexts
 const getApiBaseUrl = () => {
   // Check if we're in a browser environment
@@ -124,7 +127,23 @@ const PortfolioPage: NextPage<PortfolioPageProps> = ({ initialCategories, initia
       // Don't prefetch if already loading another page
       if (loading || isFetchingNextPage) return;
       
+      // Skip if this project was already preloaded
+      if (preloadedProjects.has(slug)) {
+        console.log(`Project ${slug} already preloaded, skipping`);
+        return;
+      }
+      
+      console.log(`Starting prefetch for project: ${slug}`);
       const locale = router.locale || 'en';
+      
+      // Create preload container early and keep reference
+      const preloadDiv = document.createElement('div');
+      preloadDiv.style.position = 'absolute';
+      preloadDiv.style.width = '0';
+      preloadDiv.style.height = '0';
+      preloadDiv.style.overflow = 'hidden';
+      preloadDiv.style.opacity = '0';
+      document.body.appendChild(preloadDiv);
       
       queryClient.prefetchQuery(
         ['projectDetail', slug, locale],
@@ -141,15 +160,36 @@ const PortfolioPage: NextPage<PortfolioPageProps> = ({ initialCategories, initia
             // Process image URLs before caching
             const data = response.data;
             if (data.images && Array.isArray(data.images)) {
-              data.images = data.images.map((img: any) => {
-                if (img.image_url && img.image_url.includes('backend:8000')) {
-                  img.image_url = img.image_url.replace('backend:8000', 'localhost:8000');
+              // Mark as preloaded right away
+              preloadedProjects.add(slug);
+              
+              // Process and preload images
+              data.images.forEach((img: any) => {
+                // Get normalized image URL
+                let imgSrc = img.image_url || img.image;
+                if (!imgSrc) return;
+                
+                // Normalize URLs
+                if (imgSrc.includes('backend:8000')) {
+                  imgSrc = imgSrc.replace(/backend:8000/g, 'localhost:8000');
+                } else if (imgSrc.startsWith('/media/')) {
+                  imgSrc = `http://localhost:8000${imgSrc}`;
+                } else if (imgSrc.startsWith('media/')) {
+                  imgSrc = `http://localhost:8000/${imgSrc}`;
                 }
-                if (img.image && img.image.includes('backend:8000')) {
-                  img.image = img.image.replace('backend:8000', 'localhost:8000');
-                }
-                return img;
+                
+                // Create and add preload image
+                const imgElement = document.createElement('img');
+                imgElement.src = imgSrc;
+                imgElement.alt = 'preload';
+                imgElement.dataset.projectSlug = slug;
+                preloadDiv.appendChild(imgElement);
+                
+                console.log(`Preloading ${slug} image: ${imgSrc}`);
               });
+              
+              // Add normalized data to cache
+              return data;
             }
             
             return data;
@@ -163,6 +203,8 @@ const PortfolioPage: NextPage<PortfolioPageProps> = ({ initialCategories, initia
           cacheTime: 600000, // 10 minutes
         }
       );
+      
+      // We intentionally don't remove the preload div to ensure images stay in browser cache
     },
     [queryClient, router.locale, loading, isFetchingNextPage]
   );
@@ -230,7 +272,15 @@ const PortfolioPage: NextPage<PortfolioPageProps> = ({ initialCategories, initia
               {projects.map((project: Project) => (
                 <div 
                   key={project.id}
-                  onMouseEnter={() => prefetchProjectDetails(project.slug)}
+                  onMouseEnter={() => {
+                    prefetchProjectDetails(project.slug);
+                    // Also attempt to preload the cover image directly
+                    if (project.cover_image_url || project.cover_image) {
+                      const img = new Image();
+                      img.src = project.cover_image_url || project.cover_image || '';
+                      console.log('Preloading cover image:', img.src);
+                    }
+                  }}
                 >
                   <ProjectCard
                     key={project.id}
@@ -304,13 +354,40 @@ export async function getStaticProps({ locale = 'en' }) {
     console.log('Projects response:', projectsResponse.status);
     const projects = projectsResponse.data.results || [];
     
-    console.log(`Successfully fetched: ${projects.length} projects, ${categories.length} categories, ${tags.length} tags`);
+    // Process image URLs on the server-side for consistent hydration
+    const processedProjects = projects.map((project: any) => {
+      // Process cover image URLs to ensure consistency
+      if (project.cover_image_url && project.cover_image_url.includes('backend:8000')) {
+        project.cover_image_url = project.cover_image_url.replace(/backend:8000/g, 'localhost:8000');
+      }
+      
+      if (project.cover_image && project.cover_image.includes('backend:8000')) {
+        project.cover_image = project.cover_image.replace(/backend:8000/g, 'localhost:8000');
+      }
+      
+      // Process all images in the project if they exist
+      if (project.images && Array.isArray(project.images)) {
+        project.images = project.images.map((img: any) => {
+          if (img.image_url && img.image_url.includes('backend:8000')) {
+            img.image_url = img.image_url.replace(/backend:8000/g, 'localhost:8000');
+          }
+          if (img.image && img.image.includes('backend:8000')) {
+            img.image = img.image.replace(/backend:8000/g, 'localhost:8000');
+          }
+          return img;
+        });
+      }
+      
+      return project;
+    });
+    
+    console.log(`Successfully fetched: ${processedProjects.length} projects, ${categories.length} categories, ${tags.length} tags`);
 
     return {
       props: {
         initialCategories: categories,
         initialTags: tags,
-        initialProjects: projects,
+        initialProjects: processedProjects,
         ...(await serverSideTranslations(locale, ['common'])),
       },
       revalidate: 60 // Revalidate at most once per minute

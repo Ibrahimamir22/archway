@@ -1,9 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useInfiniteQuery } from 'react-query';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 
-// API base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+// Smart detection of environment to handle both browser and container contexts
+const getApiBaseUrl = () => {
+  // Check if we're in a browser environment
+  const isBrowser = typeof window !== 'undefined';
+  
+  // Get the configured API URL (from environment variables)
+  const configuredUrl = process.env.NEXT_PUBLIC_API_URL;
+  
+  if (configuredUrl) {
+    // If we're in a browser and the URL contains 'backend', replace with 'localhost'
+    if (isBrowser && configuredUrl.includes('backend')) {
+      return configuredUrl.replace('backend', 'localhost');
+    }
+    return configuredUrl;
+  }
+  
+  // Default fallback - use backend for server-side, localhost for client-side
+  return isBrowser 
+    ? 'http://localhost:8000/api/v1' 
+    : 'http://backend:8000/api/v1';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export interface Project {
   id: string;
@@ -16,10 +37,12 @@ export interface Project {
   area?: number;
   completed_date?: string;
   is_featured: boolean;
+  is_published: boolean;
   created_at: string;
   updated_at: string;
   tags: Tag[];
   cover_image?: string;
+  cover_image_url?: string;
   images?: ProjectImage[];
 }
 
@@ -50,256 +73,304 @@ interface UseProjectsOptions {
   limit?: number;
 }
 
-export const useProjects = (options: UseProjectsOptions = {}) => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+interface ProjectsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Project[];
+}
+
+export const useProjects = (options: UseProjectsOptions = {}, prefetchedData?: Project[]) => {
   const router = useRouter();
   const { locale } = router;
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        // Build query parameters
-        const params = new URLSearchParams();
-        
-        if (options.category) {
-          params.append('category__slug', options.category);
-        }
-        
-        if (options.tag) {
-          params.append('tags__slug', options.tag);
-        }
-        
-        if (options.search) {
-          params.append('search', options.search);
-        }
-        
-        if (options.featured) {
-          params.append('is_featured', 'true');
-        }
-        
-        if (options.limit) {
-          params.append('limit', options.limit.toString());
-        }
-        
-        // Add language parameter
-        params.append('lang', locale || 'en');
-        
-        // Fetch data from API
-        const response = await axios.get(`${API_BASE_URL}/projects/?${params.toString()}`);
-        
-        // For Pagination response structure
-        let projectsData = response.data;
-        if (response.data.results) {
-          projectsData = response.data.results;
-        }
-        
-        setProjects(projectsData);
-      } catch (err) {
-        console.error('Error fetching projects:', err);
-        // Fallback to mock data if API is not available (for development)
-        const mockProjects: Project[] = [
-          {
-            id: '1',
-            title: locale === 'ar' ? 'فيلا ساحلية حديثة' : 'Modern Coastal Villa',
-            slug: 'modern-coastal-villa',
-            description: locale === 'ar' ? 'فيلا ساحلية مع إطلالات خلابة على البحر الأبيض المتوسط.' : 'A coastal villa with stunning views of the Mediterranean Sea.',
-            category: { id: '1', name: locale === 'ar' ? 'سكني' : 'Residential', slug: 'residential' },
-            location: 'Alexandria, Egypt',
-            area: 450,
-            is_featured: true,
-            created_at: '2023-01-15T00:00:00Z',
-            updated_at: '2023-01-15T00:00:00Z',
-            tags: [
-              { id: '1', name: locale === 'ar' ? 'حديث' : 'Modern', slug: 'modern' },
-              { id: '2', name: locale === 'ar' ? 'ساحلي' : 'Coastal', slug: 'coastal' }
-            ],
-            cover_image: 'https://via.placeholder.com/800x600/102339/FFFFFF?text=Coastal+Villa'
-          },
-          {
-            id: '2',
-            title: locale === 'ar' ? 'مكتب شركة القاهرة' : 'Cairo Corporate Office',
-            slug: 'cairo-corporate-office',
-            description: locale === 'ar' ? 'مساحة مكتبية عصرية تجمع بين الوظائف والأناقة لشركة تكنولوجيا في القاهرة الجديدة.' : 'A modern office space that combines functionality and elegance for a tech company in New Cairo.',
-            category: { id: '2', name: locale === 'ar' ? 'تجاري' : 'Commercial', slug: 'commercial' },
-            location: 'New Cairo, Egypt',
-            area: 1200,
-            is_featured: true,
-            created_at: '2023-02-20T00:00:00Z',
-            updated_at: '2023-02-20T00:00:00Z',
-            tags: [
-              { id: '3', name: locale === 'ar' ? 'مكتب' : 'Office', slug: 'office' },
-              { id: '4', name: locale === 'ar' ? 'شركة' : 'Corporate', slug: 'corporate' }
-            ],
-            cover_image: 'https://via.placeholder.com/800x600/102339/FFFFFF?text=Corporate+Office'
-          },
-          {
-            id: '3',
-            title: locale === 'ar' ? 'متجر أزياء راقي' : 'Luxury Fashion Boutique',
-            slug: 'luxury-fashion-boutique',
-            description: locale === 'ar' ? 'تصميم داخلي فاخر لمتجر أزياء راقٍ في وسط القاهرة.' : 'Luxurious interior design for a high-end fashion boutique in downtown Cairo.',
-            category: { id: '3', name: locale === 'ar' ? 'تجزئة' : 'Retail', slug: 'retail' },
-            location: 'Cairo, Egypt',
-            area: 250,
-            is_featured: false,
-            created_at: '2023-03-10T00:00:00Z',
-            updated_at: '2023-03-10T00:00:00Z',
-            tags: [
-              { id: '5', name: locale === 'ar' ? 'فاخر' : 'Luxury', slug: 'luxury' },
-              { id: '6', name: locale === 'ar' ? 'متجر' : 'Boutique', slug: 'boutique' }
-            ],
-            cover_image: 'https://via.placeholder.com/800x600/102339/FFFFFF?text=Fashion+Boutique'
-          }
-        ];
-        
-        // Filter the mock data based on options
-        let filteredProjects = [...mockProjects];
-        
-        if (options.category) {
-          filteredProjects = filteredProjects.filter(
-            project => project.category.slug === options.category
-          );
-        }
-        
-        if (options.tag) {
-          filteredProjects = filteredProjects.filter(
-            project => project.tags.some(tag => tag.slug === options.tag)
-          );
-        }
-        
-        if (options.search) {
-          const searchLower = options.search.toLowerCase();
-          filteredProjects = filteredProjects.filter(
-            project => 
-              project.title.toLowerCase().includes(searchLower) ||
-              project.description.toLowerCase().includes(searchLower) ||
-              (project.location && project.location.toLowerCase().includes(searchLower))
-          );
-        }
-        
-        if (options.featured) {
-          filteredProjects = filteredProjects.filter(project => project.is_featured);
-        }
-        
-        if (options.limit && options.limit > 0) {
-          filteredProjects = filteredProjects.slice(0, options.limit);
-        }
-        
-        setProjects(filteredProjects);
-        setError(locale === 'ar' ? "جاري استخدام بيانات تجريبية - فشل الاتصال بواجهة برمجة التطبيقات" : "Using mock data - API connection failed");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Function to fetch projects from API
+  const fetchProjects = async ({ pageParam = 1 }) => {
+    // Build query parameters
+    const params = new URLSearchParams();
     
-    fetchProjects();
-  }, [options.category, options.tag, options.search, options.featured, options.limit, locale]);
-  
-  return { projects, loading, error };
+    if (options.category) {
+      params.append('category__slug', options.category);
+    }
+    
+    if (options.tag) {
+      params.append('tags__slug', options.tag);
+    }
+    
+    if (options.search) {
+      params.append('search', options.search);
+    }
+    
+    if (options.featured) {
+      params.append('is_featured', 'true');
+    }
+    
+    if (options.limit) {
+      params.append('limit', options.limit.toString());
+    }
+    
+    // Add language parameter
+    params.append('lang', locale || 'en');
+    
+    // Add page parameter for pagination
+    params.append('page', pageParam.toString());
+    
+    // Fetch data from API
+    const response = await axios.get<ProjectsResponse>(`${API_BASE_URL}/projects/?${params.toString()}`);
+    return response.data;
+  };
+
+  // Use react-query for data fetching with pagination support
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+    refetch
+  } = useInfiniteQuery(
+    ['projects', options, locale],
+    fetchProjects,
+    {
+      getNextPageParam: (lastPage) => {
+        if (lastPage.next) {
+          // Extract page number from next URL
+          const url = new URL(lastPage.next);
+          return url.searchParams.get('page');
+        }
+        return undefined;
+      },
+      retry: 2,
+      refetchOnWindowFocus: false,
+      staleTime: 60000, // 1 minute
+      initialData: prefetchedData ? {
+        pages: [{ results: prefetchedData, count: prefetchedData.length, next: null, previous: null }],
+        pageParams: [1],
+      } : undefined,
+    }
+  );
+
+  // Flatten paginated results
+  const projects = data?.pages ? data.pages.flatMap(page => page?.results || []) : [];
+  const loading = status === 'loading';
+  const isError = status === 'error';
+  const errorMessage = isError 
+    ? locale === 'ar' 
+      ? "فشل تحميل المشاريع، يرجى المحاولة مرة أخرى" 
+      : "Failed to load projects, please try again"
+    : null;
+
+  return { 
+    projects, 
+    loading, 
+    error: errorMessage, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage,
+    refetch
+  };
 };
 
-export const useProjectCategories = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+export const useProjectCategories = (prefetchedData?: Category[]) => {
   const router = useRouter();
   const { locale } = router;
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        // Add language parameter
-        const params = new URLSearchParams();
-        params.append('lang', locale || 'en');
-        
-        // Fetch data from API
-        const response = await axios.get(`${API_BASE_URL}/projects/categories/?${params.toString()}`);
-        
-        // For Pagination response structure
-        let categoriesData = response.data;
-        if (response.data.results) {
-          categoriesData = response.data.results;
-        }
-        
-        setCategories(categoriesData);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-        // Fallback to mock data
-        const mockCategories: Category[] = [
-          { id: '1', name: locale === 'ar' ? 'سكني' : 'Residential', slug: 'residential' },
-          { id: '2', name: locale === 'ar' ? 'تجاري' : 'Commercial', slug: 'commercial' },
-          { id: '3', name: locale === 'ar' ? 'تجزئة' : 'Retail', slug: 'retail' },
-          { id: '4', name: locale === 'ar' ? 'ضيافة' : 'Hospitality', slug: 'hospitality' }
-        ];
-        
-        setCategories(mockCategories);
-        setError(locale === 'ar' ? "جاري استخدام بيانات تجريبية - فشل الاتصال بواجهة برمجة التطبيقات" : "Using mock data - API connection failed");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchCategories = async () => {
+    // Add language parameter
+    const params = new URLSearchParams();
+    params.append('lang', locale || 'en');
     
-    fetchCategories();
-  }, [locale]);
-  
-  return { categories, loading, error };
+    // Fetch data from API - using updated URL based on new router configuration
+    const response = await axios.get(`${API_BASE_URL}/categories/?${params.toString()}`);
+      
+    // Handle pagination response structure
+    return response.data.results || response.data;
+  };
+
+  const { data, error, status, refetch } = useQuery(
+    ['projectCategories', locale],
+    fetchCategories,
+    {
+      retry: 2,
+      refetchOnWindowFocus: false,
+      staleTime: 300000, // 5 minutes
+      initialData: prefetchedData // Use prefetched data if available
+    }
+  );
+
+  const categories = data || [];
+  const loading = status === 'loading';
+  const errorMessage = status === 'error' 
+    ? locale === 'ar' 
+      ? "فشل تحميل الفئات، يرجى المحاولة مرة أخرى" 
+      : "Failed to load categories, please try again"
+    : null;
+
+  return { categories, loading, error: errorMessage, refetch };
 };
 
-export const useProjectTags = () => {
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+export const useProjectTags = (prefetchedData?: Tag[]) => {
   const router = useRouter();
   const { locale } = router;
 
-  useEffect(() => {
-    const fetchTags = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        // Add language parameter
-        const params = new URLSearchParams();
-        params.append('lang', locale || 'en');
-        
-        // Fetch data from API
-        const response = await axios.get(`${API_BASE_URL}/projects/tags/?${params.toString()}`);
-        
-        // For Pagination response structure
-        let tagsData = response.data;
-        if (response.data.results) {
-          tagsData = response.data.results;
-        }
-        
-        setTags(tagsData);
-      } catch (err) {
-        console.error('Error fetching tags:', err);
-        // Fallback to mock data
-        const mockTags: Tag[] = [
-          { id: '1', name: locale === 'ar' ? 'حديث' : 'Modern', slug: 'modern' },
-          { id: '2', name: locale === 'ar' ? 'ساحلي' : 'Coastal', slug: 'coastal' },
-          { id: '3', name: locale === 'ar' ? 'مكتب' : 'Office', slug: 'office' },
-          { id: '4', name: locale === 'ar' ? 'شركة' : 'Corporate', slug: 'corporate' },
-          { id: '5', name: locale === 'ar' ? 'فاخر' : 'Luxury', slug: 'luxury' },
-          { id: '6', name: locale === 'ar' ? 'متجر' : 'Boutique', slug: 'boutique' }
-        ];
-        
-        setTags(mockTags);
-        setError(locale === 'ar' ? "جاري استخدام بيانات تجريبية - فشل الاتصال بواجهة برمجة التطبيقات" : "Using mock data - API connection failed");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchTags = async () => {
+    // Add language parameter
+    const params = new URLSearchParams();
+    params.append('lang', locale || 'en');
     
-    fetchTags();
-  }, [locale]);
+    // Fetch data from API - using updated URL based on new router configuration
+    const response = await axios.get(`${API_BASE_URL}/tags/?${params.toString()}`);
+    
+    // Handle pagination response structure
+    return response.data.results || response.data;
+  };
+
+  const { data, error, status, refetch } = useQuery(
+    ['projectTags', locale],
+    fetchTags,
+    {
+      retry: 2,
+      refetchOnWindowFocus: false,
+      staleTime: 300000, // 5 minutes
+      initialData: prefetchedData // Use prefetched data if available
+    }
+  );
+
+  const tags = data || [];
+  const loading = status === 'loading';
+  const errorMessage = status === 'error' 
+    ? locale === 'ar' 
+      ? "فشل تحميل الوسوم، يرجى المحاولة مرة أخرى" 
+      : "Failed to load tags, please try again"
+    : null;
+
+  return { tags, loading, error: errorMessage, refetch };
+};
+
+// Improved utility function for fixing all image URLs
+export const fixImageUrl = (url: string | undefined): string => {
+  if (!url) return '/images/placeholder.jpg';
   
-  return { tags, loading, error };
+  // If it's already a fully qualified URL starting with http(s), leave it alone
+  // This handles external image sources and prevents double fixing
+  if (url.match(/^https?:\/\//)) {
+    return url;
+  }
+  
+  // Handle absolute URLs with /media/
+  if (url.startsWith('/media/')) {
+    // Get the appropriate base URL depending on environment
+    const baseApiUrl = getApiBaseUrl();
+    // Extract the domain from the API URL (removes /api/v1 etc.)
+    const domainMatch = baseApiUrl.match(/^(https?:\/\/[^\/]+)/);
+    const domain = domainMatch ? domainMatch[1] : 'http://localhost:8000';
+    
+    return `${domain}${url}`;
+  }
+  
+  // Handle relative URLs starting with media/
+  if (url.startsWith('media/')) {
+    // Get the appropriate base URL depending on environment
+    const baseApiUrl = getApiBaseUrl();
+    // Extract the domain from the API URL (removes /api/v1 etc.)
+    const domainMatch = baseApiUrl.match(/^(https?:\/\/[^\/]+)/);
+    const domain = domainMatch ? domainMatch[1] : 'http://localhost:8000';
+    
+    return `${domain}/${url}`;
+  }
+  
+  // Handle backend:8000 in URLs (typical in Docker environments)
+  if (url.includes('backend:8000')) {
+    // If we're in browser context, replace backend with localhost
+    const isBrowser = typeof window !== 'undefined';
+    return isBrowser 
+      ? url.replace('backend:8000', 'localhost:8000')
+      : url; // Keep as is for server-side rendering
+  }
+  
+  // Default: if it doesn't match any pattern but seems to be a relative path, 
+  // assume it's relative to the API server
+  if (!url.startsWith('/') && !url.includes('://')) {
+    const baseApiUrl = getApiBaseUrl();
+    const domainMatch = baseApiUrl.match(/^(https?:\/\/[^\/]+)/);
+    const domain = domainMatch ? domainMatch[1] : 'http://localhost:8000';
+    
+    return `${domain}/${url}`;
+  }
+  
+  // Return as-is for any other cases
+  return url;
+};
+
+export const useProjectDetail = (slug: string) => {
+  const router = useRouter();
+  const { locale } = router;
+
+  const fetchProjectDetail = async () => {
+    if (!slug) return null;
+    
+    // Add language parameter
+    const params = new URLSearchParams();
+    params.append('lang', locale || 'en');
+    
+    try {
+      // Fetch data from API
+      const response = await axios.get(`${API_BASE_URL}/projects/${slug}/?${params.toString()}`);
+      
+      // Transform API response to match our ProjectDetail interface
+      const { data } = response;
+
+      // For safety, ensure images array exists
+      const images = data.images || [];
+
+      // Process all image URLs right away
+      const safeImages = images.map((img: any, index: number) => {
+        const imgSrc = img.image_url || img.image || `/images/project-${(index % 5) + 1}.jpg`;
+        return {
+          id: img.id || `image-${index + 1}`,
+          src: fixImageUrl(imgSrc),
+          alt: img.alt_text || 'Project image',
+          isCover: img.is_cover
+        };
+      });
+      
+      // Create a clean project object with fixed URLs
+      return {
+        ...data,
+        completedDate: data.completed_date,
+        images: safeImages,
+        // Fix cover image if present
+        cover_image: data.cover_image ? fixImageUrl(data.cover_image) : undefined,
+        cover_image_url: data.cover_image_url ? fixImageUrl(data.cover_image_url) : undefined
+      };
+    } catch (error) {
+      console.error('Error fetching project details:', error);
+      return null;
+    }
+  };
+
+  // Use standard react-query with good caching settings
+  const { data, error, status, refetch } = useQuery(
+    ['projectDetail', slug, locale],
+    fetchProjectDetail,
+    {
+      enabled: !!slug,
+      retry: 2,
+      refetchOnWindowFocus: false,
+      staleTime: 300000, // 5 minutes
+      cacheTime: 600000, // 10 minutes
+    }
+  );
+
+  const project = data || null;
+  const loading = status === 'loading';
+  const isError = status === 'error';
+  const errorMessage = isError 
+    ? locale === 'ar' 
+      ? "فشل تحميل تفاصيل المشروع، يرجى المحاولة مرة أخرى" 
+      : "Failed to load project details, please try again"
+    : null;
+
+  return { project, loading, error: errorMessage, refetch };
 }; 

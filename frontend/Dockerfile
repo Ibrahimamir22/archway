@@ -5,10 +5,13 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
-RUN npm install --save react-i18next i18next framer-motion
-RUN npm install --save-dev tailwindcss-rtl
+# Install dependencies - single layer for better caching
+RUN npm ci --no-optional && \
+    # Ensure critical packages are installed even if npm ci fails
+    npm list react-query || npm install --save react-query && \
+    npm list i18next framer-motion react-i18next || npm install --save i18next framer-motion react-i18next && \
+    npm list tailwindcss-rtl || npm install --save tailwindcss-rtl && \
+    npm list @types/react-query || npm install --save-dev @types/react-query
 
 # Copy the application files
 COPY . .

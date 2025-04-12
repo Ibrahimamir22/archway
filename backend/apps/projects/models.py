@@ -65,12 +65,14 @@ class Project(models.Model):
     description_en = models.TextField()
     description_ar = models.TextField(blank=True)
     category = models.ForeignKey(ProjectCategory, on_delete=models.SET_NULL, null=True, related_name='projects')
-    client = models.CharField(max_length=100, blank=True)
+    client_en = models.CharField(max_length=100, blank=True)
+    client_ar = models.CharField(max_length=100, blank=True)
     location_en = models.CharField(max_length=200, blank=True)
     location_ar = models.CharField(max_length=200, blank=True)
     area = models.FloatField(help_text="Area in square meters", null=True, blank=True)
     completed_date = models.DateField(null=True, blank=True)
     is_featured = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=False, help_text="Only published projects are displayed on the website")
     cover_image = models.ImageField(upload_to='projects/covers/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -96,6 +98,10 @@ class Project(models.Model):
     @property
     def location(self):
         return self.location_en
+        
+    @property
+    def client(self):
+        return self.client_en
         
     def save(self, *args, **kwargs):
         if not self.slug:

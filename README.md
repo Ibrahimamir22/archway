@@ -251,4 +251,74 @@ This project is proprietary and not licensed for public use.
 - [Next.js](https://nextjs.org/)
 - [Django](https://www.djangoproject.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
-- [PostgreSQL](https://www.postgresql.org/) 
+- [PostgreSQL](https://www.postgresql.org/)
+
+## Managing Portfolio Projects
+
+The Portfolio page displays projects that can be fully managed through the Django admin panel. Follow these steps to manage your portfolio projects:
+
+### Accessing the Admin Panel
+
+1. Start the project using Docker Compose: `docker-compose up`
+2. Access the admin panel at: `http://localhost:8000/admin/`
+3. Log in with your admin credentials
+
+### Managing Projects
+
+#### Adding a New Project
+
+1. In the admin panel, go to "Projects" section and click "Add Project"
+2. Fill in the required information:
+   - Basic Info: title (English/Arabic), slug (auto-generated), category, tags, description
+   - Details: client, location, area, completion date
+   - Display Options: featured status, published status, cover image
+3. Save the project
+4. After saving, you can add additional images in the "Project Images" section at the bottom
+
+#### Managing Project Images
+
+1. In the project edit screen, scroll down to the "Project Images" section
+2. Add multiple images for the project
+3. For each image, you can:
+   - Upload the image file
+   - Set alt text (English/Arabic)
+   - Mark one image as "cover" by checking "Is cover"
+   - Set the display order
+
+#### Publishing Projects
+
+Only published projects will appear on the website. To publish a project:
+
+1. Check the "Is published" checkbox when editing a project, OR
+2. Select multiple projects from the projects list and use the "Publish selected projects" action
+
+#### Featuring Projects
+
+Featured projects can be displayed prominently on the website:
+
+1. Check the "Is featured" checkbox when editing a project, OR
+2. Select multiple projects from the projects list and use the "Mark selected projects as featured" action
+
+### Managing Categories and Tags
+
+#### Adding Categories
+
+1. Go to "Project Categories" in the admin panel
+2. Click "Add Project Category"
+3. Fill in the name (English/Arabic), slug, and optional description
+4. You can also set a parent category to create hierarchical categories
+
+#### Adding Tags
+
+1. Go to "Tags" in the admin panel
+2. Click "Add Tag"
+3. Fill in the name (English/Arabic) and slug
+4. Tags can be used to filter projects on the Portfolio page
+
+### Tips for Best Results
+
+1. **Images**: Use high-quality images with consistent aspect ratios (ideally 4:3 or 16:9)
+2. **Translations**: Always provide both English and Arabic content for better user experience
+3. **Categories**: Use a consistent set of categories to help users browse your portfolio
+4. **Tags**: Use descriptive tags that highlight key features or styles of each project
+5. **Published Status**: Use the "Is published" flag to prepare projects before making them public 

@@ -1,11 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
-import { Project } from '@/hooks/useProjects';
+import { Project, fixImageUrl } from '@/hooks/useProjects';
 import Modal from '@/components/common/Modal';
 import Button from '@/components/common/Button';
+import { useQueryClient } from 'react-query';
+import axios from 'axios';
+
+// Helper function to get API base URL
+const getApiBaseUrl = () => {
+  // Check if we're in a browser environment
+  const isBrowser = typeof window !== 'undefined';
+  
+  // Get the configured API URL (from environment variables)
+  const configuredUrl = process.env.NEXT_PUBLIC_API_URL;
+  
+  if (configuredUrl) {
+    // If we're in a browser and the URL contains 'backend', replace with 'localhost'
+    if (isBrowser && configuredUrl.includes('backend')) {
+      return configuredUrl.replace('backend', 'localhost');
+    }
+    return configuredUrl;
+  }
+  
+  // Default fallback - use backend for server-side, localhost for client-side
+  return isBrowser 
+    ? 'http://localhost:8000/api/v1' 
+    : 'http://backend:8000/api/v1';
+};
 
 interface ProjectCardProps {
   project: Project;
@@ -22,6 +46,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const router = useRouter();
   const isRtl = router.locale === 'ar';
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const queryClient = useQueryClient();
   
   const handleSaveClick = () => {
     if (isAuthenticated && onSaveToFavorites) {
@@ -39,18 +66,92 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     router.push('/signup');
   };
   
+  // Prefetch project detail data and images on hover
+  const prefetchProjectDetails = async () => {
+    try {
+      const API_BASE_URL = getApiBaseUrl();
+      const locale = router.locale || 'en';
+      const params = new URLSearchParams();
+      params.append('lang', locale);
+      
+      // First, fetch project details for caching
+      const projectData = await queryClient.fetchQuery(
+        ['projectDetail', project.slug, locale],
+        async () => {
+          const response = await axios.get(`${API_BASE_URL}/projects/${project.slug}/?${params.toString()}`);
+          return response.data;
+        },
+        { staleTime: 300000 }  // 5 minutes
+      );
+      
+      // Then preload all images
+      if (projectData && projectData.images) {
+        projectData.images.forEach(async (image: any) => {
+          const imgSrc = image.image_url || image.image;
+          if (imgSrc) {
+            const imgUrl = fixImageUrl(imgSrc);
+            // Use window.Image constructor to avoid TypeScript error
+            const img = new window.Image();
+            img.src = imgUrl;
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error prefetching project details:', error);
+    }
+  };
+  
+  // Handle hover events 
+  const handleMouseEnter = () => {
+    setIsHovering(true);
+    prefetchProjectDetails();
+  };
+  
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+  };
+  
+  // Simple and reliable image URL handling
+  const getImageUrl = () => {
+    if (imageError) {
+      return '/images/placeholder.jpg';
+    }
+    
+    // Use the absolute URL from the API if available
+    if (project.cover_image_url) {
+      return fixImageUrl(project.cover_image_url);
+    }
+    
+    // If cover_image is available, use it
+    if (project.cover_image) {
+      return fixImageUrl(project.cover_image);
+    }
+    
+    // Default fallback
+    return '/images/placeholder.jpg';
+  };
+  
   return (
     <>
-      <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg">
+      <div 
+        className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <Link href={`/portfolio/${project.slug}`}>
           <div className="relative h-48 w-full">
-            <Image
-              src={project.cover_image || '/images/placeholder.jpg'}
+            <img
+              src={getImageUrl()}
               alt={project.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={() => setImageError(true)}
             />
+            
+            {isHovering && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white">
+                <span className="px-4 py-2 bg-brand-blue rounded">{t('portfolio.viewDetails')}</span>
+              </div>
+            )}
           </div>
         </Link>
         

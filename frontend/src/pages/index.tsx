@@ -4,9 +4,21 @@ import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
+import { useProjects, fixImageUrl, Project } from '../hooks/useProjects';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
-// Project data with translations
-const projectData = {
+// Define fallback project interface
+interface FallbackProject {
+  title: string;
+  description: string;
+  slug: string;
+  image: string;
+  id?: string;
+}
+
+// This will only be used as fallback in case the API fails
+const fallbackProjectData: { en: FallbackProject[], ar: FallbackProject[] } = {
   en: [
     {
       title: "Minimalist Apartment",
@@ -49,14 +61,40 @@ const projectData = {
   ]
 };
 
-export default function Home() {
+interface HomeProps {
+  initialProjects: Project[];
+}
+
+export default function Home({ initialProjects = [] }: HomeProps) {
   const router = useRouter();
   const { locale } = router;
   const { t } = useTranslation('common');
   const isRtl = locale === 'ar';
 
-  // Get projects based on current locale
-  const projects = locale === 'ar' ? projectData.ar : projectData.en;
+  // Fetch featured projects from the backend API
+  const { projects, loading, error } = useProjects(
+    { featured: true, limit: 3 },
+    initialProjects
+  );
+
+  // Use fetched projects if available, otherwise use fallback data
+  const displayProjects = projects.length > 0 
+    ? projects 
+    : (locale === 'ar' ? fallbackProjectData.ar : fallbackProjectData.en);
+
+  // Function to get image source safely from either Project or FallbackProject
+  const getImageSrc = (project: Project | FallbackProject): string => {
+    if ('cover_image_url' in project && project.cover_image_url) {
+      return fixImageUrl(project.cover_image_url);
+    }
+    if ('cover_image' in project && project.cover_image) {
+      return fixImageUrl(project.cover_image);
+    }
+    if ('image' in project && project.image) {
+      return project.image;
+    }
+    return '/images/placeholder.jpg';
+  };
 
   return (
     <>
@@ -171,25 +209,53 @@ export default function Home() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {/* Project cards */}
-              {projects.map((project, index) => (
-                <div key={index} className="group overflow-hidden rounded-lg shadow-md bg-white">
-                  <div className="relative h-64 overflow-hidden">
-                    <Image 
-                      src={project.image}
-                      alt={project.title} 
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
+              {loading ? (
+                // Show skeleton loaders while loading
+                Array(3).fill(0).map((_, index) => (
+                  <div key={`skeleton-${index}`} className="rounded-lg shadow-md bg-white animate-pulse">
+                    <div className="relative h-64 bg-gray-200"></div>
+                    <div className="p-6">
+                      <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                      <div className="h-4 w-1/3 bg-gray-200 rounded"></div>
+                    </div>
                   </div>
-                  <div className={`p-6 ${isRtl ? 'text-right' : ''}`}>
-                    <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                    <p className="text-gray-600 mb-4">{project.description}</p>
-                    <Link href={`/portfolio/${project.slug}`} className={`text-brand-blue-light font-medium hover:underline ${isRtl ? 'block text-right' : ''}`}>
-                      {t('home.viewProject')} {isRtl ? '←' : '→'}
-                    </Link>
-                  </div>
+                ))
+              ) : error ? (
+                // Show error state
+                <div className="col-span-3 text-center py-8">
+                  <p className="text-red-500">{error}</p>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="mt-4 px-4 py-2 bg-brand-blue-light text-white rounded"
+                  >
+                    {t('common.tryAgain')}
+                  </button>
                 </div>
-              ))}
+              ) : (
+                // Show project data
+                displayProjects.map((project, index) => (
+                  <div key={project.id || `project-${index}`} className="group overflow-hidden rounded-lg shadow-md bg-white">
+                    <div className="relative h-64 overflow-hidden">
+                      <Image 
+                        src={getImageSrc(project)}
+                        alt={project.title} 
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        priority={index < 3} // Prioritize loading first 3 images
+                      />
+                    </div>
+                    <div className={`p-6 ${isRtl ? 'text-right' : ''}`}>
+                      <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+                      <p className="text-gray-600 mb-4">{project.description}</p>
+                      <Link href={`/portfolio/${project.slug}`} className={`text-brand-blue-light font-medium hover:underline ${isRtl ? 'block text-right' : ''}`}>
+                        {t('home.viewProject')} {isRtl ? '←' : '→'}
+                      </Link>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
             
             <div className="text-center mt-12">
@@ -218,9 +284,34 @@ export default function Home() {
 }
 
 export async function getStaticProps({ locale }: { locale: string }) {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale, ['common'])),
-    },
-  };
+  try {
+    // Determine API URL based on environment
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000/api/v1';
+    
+    // Fetch featured projects during build time
+    const params = new URLSearchParams();
+    params.append('is_featured', 'true');
+    params.append('limit', '3');
+    params.append('lang', locale || 'en');
+    
+    const response = await axios.get(`${apiBaseUrl}/projects/?${params.toString()}`);
+    const initialProjects = response.data.results || [];
+    
+    return {
+      props: {
+        ...(await serverSideTranslations(locale, ['common'])),
+        initialProjects,
+      },
+      revalidate: 60, // Re-generate page every 60 seconds if requested
+    };
+  } catch (error) {
+    console.error('Error fetching initial projects:', error);
+    return {
+      props: {
+        ...(await serverSideTranslations(locale, ['common'])),
+        initialProjects: [],
+      },
+      revalidate: 60,
+    };
+  }
 } 

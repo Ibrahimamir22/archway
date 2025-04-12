@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-body text-brand-dark bg-white;
+  }
+  [dir="rtl"] {
+    @apply font-cairo;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-bold;
+  }
+  h1 {
+    @apply text-4xl md:text-5xl mb-6;
+  }
+  h2 {
+    @apply text-3xl md:text-4xl mb-4;
+  }
+  h3 {
+    @apply text-2xl md:text-3xl mb-3;
+  }
+  p {
+    @apply mb-4 leading-relaxed;
+  }
+  a {
+    @apply text-brand-blue hover:text-opacity-80 transition-colors;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-6 py-2 rounded-md font-medium transition-all duration-200 inline-block;
+  }
+  .btn-primary {
+    @apply bg-brand-blue text-white hover:bg-opacity-90;
+  }
+  .btn-secondary {
+    @apply bg-brand-light text-brand-dark hover:bg-opacity-90;
+  }
+  .btn-accent {
+    @apply bg-brand-accent text-white hover:bg-opacity-90;
+  }
+  .container-custom {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  .section {
+    @apply py-12 md:py-16 lg:py-20;
+  }
+}

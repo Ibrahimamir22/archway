@@ -11,11 +11,15 @@ interface ProjectFiltersProps {
     tag?: string;
     search?: string;
   };
+  initialCategories?: Category[];
+  initialTags?: Tag[];
 }
 
 const ProjectFilters: React.FC<ProjectFiltersProps> = ({
   onFilterChange,
-  initialFilters = {}
+  initialFilters = {},
+  initialCategories = [],
+  initialTags = []
 }) => {
   const { t } = useTranslation('common');
   const router = useRouter();
@@ -25,8 +29,8 @@ const ProjectFilters: React.FC<ProjectFiltersProps> = ({
   const [selectedTag, setSelectedTag] = useState<string | undefined>(initialFilters.tag);
   const [searchQuery, setSearchQuery] = useState<string>(initialFilters.search || '');
   
-  const { categories, loading: categoriesLoading } = useProjectCategories();
-  const { tags, loading: tagsLoading } = useProjectTags();
+  const { categories, loading: categoriesLoading } = useProjectCategories(initialCategories);
+  const { tags, loading: tagsLoading } = useProjectTags(initialTags);
   
   // Apply filters when they change
   useEffect(() => {
@@ -130,7 +134,7 @@ const ProjectFilters: React.FC<ProjectFiltersProps> = ({
                 </label>
               </div>
               
-              {categories.map(category => (
+              {categories.map((category: Category) => (
                 <div key={category.id} className="flex items-center">
                   <input
                     id={`category-${category.slug}`}
@@ -180,7 +184,7 @@ const ProjectFilters: React.FC<ProjectFiltersProps> = ({
                 </label>
               </div>
               
-              {tags.map(tag => (
+              {tags.map((tag: Tag) => (
                 <div key={tag.id} className="flex items-center">
                   <input
                     id={`tag-${tag.slug}`}

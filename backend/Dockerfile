@@ -23,8 +23,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the Django project
 COPY . .
 
+# Create media and static directories
+RUN mkdir -p /app/media /app/static
+
+# Set environment variable to tell Django that it's okay to serve static files
+ENV DJANGO_SETTINGS_MODULE=interior_platform.settings
+ENV PYTHONUNBUFFERED=1
+
 # Expose port
 EXPOSE 8000
 
-# Run Django development server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"] 
+# Start command
+CMD python manage.py collectstatic --no-input && \
+    python manage.py migrate && \
+    python manage.py runserver 0.0.0.0:8000 

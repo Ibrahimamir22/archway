@@ -18,12 +18,14 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.55.0",
     "react-i18next": "^15.4.1",
+    "react-query": "^3.39.3",
     "tailwindcss-rtl": "^0.9.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
+    "@types/react-query": "^1.2.8",
     "autoprefixer": "^10.4.14",
     "eslint": "^8.0.0",
     "eslint-config-next": "^14.0.0",

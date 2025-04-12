@@ -121,5 +121,17 @@
     "category": "التصنيف",
     "tag": "الوسم",
     "clearFilters": "مسح التصفية"
-  }
+  },
+  "backToPortfolio": "العودة إلى المشاريع",
+  "projectDetails": "تفاصيل المشروع",
+  "client": "العميل",
+  "location": "الموقع",
+  "area": "المساحة",
+  "areaUnit": "م²",
+  "completed": "تاريخ الإنجاز",
+  "projectGallery": "معرض الصور",
+  "interestedInThisStyle": "هل أعجبك هذا التصميم؟",
+  "contactUsForSimilarProject": "تواصل معنا للحصول على مشروع مماثل",
+  "getInTouch": "تواصل معنا الآن",
+  "noImageAvailable": "لا توجد صورة متاحة"
 } 

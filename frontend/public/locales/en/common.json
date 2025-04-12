@@ -121,5 +121,17 @@
     "category": "Category",
     "tag": "Tag",
     "clearFilters": "Clear Filters"
-  }
+  },
+  "backToPortfolio": "Back to Portfolio",
+  "projectDetails": "Project Details",
+  "client": "Client",
+  "location": "Location",
+  "area": "Area",
+  "areaUnit": "m²",
+  "completed": "Completed",
+  "projectGallery": "Project Gallery",
+  "interestedInThisStyle": "Interested in this style?",
+  "contactUsForSimilarProject": "Contact us to get a similar project for your space",
+  "getInTouch": "Get in Touch",
+  "noImageAvailable": "No image available"
 } 

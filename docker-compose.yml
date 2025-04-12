@@ -10,7 +10,6 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-      - /app/.next
     env_file:
       - .env
     environment:
@@ -34,20 +33,28 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - ./backend/static:/app/static
+      - ./backend/media:/app/media
     env_file:
       - .env
     environment:
-      - DEBUG=True
-      - SECRET_KEY=dev_secret_key_change_in_production
-      - CORS_ALLOWED_ORIGINS=http://frontend:3000,http://localhost:3000
+      - DEBUG=1
+      - SECRET_KEY=${SECRET_KEY}
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
     depends_on:
       - db
     networks:
       - archway-network
     restart: unless-stopped
+    command: >
+      bash -c "python manage.py collectstatic --no-input &&
+               python manage.py migrate &&
+               python manage.py runserver 0.0.0.0:8000"
 
   db:
-    image: postgres:14-alpine
+    image: postgres:14
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:

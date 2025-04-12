@@ -46,6 +46,8 @@ def api_root(request, format=None):
         'services': reverse('service-list', request=request, format=format),
         'service-categories': reverse('servicecategory-list', request=request, format=format),
         'footer': reverse('footer', request=request, format=format),
+        # Commented until analytics app is enabled
+        # 'analytics': reverse('pageview-list', request=request, format=format),
     })
 
 # Default router for API endpoints
@@ -64,6 +66,8 @@ api_patterns = [
     path('v1/', include(router.urls)),
     path('v1/', api_root, name='api-root'),
     path('v1/', include('apps.contact.urls')),  # Include contact app URLs with footer endpoints
+    # Commented until analytics app is enabled
+    # path('v1/analytics/', include('apps.analytics.urls')),  # Include analytics app URLs
     path('auth/', include('rest_framework.urls')),
 ]
 

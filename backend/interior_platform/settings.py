@@ -55,6 +55,11 @@ CORS_ALLOW_CREDENTIALS = True
 # Application definition
 
 INSTALLED_APPS = [
+    # Admin interface
+    'admin_interface',
+    'colorfield',
+    
+    # Django built-in apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -72,13 +77,18 @@ INSTALLED_APPS = [
     'apps.testimonials',
     'apps.services',
     'apps.contact',
-    'apps.analytics',
-    'apps.blog',
-    'apps.bookings',
-    'apps.chatbot',
-    'apps.jobs',
-    'apps.users',
+    # Commented out until container rebuild
+    # 'apps.analytics',
+    # 'apps.blog',
+    # 'apps.bookings',
+    # 'apps.chatbot',
+    # 'apps.jobs',
+    # 'apps.users',
 ]
+
+# Admin Interface settings
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+SILENCED_SYSTEM_CHECKS = ['security.W019']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

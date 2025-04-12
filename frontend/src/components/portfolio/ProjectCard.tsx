@@ -74,9 +74,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
   // Preload images when the component mounts
   useEffect(() => {
-    // Only run in browser environment
-    if (typeof window === 'undefined') return;
-    
     // Check if this project has already been preloaded
     if (preloadedProjects.has(project.slug)) {
       setIsPreloaded(true);
@@ -99,11 +96,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
     // Immediately preload cover image
     if (project.cover_image_url || project.cover_image) {
-      // Create and add an image element to the hidden div
-      const imgElement = document.createElement('img');
-      imgElement.src = fixImageUrl(project.cover_image_url || project.cover_image || '');
-      imgElement.alt = "Preload cover";
-      preloadDivRef.current?.appendChild(imgElement);
+      const img = new Image();
+      img.src = fixImageUrl(project.cover_image_url || project.cover_image || '');
+      preloadDivRef.current.appendChild(img);
     }
 
     // Prefetch the project data and preload all images
@@ -130,6 +125,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               
               // Use our consistent fixImageUrl function
               const normalizedSrc = fixImageUrl(imgSrc);
+              
+              // Create an actual Image object for more reliable loading
+              const imageObj = new Image();
+              imageObj.src = normalizedSrc;
               
               // Add to hidden div to ensure images are kept in cache
               if (preloadDivRef.current) {

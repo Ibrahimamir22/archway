@@ -56,8 +56,8 @@ CORS_ALLOW_CREDENTIALS = True
 
 INSTALLED_APPS = [
     # Admin interface
-    'admin_interface',
-    'colorfield',
+    'admin_interface',  # Admin UI customization
+    'colorfield',  # Color picker for admin interface
     
     # Django built-in apps
     'django.contrib.admin',
@@ -77,22 +77,12 @@ INSTALLED_APPS = [
     'apps.testimonials',
     'apps.services',
     'apps.contact',
-<<<<<<< HEAD
-    # Commented out until container rebuild
-    # 'apps.analytics',
-    # 'apps.blog',
-    # 'apps.bookings',
-    # 'apps.chatbot',
-    # 'apps.jobs',
-    # 'apps.users',
-=======
     # 'apps.analytics',  # Commented out to fix ModuleNotFoundError
     # 'apps.blog',  # Commented out to fix ModuleNotFoundError
     # 'apps.bookings',  # Commented out to fix ModuleNotFoundError
     # 'apps.chatbot',  # Commented out to fix ModuleNotFoundError
     # 'apps.jobs',  # Commented out to fix ModuleNotFoundError
     # 'apps.users',  # Commented out to fix ModuleNotFoundError
->>>>>>> 700809d (Final tweaks on useProjects, settings & tsconfig)
 ]
 
 # Admin Interface settings

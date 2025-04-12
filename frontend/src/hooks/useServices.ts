@@ -1,6 +1,7 @@
-import { useQuery, useInfiniteQuery } from 'react-query';
+import { useInfiniteQuery, useQuery } from 'react-query';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import { ServiceCategory } from './useServiceCategories';
 
 // Smart detection of environment to handle both browser and container contexts
 const getApiBaseUrl = () => {
@@ -30,15 +31,6 @@ export interface ServiceFeature {
   name: string;
   description: string;
   is_included: boolean;
-  order: number;
-}
-
-export interface ServiceCategory {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  icon: string;
   order: number;
 }
 
@@ -132,15 +124,18 @@ export const useServices = (options: UseServicesOptions = {}, prefetchedData?: S
       retry: 2,
       refetchOnWindowFocus: false,
       staleTime: 60000, // 1 minute
-      initialData: prefetchedData ? {
+      initialData: prefetchedData && Array.isArray(prefetchedData) ? {
         pages: [{ results: prefetchedData, count: prefetchedData.length, next: null, previous: null }],
         pageParams: [1],
       } : undefined,
     }
   );
 
-  // Flatten paginated results
-  const services = data?.pages ? data.pages.flatMap(page => page?.results || []) : [];
+  // Flatten paginated results with safety check
+  const services = data?.pages 
+    ? data.pages.flatMap(page => page?.results && Array.isArray(page.results) ? page.results : []) 
+    : [];
+    
   const loading = status === 'loading';
   const isError = status === 'error';
   const errorMessage = isError 
@@ -158,44 +153,6 @@ export const useServices = (options: UseServicesOptions = {}, prefetchedData?: S
     isFetchingNextPage,
     refetch
   };
-};
-
-export const useServiceCategories = (prefetchedData?: ServiceCategory[]) => {
-  const router = useRouter();
-  const { locale } = router;
-
-  const fetchCategories = async () => {
-    // Add language parameter
-    const params = new URLSearchParams();
-    params.append('lang', locale || 'en');
-    
-    // Fetch data from API
-    const response = await axios.get(`${API_BASE_URL}/service-categories/?${params.toString()}`);
-      
-    // Handle pagination response structure
-    return response.data.results || response.data;
-  };
-
-  const { data, error, status, refetch } = useQuery(
-    ['serviceCategories', locale],
-    fetchCategories,
-    {
-      retry: 2,
-      refetchOnWindowFocus: false,
-      staleTime: 300000, // 5 minutes
-      initialData: prefetchedData // Use prefetched data if available
-    }
-  );
-
-  const categories = data || [];
-  const loading = status === 'loading';
-  const errorMessage = status === 'error' 
-    ? locale === 'ar' 
-      ? "فشل تحميل فئات الخدمات، يرجى المحاولة مرة أخرى" 
-      : "Failed to load service categories, please try again"
-    : null;
-
-  return { categories, loading, error: errorMessage, refetch };
 };
 
 export const useServiceDetail = (slug: string | undefined) => {

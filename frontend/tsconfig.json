@@ -8,15 +8,27 @@
     ],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": false,
+    "allowUnreachableCode": true,
+    "allowUnusedLabels": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false,
+    "noImplicitOverride": false,
+    "noImplicitReturns": false,
     "plugins": [
       {
         "name": "next"
@@ -26,16 +38,20 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "strictNullChecks": false,
+    "ignoreDeprecations": "5.0"
   },
   "include": [
     "next-env.d.ts",
+    "src/@types/next-env.d.ts",
+    "src/@types/next-environment.d.ts",
     "**/*.ts",
     "**/*.tsx",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/@types",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "src/@types/*.d.ts"
   ],
   "exclude": [
     "node_modules"

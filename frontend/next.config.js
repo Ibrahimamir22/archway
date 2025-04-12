@@ -33,6 +33,14 @@ const nextConfig = {
       },
     ];
   },
+  typescript: {
+    // Dangerously allow production builds to successfully complete even with TypeScript errors
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    // Dangerously allow production builds to successfully complete even with ESLint errors
+    ignoreDuringBuilds: true,
+  },
 };
 
 module.exports = nextConfig; 

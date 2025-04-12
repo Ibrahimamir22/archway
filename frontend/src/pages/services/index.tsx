@@ -4,7 +4,8 @@ import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useServices, useServiceCategories, Service, ServiceCategory } from '@/hooks/useServices';
+import { useServices, Service } from '@/hooks/useServices';
+import { useServiceCategories, ServiceCategory } from '@/hooks/useServiceCategories';
 import ServiceCard from '@/components/services/ServiceCard';
 import Link from 'next/link';
 import axios from 'axios';
@@ -131,19 +132,21 @@ const ServicesPage: NextPage<ServicesPageProps> = ({
                 {t('services.allServices')}
               </button>
               
-              {categories.map((category: ServiceCategory) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategoryChange(category.slug)}
-                  className={`px-4 py-2 rounded-full ${
-                    selectedCategory === category.slug
-                      ? 'bg-brand-blue text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
-                  } transition-colors shadow-sm`}
-                >
-                  {category.name}
-                </button>
-              ))}
+              {Array.isArray(categories) && categories.length > 0 ? (
+                categories.map((category: ServiceCategory) => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryChange(category.slug)}
+                    className={`px-4 py-2 rounded-full ${
+                      selectedCategory === category.slug
+                        ? 'bg-brand-blue text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                    } transition-colors shadow-sm`}
+                  >
+                    {category.name}
+                  </button>
+                ))
+              ) : null}
             </div>
           </div>
         </section>
@@ -174,12 +177,13 @@ const ServicesPage: NextPage<ServicesPageProps> = ({
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {services.map((service, index) => (
-                    <ServiceCard 
-                      key={service.id} 
-                      service={service} 
-                      priority={index < 6}
-                    />
+                  {Array.isArray(services) && services.map((service, index) => (
+                    <div key={service.id}>
+                      <ServiceCard
+                        service={service} 
+                        priority={index < 6}
+                      />
+                    </div>
                   ))}
                 </div>
                 
@@ -255,8 +259,18 @@ export async function getStaticProps({ locale }: { locale: string }) {
     const servicesData = queryClient.getQueryData(['services', { featured: true }, locale]) as any;
     const categoriesData = queryClient.getQueryData(['serviceCategories', locale]) as any;
     
-    const initialServices = servicesData?.results || [];
-    const initialCategories = categoriesData?.results || [];
+    // Ensure we extract results from data and provide fallbacks if data structure is unexpected
+    const initialServices = Array.isArray(servicesData?.results) 
+      ? servicesData.results 
+      : Array.isArray(servicesData) 
+        ? servicesData 
+        : [];
+        
+    const initialCategories = Array.isArray(categoriesData?.results) 
+      ? categoriesData.results 
+      : Array.isArray(categoriesData) 
+        ? categoriesData 
+        : [];
     
     return {
       props: {

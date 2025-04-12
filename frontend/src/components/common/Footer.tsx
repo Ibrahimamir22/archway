@@ -109,7 +109,7 @@ const NewsletterForm = () => {
 };
 
 // Footer section component
-const FooterSection = ({ section, isRtl }: { section: FooterSectionType; isRtl: boolean }) => {
+const FooterSection = ({ section, isRtl }: FooterSectionProps) => {
   return (
     <div className={`col-span-1 ${isRtl ? 'text-right' : ''}`}>
       <h3 className="text-xl font-bold mb-4">{section.title}</h3>
@@ -145,7 +145,7 @@ const FooterSection = ({ section, isRtl }: { section: FooterSectionType; isRtl: 
 };
 
 // Social media icon component
-const SocialIcon = ({ platform, url }: { platform: string; url: string }) => {
+const SocialIcon = ({ platform, url }: SocialIconProps) => {
   // Get brand-specific color class based on platform
   const getBrandColorClass = (platform: string): string => {
     switch (platform.toLowerCase()) {

@@ -9,6 +9,7 @@ import ServiceCard from '@/components/services/ServiceCard';
 import Link from 'next/link';
 import axios from 'axios';
 import { useQueryClient } from 'react-query';
+import { dehydrate, QueryClient } from 'react-query';
 
 // Global preload cache to keep track of which services have been preloaded
 const preloadedServices = typeof window !== 'undefined' ? new Set<string>() : new Set();
@@ -219,29 +220,50 @@ const ServicesPage: NextPage<ServicesPageProps> = ({
 
 export async function getStaticProps({ locale }: { locale: string }) {
   try {
+    // Create a new QueryClient instance for server-side
+    const queryClient = new QueryClient();
+    
     // Determine API URL based on environment
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000/api/v1';
     
-    // Fetch services data during build time
+    // Setup params for localization
     const params = new URLSearchParams();
     params.append('lang', locale || 'en');
     
-    // Fetch all featured services first
-    params.append('is_featured', 'true');
-    
-    const [servicesResponse, categoriesResponse] = await Promise.all([
-      axios.get(`${apiBaseUrl}/services/?${params.toString()}`),
-      axios.get(`${apiBaseUrl}/service-categories/?${params.toString()}`)
+    // Prefetch services, categories, and footer data in parallel
+    await Promise.all([
+      // Prefetch featured services
+      queryClient.prefetchQuery(['services', { featured: true }, locale], async () => {
+        const servicesResponse = await axios.get(`${apiBaseUrl}/services/?${params.toString()}&is_featured=true`);
+        return servicesResponse.data;
+      }),
+      
+      // Prefetch service categories
+      queryClient.prefetchQuery(['serviceCategories', locale], async () => {
+        const categoriesResponse = await axios.get(`${apiBaseUrl}/service-categories/?${params.toString()}`);
+        return categoriesResponse.data;
+      }),
+      
+      // Prefetch footer data
+      queryClient.prefetchQuery(['footer', locale], async () => {
+        const footerResponse = await axios.get(`${apiBaseUrl}/footer/?${params.toString()}`);
+        return footerResponse.data;
+      })
     ]);
     
-    const initialServices = servicesResponse.data.results || [];
-    const initialCategories = categoriesResponse.data.results || [];
+    // Extract the prefetched data for direct use in the component
+    const servicesData = queryClient.getQueryData(['services', { featured: true }, locale]) as any;
+    const categoriesData = queryClient.getQueryData(['serviceCategories', locale]) as any;
+    
+    const initialServices = servicesData?.results || [];
+    const initialCategories = categoriesData?.results || [];
     
     return {
       props: {
         ...(await serverSideTranslations(locale, ['common'])),
         initialServices,
         initialCategories,
+        dehydratedState: dehydrate(queryClient),
       },
       revalidate: 60, // Re-generate page every 60 seconds if requested
     };
@@ -252,6 +274,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         ...(await serverSideTranslations(locale, ['common'])),
         initialServices: [],
         initialCategories: [],
+        dehydratedState: dehydrate(new QueryClient()),
       },
       revalidate: 60,
     };

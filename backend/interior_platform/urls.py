@@ -27,7 +27,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from apps.projects.views import ProjectViewSet, CategoryViewSet, TagViewSet
 from apps.testimonials.views import TestimonialViewSet
-from apps.contact.views import ContactViewSet, ContactInfoViewSet
+from apps.contact.views import ContactViewSet, ContactInfoViewSet, FooterAPIView
 from apps.services.views import ServiceViewSet, ServiceCategoryViewSet
 
 @api_view(['GET'])
@@ -45,6 +45,7 @@ def api_root(request, format=None):
         'contact-info': reverse('contact-info-list', request=request, format=format),
         'services': reverse('service-list', request=request, format=format),
         'service-categories': reverse('servicecategory-list', request=request, format=format),
+        'footer': reverse('footer', request=request, format=format),
     })
 
 # Default router for API endpoints
@@ -62,6 +63,7 @@ router.register(r'service-categories', ServiceCategoryViewSet, basename='service
 api_patterns = [
     path('v1/', include(router.urls)),
     path('v1/', api_root, name='api-root'),
+    path('v1/', include('apps.contact.urls')),  # Include contact app URLs with footer endpoints
     path('auth/', include('rest_framework.urls')),
 ]
 

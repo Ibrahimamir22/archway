@@ -8,6 +8,8 @@ import { useServices, Service } from '../hooks/useServices';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import OptimizedImage from '../components/common/OptimizedImage';
+import { GetStaticProps } from 'next';
+import { dehydrate, QueryClient } from 'react-query';
 
 // Define fallback project interface
 interface FallbackProject {
@@ -338,31 +340,58 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
   );
 }
 
-export async function getStaticProps({ locale }: { locale: string }) {
+export const getStaticProps: GetStaticProps = async ({ locale = 'en' }) => {
   try {
+    // Create a new QueryClient instance for server-side
+    const queryClient = new QueryClient();
+    
     // Determine API URL based on environment
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000/api/v1';
     
-    // Set up query parameters with language
+    // Setup params for localization
     const params = new URLSearchParams();
-    params.append('lang', locale || 'en');
-    params.append('is_featured', 'true');
-    params.append('limit', '3');
+    params.append('lang', locale);
     
-    // Fetch featured projects and services concurrently
-    const [projectsResponse, servicesResponse] = await Promise.all([
-      axios.get(`${apiBaseUrl}/projects/?${params.toString()}`),
-      axios.get(`${apiBaseUrl}/services/?${params.toString()}`)
+    // Prefetch projects, services, and footer data in parallel
+    await Promise.all([
+      // Prefetch featured projects
+      queryClient.prefetchQuery(['projects', { featured: true }, locale], async () => {
+        const projectsResponse = await axios.get(
+          `${apiBaseUrl}/projects/?${params.toString()}&is_featured=true&limit=6`
+        );
+        return projectsResponse.data;
+      }),
+      
+      // Prefetch featured services
+      queryClient.prefetchQuery(['services', { featured: true }, locale], async () => {
+        const servicesResponse = await axios.get(
+          `${apiBaseUrl}/services/?${params.toString()}&is_featured=true&limit=6`
+        );
+        return servicesResponse.data;
+      }),
+      
+      // Prefetch footer data
+      queryClient.prefetchQuery(['footer', locale], async () => {
+        const footerResponse = await axios.get(
+          `${apiBaseUrl}/footer/?${params.toString()}`
+        );
+        return footerResponse.data;
+      })
     ]);
     
-    const initialProjects = projectsResponse.data.results || [];
-    const initialServices = servicesResponse.data.results || [];
+    // Extract the prefetched data for direct use in the component
+    const projectsData = queryClient.getQueryData(['projects', { featured: true }, locale]) as any;
+    const servicesData = queryClient.getQueryData(['services', { featured: true }, locale]) as any;
+    
+    const initialProjects = projectsData?.results || [];
+    const initialServices = servicesData?.results || [];
     
     return {
       props: {
         ...(await serverSideTranslations(locale, ['common'])),
         initialProjects,
         initialServices,
+        dehydratedState: dehydrate(queryClient),
       },
       revalidate: 60, // Re-generate page every 60 seconds if requested
     };
@@ -377,4 +406,4 @@ export async function getStaticProps({ locale }: { locale: string }) {
       revalidate: 60,
     };
   }
-}
+};

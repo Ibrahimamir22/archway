@@ -14,7 +14,7 @@ services:
       - .env
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+      - NEXT_PUBLIC_API_URL=http://backend:8000/api/v1
       - NEXT_PUBLIC_BACKEND_URL=http://backend:8000
       - NEXT_TELEMETRY_DISABLED=1
       - HOSTNAME=0.0.0.0

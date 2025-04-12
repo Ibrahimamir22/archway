@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'apps.testimonials',
     'apps.services',
     'apps.contact',
+<<<<<<< HEAD
     # Commented out until container rebuild
     # 'apps.analytics',
     # 'apps.blog',
@@ -84,6 +85,14 @@ INSTALLED_APPS = [
     # 'apps.chatbot',
     # 'apps.jobs',
     # 'apps.users',
+=======
+    # 'apps.analytics',  # Commented out to fix ModuleNotFoundError
+    # 'apps.blog',  # Commented out to fix ModuleNotFoundError
+    # 'apps.bookings',  # Commented out to fix ModuleNotFoundError
+    # 'apps.chatbot',  # Commented out to fix ModuleNotFoundError
+    # 'apps.jobs',  # Commented out to fix ModuleNotFoundError
+    # 'apps.users',  # Commented out to fix ModuleNotFoundError
+>>>>>>> 700809d (Final tweaks on useProjects, settings & tsconfig)
 ]
 
 # Admin Interface settings
@@ -101,7 +110,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # 'django_ratelimit.middleware.RatelimitMiddleware',  # Rate limiting
-    'apps.contact.middleware.DynamicEmailSettingsMiddleware',  # Dynamic email settings
+    'apps.contact.middleware.DynamicEmailSettingsMiddleware',  # Re-enabled since apps.contact exists
 ]
 
 # Rate limiting settings

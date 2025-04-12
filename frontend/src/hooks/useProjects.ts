@@ -2,6 +2,15 @@ import { useQuery, useInfiniteQuery } from 'react-query';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 
+// Type declaration for Node.js process
+declare const process: {
+  env: {
+    NEXT_PUBLIC_API_URL?: string;
+    NEXT_PUBLIC_BACKEND_URL?: string;
+    [key: string]: string | undefined;
+  }
+};
+
 // Smart detection of environment to handle both browser and container contexts
 const getApiBaseUrl = () => {
   // Check if we're in a browser environment
@@ -11,16 +20,13 @@ const getApiBaseUrl = () => {
   const configuredUrl = process.env.NEXT_PUBLIC_API_URL;
   
   if (configuredUrl) {
-    // If we're in a browser and the URL contains 'backend', replace with 'localhost'
-    if (isBrowser && configuredUrl.includes('backend')) {
-      return configuredUrl.replace('backend', 'localhost');
-    }
+    // Use configured URL as is - don't transform it
     return configuredUrl;
   }
   
   // Default fallback - use backend for server-side, localhost for client-side
   return isBrowser 
-    ? 'http://localhost:8000/api/v1' 
+    ? 'http://backend:8000/api/v1' 
     : 'http://backend:8000/api/v1';
 };
 
@@ -135,7 +141,7 @@ export const useProjects = (options: UseProjectsOptions = {}, prefetchedData?: P
     ['projects', options, locale],
     fetchProjects,
     {
-      getNextPageParam: (lastPage) => {
+      getNextPageParam: (lastPage: ProjectsResponse) => {
         if (lastPage.next) {
           // Extract page number from next URL
           const url = new URL(lastPage.next);
@@ -154,7 +160,7 @@ export const useProjects = (options: UseProjectsOptions = {}, prefetchedData?: P
   );
 
   // Flatten paginated results
-  const projects = data?.pages ? data.pages.flatMap(page => page?.results || []) : [];
+  const projects = data?.pages ? data.pages.flatMap((page: ProjectsResponse) => page?.results || []) : [];
   const loading = status === 'loading';
   const isError = status === 'error';
   const errorMessage = isError 
@@ -254,25 +260,15 @@ export const useProjectTags = (prefetchedData?: Tag[]) => {
 export const fixImageUrl = (url: string | undefined): string => {
   if (!url) return '';
   
-  // In Docker environment when SSR, keep backend:8000
-  // When in browser, replace with localhost:8000
-  const isBrowser = typeof window !== 'undefined';
-  
-  if (isBrowser && url.includes('backend:8000')) {
-    return url.replace(/backend:8000/g, 'localhost:8000');
-  }
+  // Always use backend:8000 in Docker environment
   
   // Handle media paths that start with /media or media/
   if (url.startsWith('/media/')) {
-    return isBrowser 
-      ? `http://localhost:8000${url}` 
-      : `http://backend:8000${url}`;
+    return `http://backend:8000${url}`;
   }
   
   if (url.startsWith('media/')) {
-    return isBrowser 
-      ? `http://localhost:8000/${url}` 
-      : `http://backend:8000/${url}`;
+    return `http://backend:8000/${url}`;
   }
   
   return url;
@@ -335,7 +331,7 @@ export const useProjectDetail = (slug: string) => {
       refetchOnWindowFocus: false,
       staleTime: 600000, // 10 minutes - increased from 5
       cacheTime: 3600000, // 60 minutes - increased from 10 
-      onSuccess: (data) => {
+      onSuccess: (data: any) => {
         // Preload images when data is successfully fetched 
         if (typeof window !== 'undefined' && data?.images?.length) {
           console.log(`Preloading ${data.images.length} images on successful fetch`);

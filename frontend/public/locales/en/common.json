@@ -17,7 +17,20 @@
     "address": "Address",
     "email": "Email",
     "phone": "Phone",
-    "followUs": "Follow Us"
+    "followUs": "Follow Us",
+    "allRightsReserved": "All rights reserved.",
+    "newsletter": {
+      "title": "Subscribe to Our Newsletter",
+      "placeholder": "Enter your email",
+      "subscribe": "Subscribe",
+      "emailRequired": "Email is required",
+      "invalidEmail": "Please enter a valid email",
+      "successMessage": "Thank you for subscribing!",
+      "errorMessage": "Failed to subscribe. Please try again."
+    },
+    "viewOnMap": "View on Google Maps",
+    "sendEmail": "Send email to",
+    "callUs": "Call us at"
   },
   "home": {
     "metaTitle": "Archway Interior Design | Professional Interior Design in Egypt",
@@ -163,13 +176,15 @@
     "submit": "Submit",
     "save": "Save",
     "loading": "Loading...",
+    "submitting": "Submitting...",
     "error": "Error",
     "success": "Success",
     "back": "Back",
     "category": "Category",
     "tag": "Tag",
     "clearFilters": "Clear Filters",
-    "tryAgain": "Try Again"
+    "tryAgain": "Try Again",
+    "errorLoading": "Error loading content. Please try again."
   },
   "backToPortfolio": "Back to Portfolio",
   "projectDetails": "Project Details",

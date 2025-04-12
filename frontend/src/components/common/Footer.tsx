@@ -31,6 +31,16 @@ const NewsletterForm = () => {
       return;
     }
     
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setMessage({
+        text: t('footer.newsletter.invalidEmail'),
+        isError: true
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     setMessage(null);
     
@@ -66,16 +76,26 @@ const NewsletterForm = () => {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder={t('footer.newsletter.placeholder')}
+          placeholder={t('footer.newsletter.placeholder') || "Enter your email"}
           className="px-4 py-2 bg-gray-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-brand-blue"
-          aria-label={t('footer.newsletter.placeholder')}
+          aria-label={t('footer.newsletter.placeholder') || "Email for newsletter"}
         />
         <button
           type="submit"
           disabled={isSubmitting}
           className="px-4 py-2 bg-brand-blue text-white rounded hover:bg-brand-blue-dark transition-colors disabled:opacity-50"
         >
-          {isSubmitting ? t('common.submitting') : t('footer.newsletter.subscribe')}
+          {isSubmitting ? (
+            <span className="flex items-center justify-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {t('common.submitting')}
+            </span>
+          ) : (
+            t('footer.newsletter.subscribe') || "Subscribe"
+          )}
         </button>
       </div>
       
@@ -126,6 +146,33 @@ const FooterSection = ({ section, isRtl }: { section: FooterSectionType; isRtl: 
 
 // Social media icon component
 const SocialIcon = ({ platform, url }: { platform: string; url: string }) => {
+  // Get brand-specific color class based on platform
+  const getBrandColorClass = (platform: string): string => {
+    switch (platform.toLowerCase()) {
+      case 'facebook':
+        return 'group-hover:text-[#1877F2]'; // Facebook blue
+      case 'twitter':
+        return 'group-hover:text-[#1DA1F2]'; // Twitter blue
+      case 'instagram':
+        // Instagram has a gradient but we'll use a single color for simplicity
+        return 'group-hover:text-[#E1306C]'; // Instagram pink/red
+      case 'linkedin':
+        return 'group-hover:text-[#0A66C2]'; // LinkedIn blue
+      case 'youtube':
+        return 'group-hover:text-[#FF0000]'; // YouTube red
+      case 'pinterest':
+        return 'group-hover:text-[#E60023]'; // Pinterest red
+      case 'tiktok':
+        return 'group-hover:text-[#69C9D0]'; // TikTok teal
+      case 'behance':
+        return 'group-hover:text-[#1769FF]'; // Behance blue
+      case 'whatsapp':
+        return 'group-hover:text-[#25D366]'; // WhatsApp green
+      default:
+        return 'group-hover:text-brand-blue'; // Default brand color
+    }
+  };
+  
   // Icons mapping
   const getIcon = () => {
     switch (platform.toLowerCase()) {
@@ -168,7 +215,7 @@ const SocialIcon = ({ platform, url }: { platform: string; url: string }) => {
       case 'behance':
         return (
           <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M7.799 5.698c.589 0 1.12.051 1.606.156.482.102.894.273 1.241.507.344.235.612.546.804.938.188.387.281.871.281 1.443 0 .619-.141 1.137-.421 1.551-.284.414-.7.753-1.255 1.014.756.214 1.311.601 1.671 1.164.36.563.537 1.241.537 2.031 0 .619-.12 1.164-.358 1.637-.242.473-.57.863-.991 1.164-.419.3-.911.523-1.48.669-.567.143-1.179.217-1.835.217H1V5.698h6.799zm-.356 4.403c.481 0 .878-.114 1.192-.345.311-.228.463-.603.463-1.119 0-.286-.051-.522-.151-.707-.104-.185-.245-.322-.435-.415-.188-.093-.413-.155-.686-.18-.276-.026-.563-.041-.863-.041H3.682v2.807h3.761zm.221 4.89c.343 0 .643-.034.901-.103.26-.07.476-.176.654-.324.174-.145.313-.337.407-.568.095-.228.143-.508.143-.836 0-.66-.221-1.15-.664-1.458-.445-.309-1.023-.463-1.728-.463h-4.06v3.752h4.347zm11.426-9.113h-4.221v1.036h4.221v-1.036zm-5.247 6.526c.087.33.218.635.397.908.178.273.409.495.695.664.286.17.615.253.989.253.503 0 .937-.101 1.29-.305.357-.203.639-.504.853-.896h2.814c-.3.966-.839 1.722-1.611 2.253-.774.532-1.694.797-2.761.797-.854 0-1.613-.137-2.28-.415-.666-.277-1.222-.67-1.681-1.174a5.252 5.252 0 01-1.03-1.844c-.238-.716-.357-1.504-.357-2.363 0-.83.119-1.606.357-2.327.236-.721.586-1.349 1.03-1.878.444-.53 1-.946 1.667-1.241.667-.296 1.438-.445 2.314-.445.939 0 1.751.183 2.431.541.681.36 1.229.836 1.643 1.429.414.595.704 1.256.865 1.991.165.734.217 1.456.162 2.29.414z"></path>
+            <path d="M7.799 5.698c.589 0 1.12.051 1.606.156.482.102.894.273 1.241.507.344.235.612.546.804.938.188.387.281 1.871.281 1.443 0 .619-.141 1.137-.421 1.551-.284.414-.7.753-1.255 1.014.756.214 1.311.601 1.671 1.164.36.563.537 1.241.537 2.031 0 .619-.12 1.164-.358 1.637-.242.473-.57.863-.991 1.164-.419.3-.911.523-1.48.669-.567.143-1.179.217-1.835.217H1V5.698h6.799zm-.356 4.403c.481 0 .878-.114 1.192-.345.311-.228.463-.603.463-1.119 0-.286-.051-.522-.151-.707-.104-.185-.245-.322-.435-.415-.188-.093-.413-.155-.686-.18-.276-.026-.563-.041-.863-.041H3.682v2.807h3.761zm.221 4.89c.343 0 .643-.034.901-.103.26-.07.476-.176.654-.324.174-.145.313-.337.407-.568.095-.228.143-.508.143-.836 0-.66-.221-1.15-.664-1.458-.445-.309-1.023-.463-1.728-.463h-4.06v3.752h4.347zm11.426-9.113h-4.221v1.036h4.221v-1.036zm-5.247 6.526c.087.33.218.635.397.908.178.273.409.495.695.664.286.17.615.253.989.253.503 0 .937-.101 1.29-.305.357-.203.639-.504.853-.896h2.814c-.3.966-.839 1.722-1.611 2.253-.774.532-1.694.797-2.761.797-.854 0-1.613-.137-2.28-.415-.666-.277-1.222-.67-1.681-1.174a5.252 5.252 0 01-1.03-1.844c-.238-.716-.357-1.504-.357-2.363 0-.83.119-1.606.357-2.327.236-.721.586-1.349 1.03-1.878.444-.53 1-.946 1.667-1.241.667-.296 1.438-.445 2.314-.445.939 0 1.751.183 2.431.541.681.36 1.229.836 1.643 1.429.414.595.704 1.256.865 1.991.165.734.217 1.456.162 2.29.414z"></path>
           </svg>
         );
       case 'whatsapp':
@@ -186,15 +233,19 @@ const SocialIcon = ({ platform, url }: { platform: string; url: string }) => {
     }
   };
   
+  const brandColorClass = getBrandColorClass(platform);
+  
   return (
     <a
       href={url}
       target="_blank"
       rel="noopener noreferrer"
       aria-label={platform}
-      className="text-gray-300 hover:text-white transition-colors"
+      className="group"
     >
-      {getIcon()}
+      <div className={`text-gray-300 hover:text-white ${brandColorClass} transition-colors duration-300 transform hover:scale-110`}>
+        {getIcon()}
+      </div>
     </a>
   );
 };
@@ -215,13 +266,13 @@ const CompanyInfo = ({
     <div className={`col-span-1 md:col-span-1 ${isRtl ? 'text-right' : ''}`}>
       <h3 className="text-xl font-bold mb-4">{settings?.company_name || 'Archway Design'}</h3>
       {settings?.description && (
-        <p className="text-gray-300 mb-4">{settings.description}</p>
+        <p className="text-gray-300 mb-4 leading-relaxed">{settings.description}</p>
       )}
       
       {socialMedia && socialMedia.length > 0 && (
-        <div className={`mt-4 ${isRtl ? 'text-right' : ''}`}>
-          <h4 className="text-lg font-medium mb-3">{t('footer.followUs')}</h4>
-          <div className={`flex ${isRtl ? 'justify-end space-x-reverse' : ''} space-x-4`}>
+        <div className={`mt-6 ${isRtl ? 'text-right' : ''}`}>
+          <h4 className="text-lg font-medium mb-4">{t('footer.followUs')}</h4>
+          <div className={`flex ${isRtl ? 'justify-end space-x-reverse' : ''} gap-5`}>
             {socialMedia.map((social) => (
               <SocialIcon 
                 key={social.id} 
@@ -234,8 +285,8 @@ const CompanyInfo = ({
       )}
       
       {settings?.show_newsletter && (
-        <div className="mt-6">
-          <h4 className="text-lg font-medium mb-2">
+        <div className="mt-8">
+          <h4 className="text-lg font-medium mb-3">
             {settings.newsletter_text || t('footer.newsletter.title')}
           </h4>
           <NewsletterForm />
@@ -251,45 +302,77 @@ const ContactInfo = ({ settings, isRtl }: { settings: any; isRtl: boolean }) => 
   
   if (!settings) return null;
   
+  // Function to generate Google Maps URL from address
+  const getGoogleMapsUrl = (address: string) => {
+    if (!address) return '#';
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  };
+  
   return (
     <div className={`col-span-1 ${isRtl ? 'text-right' : ''}`}>
       <h3 className="text-xl font-bold mb-4">{t('header.contact')}</h3>
-      <ul className="space-y-2">
+      <ul className="space-y-4">
         {settings.address && (
-          <li className={`flex items-start ${isRtl ? 'flex-row-reverse' : ''}`}>
-            <svg className={`w-5 h-5 ${isRtl ? 'ms-2' : 'me-2'} mt-0.5`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
-            <div>
-              <p className="font-medium">{t('footer.address')}</p>
-              <p className="text-brand-light">{settings.address}</p>
+          <a 
+            href={getGoogleMapsUrl(settings.address)} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className={`${isRtl ? 'flex-row-reverse' : 'flex'} flex items-start group p-2 -m-2 rounded-lg transition-all duration-300 cursor-pointer`}
+            aria-label={`${t('footer.viewOnMap')}: ${settings.address}`}
+          >
+            <span className={`flex-shrink-0 mt-1 ${isRtl ? 'ms-3' : 'me-3'}`}>
+              <svg className="w-5 h-5 text-gray-300 group-hover:text-white group-hover:brightness-110 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+            </span>
+            <div className="flex-1">
+              <p className="font-medium text-gray-300 group-hover:text-white group-hover:brightness-110 transition-colors duration-300">{t('footer.address')}</p>
+              <span className="text-gray-300 group-hover:text-white group-hover:brightness-110 group-hover:drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] transition-all duration-300">
+                {settings.address}
+              </span>
             </div>
-          </li>
+          </a>
         )}
         
         {settings.email && (
-          <li className={`flex items-start ${isRtl ? 'flex-row-reverse' : ''}`}>
-            <svg className={`w-5 h-5 ${isRtl ? 'ms-2' : 'me-2'} mt-0.5`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-            </svg>
-            <div>
-              <p className="font-medium">{t('footer.email')}</p>
-              <p className="text-brand-light">{settings.email}</p>
+          <a 
+            href={`mailto:${settings.email}`}
+            className={`${isRtl ? 'flex-row-reverse' : 'flex'} flex items-start group p-2 -m-2 rounded-lg transition-all duration-300 cursor-pointer`}
+            aria-label={`${t('footer.sendEmail')}: ${settings.email}`}
+          >
+            <span className={`flex-shrink-0 mt-1 ${isRtl ? 'ms-3' : 'me-3'}`}>
+              <svg className="w-5 h-5 text-gray-300 group-hover:text-white group-hover:brightness-110 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+              </svg>
+            </span>
+            <div className="flex-1">
+              <p className="font-medium text-gray-300 group-hover:text-white group-hover:brightness-110 transition-colors duration-300">{t('footer.email')}</p>
+              <span className="text-gray-300 group-hover:text-white group-hover:brightness-110 group-hover:drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] transition-all duration-300">
+                {settings.email}
+              </span>
             </div>
-          </li>
+          </a>
         )}
         
         {settings.phone && (
-          <li className={`flex items-start ${isRtl ? 'flex-row-reverse' : ''}`}>
-            <svg className={`w-5 h-5 ${isRtl ? 'ms-2' : 'me-2'} mt-0.5`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-            </svg>
-            <div>
-              <p className="font-medium">{t('footer.phone')}</p>
-              <p className="text-brand-light">{settings.phone}</p>
+          <a 
+            href={`tel:${settings.phone.replace(/\s+/g, '')}`}
+            className={`${isRtl ? 'flex-row-reverse' : 'flex'} flex items-start group p-2 -m-2 rounded-lg transition-all duration-300 cursor-pointer`}
+            aria-label={`${t('footer.callUs')}: ${settings.phone}`}
+          >
+            <span className={`flex-shrink-0 mt-1 ${isRtl ? 'ms-3' : 'me-3'}`}>
+              <svg className="w-5 h-5 text-gray-300 group-hover:text-white group-hover:brightness-110 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+              </svg>
+            </span>
+            <div className="flex-1">
+              <p className="font-medium text-gray-300 group-hover:text-white group-hover:brightness-110 transition-colors duration-300">{t('footer.phone')}</p>
+              <span className="text-gray-300 group-hover:text-white group-hover:brightness-110 group-hover:drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] transition-all duration-300">
+                {settings.phone}
+              </span>
             </div>
-          </li>
+          </a>
         )}
       </ul>
     </div>

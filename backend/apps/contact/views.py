@@ -7,9 +7,9 @@ from django.utils.translation import gettext as _
 from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
 import logging
-from .models import ContactMessage, ContactInfo, FooterSettings, FooterSection, FooterLink, SocialMedia, NewsletterSubscription, SubscriberSegment, NewsletterTemplate, NewsletterCampaign, EmailDelivery, LinkClick, NewsletterAutomation, AutomationStep, AutomationExecution
+from .models import ContactMessage, ContactInfo, FooterSettings, FooterSection, FooterLink, SocialMedia, NewsletterSubscription, SubscriberSegment, NewsletterTemplate, NewsletterCampaign, EmailDelivery, LinkClick, NewsletterAutomation, AutomationStep, AutomationExecution, SubscriberSegmentMembership
 from .serializers import ContactMessageSerializer, ContactInfoSerializer, FooterSettingsSerializer, FooterSectionSerializer, FooterLinkSerializer, SocialMediaSerializer, NewsletterSubscriptionSerializer, FooterSerializer, LocalizedFooterSettingsSerializer, LocalizedFooterSectionSerializer, SubscriberSegmentSerializer, NewsletterTemplateSerializer, NewsletterCampaignSerializer, EmailDeliverySerializer, NewsletterAutomationSerializer, AutomationStepSerializer, ConfirmSubscriptionSerializer, UnsubscribeSerializer
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from rest_framework.decorators import api_view, action
 from rest_framework.views import APIView
 from django.utils.translation import get_language
@@ -21,6 +21,7 @@ from urllib.parse import quote_plus
 from django.http import HttpResponse
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+import base64
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -732,6 +733,8 @@ class NewsletterCampaignViewSet(viewsets.ModelViewSet):
     
     def _strip_html_tags(self, html_content):
         """Convert HTML to plain text by removing tags"""
+        if not html_content:
+            return ""
         return re.sub(r'<[^>]*>', '', html_content)
 
 class NewsletterTrackingViewSet(viewsets.ViewSet):

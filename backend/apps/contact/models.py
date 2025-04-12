@@ -470,4 +470,33 @@ class AutomationExecution(models.Model):
         unique_together = ('automation', 'subscriber')
 
     def __str__(self):
-        return f"{self.automation.name} for {self.subscriber.email}" 
+        return f"{self.automation.name} for {self.subscriber.email}"
+
+
+class EmailConfiguration(models.Model):
+    """Configuration for email delivery backend"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, help_text="Name for this configuration")
+    email_backend = models.CharField(max_length=255, default='django.core.mail.backends.smtp.EmailBackend')
+    email_host = models.CharField(max_length=255, help_text="SMTP server hostname")
+    email_port = models.PositiveIntegerField(default=587)
+    email_use_tls = models.BooleanField(default=True)
+    email_host_user = models.CharField(max_length=255, help_text="SMTP username/email")
+    email_host_password = models.CharField(max_length=255, help_text="SMTP password")
+    default_from_email = models.EmailField()
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Email Configuration"
+        verbose_name_plural = "Email Configurations"
+
+    def __str__(self):
+        return f"Email Config: {self.name} ({self.email_host})"
+    
+    def save(self, *args, **kwargs):
+        # Ensure only one configuration is active
+        if self.active:
+            EmailConfiguration.objects.exclude(pk=self.pk).update(active=False)
+        super().save(*args, **kwargs) 

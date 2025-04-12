@@ -7,7 +7,7 @@ from .models import (
     SocialMedia, NewsletterSubscription, SubscriberSegment,
     NewsletterTemplate, NewsletterCampaign, EmailDelivery,
     LinkClick, NewsletterAutomation, AutomationStep, 
-    AutomationExecution, SubscriberSegmentMembership
+    AutomationExecution, SubscriberSegmentMembership, EmailConfiguration
 )
 
 @admin.register(ContactMessage)
@@ -319,4 +319,40 @@ class AutomationExecutionAdmin(admin.ModelAdmin):
         if obj.current_step:
             return f"{obj.current_step.template.name} (Step {obj.current_step.order})"
         return "Not started"
-    current_step_name.short_description = 'Current Step' 
+    current_step_name.short_description = 'Current Step'
+
+
+@admin.register(EmailConfiguration)
+class EmailConfigurationAdmin(admin.ModelAdmin):
+    """Admin interface for managing email delivery configuration"""
+    list_display = ('name', 'email_host_user', 'email_host', 'active', 'updated_at')
+    list_filter = ('active', 'email_host')
+    search_fields = ('name', 'email_host', 'email_host_user')
+    readonly_fields = ('created_at', 'updated_at')
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'active')
+        }),
+        ('SMTP Configuration', {
+            'fields': ('email_backend', 'email_host', 'email_port', 'email_use_tls'),
+        }),
+        ('Authentication', {
+            'fields': ('email_host_user', 'email_host_password', 'default_from_email'),
+            'classes': ('collapse',),
+            'description': 'For Gmail, use an App Password, not your regular password.'
+        }),
+    )
+    
+    def save_model(self, request, obj, form, change):
+        # Ensure only one configuration is active at a time
+        if obj.active:
+            EmailConfiguration.objects.exclude(pk=obj.pk).update(active=False)
+        
+        # Save the model
+        super().save_model(request, obj, form, change)
+        
+        # Add a message to the user
+        if obj.active:
+            self.message_user(request, f"Email configuration '{obj.name}' is now active and will be used for all emails")
+        else:
+            self.message_user(request, f"Email configuration '{obj.name}' has been saved but is not active") 

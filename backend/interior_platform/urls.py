@@ -28,6 +28,7 @@ from rest_framework.reverse import reverse
 from apps.projects.views import ProjectViewSet, CategoryViewSet, TagViewSet
 from apps.testimonials.views import TestimonialViewSet
 from apps.contact.views import ContactViewSet, ContactInfoViewSet
+from apps.services.views import ServiceViewSet, ServiceCategoryViewSet
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -42,6 +43,8 @@ def api_root(request, format=None):
         'testimonials': reverse('testimonial-list', request=request, format=format),
         'contact': reverse('contact-list', request=request, format=format),
         'contact-info': reverse('contact-info-list', request=request, format=format),
+        'services': reverse('service-list', request=request, format=format),
+        'service-categories': reverse('servicecategory-list', request=request, format=format),
     })
 
 # Default router for API endpoints
@@ -52,6 +55,8 @@ router.register(r'tags', TagViewSet, basename='tag')
 router.register(r'testimonials', TestimonialViewSet, basename='testimonial')
 router.register(r'contact', ContactViewSet, basename='contact')
 router.register(r'contact-info', ContactInfoViewSet, basename='contact-info')
+router.register(r'services', ServiceViewSet, basename='service')
+router.register(r'service-categories', ServiceCategoryViewSet, basename='servicecategory')
 
 # API URLs
 api_patterns = [

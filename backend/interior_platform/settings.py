@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     # Project apps
     'apps.projects',
     'apps.testimonials',
+    'apps.services',
     'apps.contact',
     'apps.analytics',
     'apps.blog',

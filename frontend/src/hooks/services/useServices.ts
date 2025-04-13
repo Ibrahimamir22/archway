@@ -2,29 +2,7 @@ import { useInfiniteQuery, useQuery } from 'react-query';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { ServiceCategory } from './useServiceCategories';
-
-// Smart detection of environment to handle both browser and container contexts
-const getApiBaseUrl = () => {
-  // Check if we're in a browser environment
-  const isBrowser = typeof window !== 'undefined';
-  
-  // Get the configured API URLs (from environment variables)
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-  
-  if (apiUrl) {
-    // When in browser, use the NEXT_PUBLIC_API_URL directly
-    // This should point to localhost:8000 for browser access
-    return apiUrl;
-  }
-  
-  // Default fallback - use appropriate URL based on environment
-  return isBrowser 
-    ? 'http://localhost:8000/api/v1' 
-    : 'http://backend:8000/api/v1';
-};
-
-const API_BASE_URL = getApiBaseUrl();
+import { getApiBaseUrl, fixImageUrl } from '../utils/useApi';
 
 export interface ServiceFeature {
   id: string;
@@ -68,9 +46,13 @@ interface ServicesResponse {
   results: Service[];
 }
 
+/**
+ * Hook for fetching services with pagination, filtering, and search
+ */
 export const useServices = (options: UseServicesOptions = {}, prefetchedData?: Service[]) => {
   const router = useRouter();
   const { locale } = router;
+  const API_BASE_URL = getApiBaseUrl();
 
   // Function to fetch services from API
   const fetchServices = async ({ pageParam = 1 }) => {
@@ -155,9 +137,13 @@ export const useServices = (options: UseServicesOptions = {}, prefetchedData?: S
   };
 };
 
+/**
+ * Hook for fetching details of a specific service
+ */
 export const useServiceDetail = (slug: string | undefined) => {
   const router = useRouter();
   const { locale } = router;
+  const API_BASE_URL = getApiBaseUrl();
 
   const fetchService = async () => {
     if (!slug) return null;
@@ -190,31 +176,4 @@ export const useServiceDetail = (slug: string | undefined) => {
     : null;
 
   return { service, loading, error: errorMessage, refetch };
-};
-
-// Helper function to fix image URLs for use across the app
-export const fixImageUrl = (url: string | undefined): string => {
-  if (!url) return '/images/placeholder.jpg';
-  
-  // If it's already a full URL, return it
-  if (url.startsWith('http')) {
-    return url;
-  }
-  
-  const isBrowser = typeof window !== 'undefined';
-  const apiBaseUrl = isBrowser 
-    ? process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000' 
-    : process.env.NEXT_PUBLIC_BACKEND_URL || 'http://backend:8000';
-  
-  // If it's a relative path from Django, add API base URL
-  if (url.startsWith('/media')) {
-    return `${apiBaseUrl}${url}`;
-  }
-  
-  // Handle case where we just have the filename without path
-  if (!url.startsWith('/')) {
-    return `/media/${url}`;
-  }
-  
-  return url;
 }; 

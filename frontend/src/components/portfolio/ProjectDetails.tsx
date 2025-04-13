@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Button from '@/components/common/Button';
 import OptimizedImage from '@/components/common/OptimizedImage';
-import { useProjectImages } from '@/hooks/useProjectImages';
+import { useProjectImages } from '@/hooks';
 
 interface ProjectImage {
   id: string;

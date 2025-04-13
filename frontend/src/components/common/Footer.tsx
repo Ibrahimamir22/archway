@@ -4,11 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
-import { 
-  useFooter, 
-  useNewsletterSubscription, 
-  FooterSection as FooterSectionType 
-} from '@/hooks/useFooter';
+import { useFooter, useNewsletterSubscription } from '../../hooks/ui/useFooter';
+import type { FooterSection as FooterSectionType, ContactInfo as ContactInfoType } from '../../hooks/ui/useFooter';
 import LoadingState from './LoadingState';
 import ErrorMessage from './ErrorMessage';
 
@@ -109,13 +106,27 @@ const NewsletterForm = () => {
 };
 
 // Footer section component
+interface FooterSectionProps {
+  section: FooterSectionType;
+  isRtl: boolean;
+  key?: string | number;
+}
+
+// Update the links interface to match what's expected
+interface FooterLink {
+  id: string;
+  text: string;  // Changed from 'title' to 'text' to match the actual structure
+  url: string;
+  open_in_new_tab?: boolean;
+}
+
 const FooterSection = ({ section, isRtl }: FooterSectionProps) => {
   return (
     <div className={`col-span-1 ${isRtl ? 'text-right' : ''}`}>
       <h3 className="text-xl font-bold mb-4">{section.title}</h3>
       {section.links && section.links.length > 0 && (
         <ul className="space-y-2">
-          {section.links.map((link) => (
+          {section.links.map((link: FooterLink) => (
             <li key={link.id}>
               {link.url.startsWith('/') || link.url.startsWith('#') ? (
                 <Link 
@@ -124,7 +135,7 @@ const FooterSection = ({ section, isRtl }: FooterSectionProps) => {
                   target={link.open_in_new_tab ? '_blank' : undefined}
                   rel={link.open_in_new_tab ? 'noopener noreferrer' : undefined}
                 >
-                  {link.title}
+                  {link.text}
                 </Link>
               ) : (
                 <a 
@@ -133,7 +144,7 @@ const FooterSection = ({ section, isRtl }: FooterSectionProps) => {
                   target={link.open_in_new_tab ? '_blank' : '_self'}
                   rel={link.open_in_new_tab ? 'noopener noreferrer' : undefined}
                 >
-                  {link.title}
+                  {link.text}
                 </a>
               )}
             </li>
@@ -145,6 +156,12 @@ const FooterSection = ({ section, isRtl }: FooterSectionProps) => {
 };
 
 // Social media icon component
+interface SocialIconProps {
+  platform: string;
+  url: string;
+  key?: string | number;
+}
+
 const SocialIcon = ({ platform, url }: SocialIconProps) => {
   // Get brand-specific color class based on platform
   const getBrandColorClass = (platform: string): string => {
@@ -386,17 +403,23 @@ const Footer = () => {
   const { locale } = router;
   const isRtl = locale === 'ar';
   
-  // Fetch footer data using the hook
+  // Fetch footer data using the hook with properties matching the hook's actual return type
   const { 
-    settings, 
-    sections, 
-    socialMedia, 
-    isLoading, 
-    error 
+    footerData, 
+    loading, 
+    error,
+    refetch
   } = useFooter();
   
+  // Extract data from footerData
+  const socialLinks = footerData?.social_links || [];
+  const contactInfo = footerData?.contact_info || [];
+  const sections = footerData?.sections || [];
+  const copyrightText = footerData?.copyright_text;
+  const bottomLinks = footerData?.bottom_links || [];
+  
   // Show fallback content if data is loading or there's an error
-  if (isLoading) {
+  if (loading) {
     return (
       <footer className="bg-gray-900 text-white pt-12 pb-6">
         <div className="container-custom">
@@ -425,7 +448,7 @@ const Footer = () => {
   }
   
   // Calculate the grid columns based on available sections
-  const totalSections = (settings ? 1 : 0) + (sections?.length || 0) + 1; // +1 for contact info
+  const totalSections = (socialLinks.length > 0 ? 1 : 0) + (sections?.length || 0) + (contactInfo.length > 0 ? 1 : 0);
   const gridCols = totalSections <= 2 ? 'grid-cols-1 md:grid-cols-2' :
                    totalSections === 3 ? 'grid-cols-1 md:grid-cols-3' :
                    'grid-cols-1 md:grid-cols-4';
@@ -435,10 +458,10 @@ const Footer = () => {
       <div className="container-custom">
         <div className={`grid ${gridCols} gap-8`}>
           {/* Company Info */}
-          {settings && (
+          {socialLinks.length > 0 && (
             <CompanyInfo 
-              settings={settings} 
-              socialMedia={socialMedia} 
+              settings={footerData} 
+              socialMedia={socialLinks} 
               isRtl={isRtl} 
             />
           )}
@@ -453,9 +476,9 @@ const Footer = () => {
           ))}
           
           {/* Contact Info */}
-          {settings && (
+          {contactInfo.length > 0 && (
             <ContactInfo 
-              settings={settings} 
+              settings={footerData} 
               isRtl={isRtl} 
             />
           )}
@@ -463,7 +486,7 @@ const Footer = () => {
 
         {/* Copyright */}
         <div className="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
-          <p>{settings?.copyright_text || `© ${new Date().getFullYear()} Archway Design. ${t('footer.allRightsReserved')}`}</p>
+          <p>{copyrightText || `© ${new Date().getFullYear()} Archway Design. ${t('footer.allRightsReserved')}`}</p>
         </div>
       </div>
     </footer>

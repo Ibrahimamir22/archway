@@ -4,13 +4,17 @@ import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useProjects, Project, Category, Tag } from '@/hooks/useProjects';
+import { useProjects, Project, Category, Tag } from '@/hooks';
+import { useAuth } from '@/hooks';
+import ProjectCard from '@/components/portfolio/ProjectCard';
 import ProjectFilters from '@/components/portfolio/ProjectFilters';
 import ProjectGrid from '@/components/portfolio/ProjectGrid';
-import { useQueryClient } from 'react-query';
-import { useAuth } from '@/hooks/useAuth';
-import { getApiBaseUrl } from '@/utils/urls';
+import LoadingState from '@/components/common/LoadingState';
+import ErrorMessage from '@/components/common/ErrorMessage';
+import PlaceholderProjects from '@/components/portfolio/PlaceholderProjects';
 import axios from 'axios';
+import { useQueryClient } from 'react-query';
+import { getApiBaseUrl } from '@/hooks';
 
 interface FilterOptions {
   category?: string;

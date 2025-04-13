@@ -8,7 +8,7 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import { useRouter } from 'next/router';
 import Button from '@/components/common/Button';
 import LoadingState from '@/components/common/LoadingState';
-import { useProjectDetail } from '@/hooks/useProjects';
+import { useProjectDetail } from '@/hooks';
 import axios from 'axios';
 import { 
   getPlaceholderProject, 
@@ -18,7 +18,7 @@ import {
 import ProjectHeader from '@/components/portfolio/ProjectHeader';
 import ProjectDetails from '@/components/portfolio/ProjectDetails';
 import ProjectGallery from '@/components/portfolio/ProjectGallery';
-import { getApiBaseUrl, normalizeImageUrl } from '@/utils/urls';
+import { getApiBaseUrl, normalizeImageUrl } from '@/hooks';
 
 interface ProjectDetail {
   id: string;

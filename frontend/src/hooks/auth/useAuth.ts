@@ -45,8 +45,23 @@ export const useAuth = () => {
     }
   };
 
+  /**
+   * Check if a project is in the user's favorites
+   */
+  const isProjectFavorite = (projectId: string): boolean => {
+    if (!isAuthenticated) return false;
+    
+    try {
+      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+      return favorites.includes(projectId);
+    } catch {
+      return false;
+    }
+  };
+
   return {
     isAuthenticated,
-    saveToFavorites
+    saveToFavorites,
+    isProjectFavorite
   };
 }; 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
-import { Service, fixImageUrl } from '@/hooks/useServices';
+import { Service, fixImageUrl } from '@/hooks';
 import { useQueryClient } from 'react-query';
 import axios from 'axios';
 import OptimizedImage from '../common/OptimizedImage';

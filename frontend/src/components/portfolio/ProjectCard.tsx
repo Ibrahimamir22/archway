@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
-import { Project, fixImageUrl } from '@/hooks/useProjects';
+import { Project, fixImageUrl } from '@/hooks';
 import Modal from '@/components/common/Modal';
 import Button from '@/components/common/Button';
 import { useQueryClient } from 'react-query';

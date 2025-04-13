@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
 import OptimizedImage from '@/components/common/OptimizedImage';
-import { useProjectImages } from '@/hooks/useProjectImages';
+import { useProjectImages } from '@/hooks';
 
 interface ProjectImage {
   id: string;

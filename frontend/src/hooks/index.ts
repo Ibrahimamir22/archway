@@ -14,8 +14,7 @@ export * from './portfolio/useProjectList';
 export * from './portfolio/types';
 
 // Service hooks
-export * from './services/useServices';
-export * from './services/useServiceCategories';
+export * from './services';
 
 // UI hooks
 export * from './ui/useFooter';
@@ -36,7 +35,7 @@ import * as ProjectListHooks from './portfolio/useProjectList';
 import * as ApiUtils from './utils/useApi';
 import * as AuthModules from './auth/useAuth';
 import * as FooterHooks from './ui/useFooter';
-import * as ServiceCategoriesHooks from './services/useServiceCategories';
+import * as ServiceHooks from './services';
 
 // Export them as grouped namespaces
 export const PortfolioHooks = {
@@ -45,10 +44,6 @@ export const PortfolioHooks = {
   ...ProjectFilterHooks,
   ...ProjectImageHooks,
   ...ProjectListHooks
-};
-
-export const ServiceHooks = {
-  ...ServiceCategoriesHooks
 };
 
 export const UtilHooks = {

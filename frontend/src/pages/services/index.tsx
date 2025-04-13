@@ -5,7 +5,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useServices, Service, useServiceCategories, ServiceCategory } from '@/hooks';
-import ServiceCard from '@/components/services/ServiceCard';
+import ServiceCard from '@/components/services/card/ServiceCard';
 import Link from 'next/link';
 import axios from 'axios';
 import { useQueryClient } from 'react-query';

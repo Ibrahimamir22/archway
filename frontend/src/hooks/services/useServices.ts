@@ -140,7 +140,10 @@ export const useServices = (options: UseServicesOptions = {}, prefetchedData?: S
 /**
  * Hook for fetching details of a specific service
  */
-export const useServiceDetail = (slug: string | undefined) => {
+export const useServiceDetail = (
+  slug: string | undefined, 
+  options: { enabled?: boolean } = {}
+) => {
   const router = useRouter();
   const { locale } = router;
   const API_BASE_URL = getApiBaseUrl();
@@ -161,7 +164,7 @@ export const useServiceDetail = (slug: string | undefined) => {
     ['serviceDetail', slug, locale],
     fetchService,
     {
-      enabled: !!slug, // Only run query if slug is provided
+      enabled: options.enabled !== undefined ? options.enabled && !!slug : !!slug, // Only run query if enabled and slug is provided
       retry: 2,
       refetchOnWindowFocus: false
     }

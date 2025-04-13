@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Button from '@/components/common/Button/index';
 import OptimizedImage from '@/components/common/OptimizedImage/index';
 import { useProjectImages } from '@/hooks';
+import DirectProjectImage from './DirectProjectImage';
 
 interface ProjectImage {
   id: string;
@@ -65,18 +66,15 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
       <div className={`col-span-2 ${isRtl ? 'text-right' : ''}`}>
         {/* Main Project Image */}
-        <div className="relative h-[500px] w-full overflow-hidden rounded-lg mb-6 bg-gray-100">
+        <div className="relative h-[500px] w-full overflow-hidden rounded-lg mb-6 bg-gray-100" suppressHydrationWarning>
           {displayImage ? (
-            <OptimizedImage
-              src={getImageSrc(displayImage)}
-              alt={displayImage.alt || title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
-              priority={true}
-              onError={() => handleImageError(displayImage.id)}
-              onLoad={() => handleImageLoad(displayImage.id)}
-            />
+            <div className="w-full h-full">
+              <DirectProjectImage
+                src={getImageSrc(displayImage)}
+                alt={displayImage.alt || title}
+                className="w-full h-full object-cover"
+              />
+            </div>
           ) : (
             <div className="flex items-center justify-center h-full text-gray-400">
               <p>{t('noImageAvailable')}</p>

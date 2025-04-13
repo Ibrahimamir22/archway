@@ -5,8 +5,8 @@ import { useTranslation } from 'next-i18next';
 import { Service, fixImageUrl } from '@/hooks';
 import { useQueryClient } from 'react-query';
 import axios from 'axios';
-import { getApiBaseUrl } from '@/utils/urls';
-import DirectServiceImage from './DirectServiceImage';
+import { getApiBaseUrl, validateServiceSlug, validateProjectSlug } from '@/utils/urls';
+import DirectServiceImage from './common/DirectServiceImage';
 
 // Global tracking for loaded service images
 const loadedServiceImages = typeof window !== 'undefined' ? new Set<string>() : new Set();
@@ -27,6 +27,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [isPreloaded, setIsPreloaded] = useState(false);
+  const [isValidated, setIsValidated] = useState(false);
+  const [isValidService, setIsValidService] = useState(true);
   const queryClient = useQueryClient();
   const preloadDivRef = useRef<HTMLDivElement | null>(null);
 
@@ -39,6 +41,36 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   const handleMouseLeave = () => {
     setIsHovering(false);
   };
+
+  // Validate service slug to make sure we don't have a collision
+  useEffect(() => {
+    // Only validate once
+    if (isValidated || !service.slug) return;
+
+    const validateLink = async () => {
+      try {
+        // First check if it's a valid service
+        const isService = await validateServiceSlug(service.slug, router.locale);
+        
+        // If not a service, check if it's a project (potential collision)
+        if (!isService) {
+          const isProject = await validateProjectSlug(service.slug, router.locale);
+          
+          // Mark as invalid service if it's actually a project
+          if (isProject) {
+            console.warn(`Service slug "${service.slug}" collides with a project slug`);
+            setIsValidService(false);
+          }
+        }
+        
+        setIsValidated(true);
+      } catch (error) {
+        console.error("Error validating service:", error);
+      }
+    };
+    
+    validateLink();
+  }, [service.slug, router.locale, isValidated]);
 
   // Get image source without any transformations for consistency
   const getImageSrc = (): string => {
@@ -85,6 +117,29 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     prefetchData();
   }, [service.slug, router.locale, queryClient, service.cover_image_url, service.image_url]);
   
+  // Custom link handler to make sure we're going to the right place
+  const handleServiceClick = async (e: React.MouseEvent) => {
+    // If we've already checked and it's not a valid service, prevent default routing
+    if (isValidated && !isValidService) {
+      e.preventDefault();
+      
+      // Try to find the correct route using the API
+      try {
+        // Check if it's a project with the same slug
+        const isProject = await validateProjectSlug(service.slug, router.locale);
+        if (isProject) {
+          router.push(`/portfolio/${service.slug}`);
+          return;
+        }
+      } catch (error) {
+        console.error("Error validating route:", error);
+      }
+      
+      // If all else fails, just go to services page
+      router.push('/services');
+    }
+  };
+  
   // Determine icon to use
   const getIcon = () => {
     if (service.icon) {
@@ -117,7 +172,11 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <Link href={`/services/${service.slug}`} prefetch={false}>
+      <Link 
+        href={`/services/${service.slug}`} 
+        prefetch={false}
+        onClick={handleServiceClick}
+      >
         <div className="relative h-48 w-full">
           {/* Use our special Direct Service Image component */}
           <DirectServiceImage 
@@ -147,6 +206,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
               href={`/services/${service.slug}`}
               className="text-xl font-semibold text-gray-900 hover:text-brand-blue"
               prefetch={false}
+              onClick={handleServiceClick}
             >
               {service.title}
             </Link>
@@ -180,6 +240,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
             href={`/services/${service.slug}`}
             className="text-brand-blue-light font-medium hover:underline inline-flex items-center"
             prefetch={false}
+            onClick={handleServiceClick}
           >
             {isRtl ? (
               <>

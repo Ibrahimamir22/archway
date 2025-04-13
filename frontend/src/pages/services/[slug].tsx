@@ -7,7 +7,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useServiceDetail, Service, fixImageUrl } from '@/hooks';
 import Link from 'next/link';
 import OptimizedImage from '@/components/common/OptimizedImage/index';
-import DirectServiceImage from '@/components/services/DirectServiceImage';
+import DirectServiceImage from '@/components/services/common/DirectServiceImage';
 import axios from 'axios';
 
 // Smart detection of environment to handle both browser and container contexts
@@ -42,21 +42,20 @@ const ServiceDetailPage: NextPage<ServiceDetailPageProps> = ({ initialService })
   const isRtl = router.locale === 'ar';
   const { slug } = router.query;
   
-  // Use the hook to fetch service details with caching
+  // Fetch service data
   const { service, loading, error } = useServiceDetail(
-    typeof slug === 'string' ? slug : undefined
+    typeof slug === 'string' ? slug : undefined,
+    { 
+      enabled: true,
+      initialData: initialService 
+    }
   );
   
-  // Fallback for handling direct access to the page
-  useEffect(() => {
-    // If we have an error and we're mounting the component, this might be a direct access case
-    if (error && typeof window !== 'undefined') {
-      console.error('Error fetching service details:', error);
-    }
-  }, [error]);
+  // Use either the fetched service or the initial service from SSG
+  const serviceData = service || initialService;
   
   // Show loading state while page is being generated or data is being fetched
-  if ((router.isFallback || loading) && !service && !initialService) {
+  if ((router.isFallback || loading) && !serviceData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-blue"></div>
@@ -66,7 +65,7 @@ const ServiceDetailPage: NextPage<ServiceDetailPageProps> = ({ initialService })
   }
   
   // Show error state
-  if (error && !service && !initialService) {
+  if (error && !serviceData) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <p className="text-red-500 mb-4">{error}</p>
@@ -79,9 +78,6 @@ const ServiceDetailPage: NextPage<ServiceDetailPageProps> = ({ initialService })
       </div>
     );
   }
-  
-  // Use either the fetched service or the initial service from SSG
-  const serviceData = service || initialService;
   
   // If somehow we still don't have data, show a not found message
   if (!serviceData) {
@@ -171,7 +167,10 @@ const ServiceDetailPage: NextPage<ServiceDetailPageProps> = ({ initialService })
               {/* Left Column - Service Description */}
               <div className={`lg:col-span-2 ${isRtl ? 'rtl text-right' : ''}`}>
                 {(serviceData.image_url || serviceData.image) && (
-                  <div className="relative h-96 w-full mb-8 rounded-lg overflow-hidden">
+                  <div 
+                    className="relative h-96 w-full mb-8 rounded-lg overflow-hidden" 
+                    suppressHydrationWarning
+                  >
                     {/* Use DirectServiceImage for consistent rendering */}
                     <DirectServiceImage
                       src={getImageSrc()}
@@ -327,16 +326,31 @@ export const getStaticProps: GetStaticProps<ServiceDetailPageProps> = async ({
     const urlParams = new URLSearchParams();
     urlParams.append('lang', locale);
     
-    const response = await axios.get(`${apiBaseUrl}/services/${paramSlug}/?${urlParams.toString()}`);
-    const service = response.data;
-    
-    return {
-      props: {
-        ...(await serverSideTranslations(locale, ['common'])),
-        initialService: service,
-      },
-      revalidate: 60, // Re-generate page every 60 seconds if requested
-    };
+    try {
+      const response = await axios.get(`${apiBaseUrl}/services/${paramSlug}/?${urlParams.toString()}`);
+      const service = response.data;
+      
+      if (!service || !service.id) {
+        return {
+          notFound: true,
+          props: {} // Required by TypeScript
+        };
+      }
+      
+      return {
+        props: {
+          ...(await serverSideTranslations(locale, ['common'])),
+          initialService: service,
+        },
+        revalidate: 60, // Re-generate page every 60 seconds if requested
+      };
+    } catch (error) {
+      // Service not found
+      return {
+        notFound: true,
+        props: {} // Required by TypeScript
+      };
+    }
   } catch (error) {
     console.error('Error fetching service data:', error);
     return {

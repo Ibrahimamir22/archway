@@ -2,6 +2,8 @@
  * URL and API related utilities
  */
 
+import axios from 'axios';
+
 /**
  * Core URL normalization function that handles common URL transformations
  * @param url The URL to normalize
@@ -57,7 +59,11 @@ export const normalizeImageUrl = (url: string): string => {
  * Less strict than normalizeImageUrl - doesn't check for HTTP protocol
  */
 export const fixImageUrl = (url: string): string => {
-  return normalizeUrl(url, { useDefaultImage: true });
+  if (!url) return '';
+  if (url.includes('backend:8000')) {
+    return url.replace('backend:8000', 'localhost:8000');
+  }
+  return url;
 };
 
 /**
@@ -80,16 +86,73 @@ export const getApiBaseUrl = (): string => {
   const configuredUrl = process.env.NEXT_PUBLIC_API_URL || '';
   
   if (configuredUrl) {
-    // In browser context, we must use localhost:8000 instead of backend:8000
-    // because browsers can't access Docker container names
-    if (isBrowser && configuredUrl.includes('backend:8000')) {
-      return configuredUrl.replace('backend:8000', 'localhost:8000');
+    // If we're in a browser and the URL contains 'backend', replace with 'localhost'
+    if (isBrowser && configuredUrl.includes('backend')) {
+      return configuredUrl.replace('backend', 'localhost');
     }
     return configuredUrl;
   }
   
-  // Default fallback - browsers always need to use localhost
-  return isBrowser
+  // Default fallback - use backend for server-side, localhost for client-side
+  return isBrowser 
     ? 'http://localhost:8000/api/v1' 
     : 'http://backend:8000/api/v1';
+};
+
+/**
+ * Validates if a slug belongs to a service
+ * Returns true if it's a service, false if not
+ */
+export const validateServiceSlug = async (slug: string, locale = 'en'): Promise<boolean> => {
+  if (!slug) return false;
+  
+  try {
+    const API_BASE_URL = getApiBaseUrl();
+    const params = new URLSearchParams();
+    params.append('lang', locale);
+    
+    const response = await axios.get(`${API_BASE_URL}/services/${slug}/?${params.toString()}`);
+    return !!(response.data && response.data.id);
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
+ * Validates if a slug belongs to a project
+ * Returns true if it's a project, false if not
+ */
+export const validateProjectSlug = async (slug: string, locale = 'en'): Promise<boolean> => {
+  if (!slug) return false;
+  
+  try {
+    const API_BASE_URL = getApiBaseUrl();
+    const params = new URLSearchParams();
+    params.append('lang', locale);
+    
+    const response = await axios.get(`${API_BASE_URL}/projects/${slug}/?${params.toString()}`);
+    return !!(response.data && response.data.id);
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
+ * Get the correct route for a slug based on content type
+ */
+export const getCorrectRoute = async (slug: string, locale = 'en'): Promise<string> => {
+  if (!slug) return '/';
+  
+  // Try service first since that was the original intended routing
+  if (await validateServiceSlug(slug, locale)) {
+    return `/services/${slug}`;
+  }
+  
+  // Then try project
+  if (await validateProjectSlug(slug, locale)) {
+    return `/portfolio/${slug}`;
+  }
+  
+  // Default to home if neither
+  return '/';
 }; 

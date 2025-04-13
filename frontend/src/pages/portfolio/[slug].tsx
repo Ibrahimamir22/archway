@@ -16,34 +16,32 @@ import {
 import ProjectHeader from '@/components/portfolio/ProjectHeader';
 import ProjectDetails from '@/components/portfolio/ProjectDetails';
 import ProjectGallery from '@/components/portfolio/ProjectGallery';
-
-// Define custom hooks directly in this file until we can create proper hook files
-const useProjectDetail = (slug: string) => {
-  const [project, setProject] = React.useState<ProjectDetail | null>(null);
-  const [loading, setLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    if (!slug) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    // API call logic would go here
-    // For now just simulate loading
-    setTimeout(() => {
-      setLoading(false);
-    }, 500);
-  }, [slug]);
-
-  return { project, loading };
-};
+import { useProjectDetail, useServiceDetail } from '@/hooks';
+import DirectProjectImage from '@/components/portfolio/DirectProjectImage';
 
 const getApiBaseUrl = () => {
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+  // Check if we're in a browser environment
+  const isBrowser = typeof window !== 'undefined';
+  
+  // Get the configured API URL (from environment variables)
+  const configuredUrl = process.env.NEXT_PUBLIC_API_URL;
+  
+  if (configuredUrl) {
+    // If we're in a browser and the URL contains 'backend', replace with 'localhost'
+    if (isBrowser && configuredUrl.includes('backend')) {
+      return configuredUrl.replace('backend', 'localhost');
+    }
+    return configuredUrl;
+  }
+  
+  // Default fallback - use backend for server-side, localhost for client-side
+  return isBrowser 
+    ? 'http://localhost:8000/api/v1' 
+    : 'http://backend:8000/api/v1';
 };
 
 const normalizeImageUrl = (url: string) => {
+  if (!url) return '/images/project-placeholder.jpg';
   if (url.startsWith('http')) return url;
   return url.startsWith('/') ? url : `/${url}`;
 };
@@ -78,11 +76,24 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
   const { t, i18n } = useTranslation('common');
   const router = useRouter();
   const { slug } = router.query;
-
+  
   // Use the useProjectDetail hook to fetch the project
-  const { project: fetchedProject, loading } = useProjectDetail(
+  const { project: fetchedProject, loading, error } = useProjectDetail(
     typeof slug === 'string' ? slug : ''
   );
+  
+  // Check if this slug exists as a service to handle slug collisions
+  const { service: serviceWithSameSlug } = useServiceDetail(
+    typeof slug === 'string' ? slug : undefined,
+    { enabled: !!error || !fetchedProject }
+  );
+  
+  // Redirect to service page if this is actually a service slug
+  React.useEffect(() => {
+    if (serviceWithSameSlug && !fetchedProject && typeof slug === 'string') {
+      router.replace(`/services/${slug}`);
+    }
+  }, [serviceWithSameSlug, fetchedProject, slug, router]);
   
   // Use fetched project or fall back to initial data
   const project = fetchedProject || initialProject;
@@ -99,6 +110,16 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
     return (
       <div className="container mx-auto px-4 py-12">
         <LoadingState type="card" />
+      </div>
+    );
+  }
+  
+  // If we know this is a service slug, show a loading indicator while redirecting
+  if (serviceWithSameSlug && !fetchedProject) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-blue"></div>
+        <span className="ml-3">{t('common.redirecting')}</span>
       </div>
     );
   }
@@ -148,7 +169,7 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
         )}
       </Head>
       
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-12" suppressHydrationWarning>
         {/* Project Header */}
         <ProjectHeader 
           title={project.title}
@@ -249,75 +270,97 @@ export const getStaticProps: GetStaticProps = async ({ params, locale = 'en' }) 
     const projectParams = new URLSearchParams();
     projectParams.append('lang', locale);
     
-    const response = await axios.get(`${API_BASE_URL}/projects/${slug}/?${projectParams.toString()}`);
-    const projectData = response.data;
-    
-    // Process images properly at build time with normalized URLs
-    const images = projectData.images || [];
-    let safeImages = images.map((img: any, index: number) => {
-      // Get image source with explicit fallback for missing sources
-      let imgSrc = img.image_url || img.image;
+    try {
+      const response = await axios.get(`${API_BASE_URL}/projects/${slug}/?${projectParams.toString()}`);
+      const projectData = response.data;
       
-      // Use fallback if image source is missing
-      if (!imgSrc) {
-        imgSrc = `/images/project-${(index % 5) + 1}.jpg`;
-      }
+      // Process images properly at build time with normalized URLs
+      const images = projectData.images || [];
+      let safeImages = images.map((img: any, index: number) => {
+        // Get image source with explicit fallback for missing sources
+        let imgSrc = img.image_url || img.image;
+        
+        // Use fallback if image source is missing
+        if (!imgSrc) {
+          imgSrc = `/images/project-${(index % 5) + 1}.jpg`;
+        }
+        
+        return {
+          id: img.id || `image-${index + 1}`,
+          src: normalizeImageUrl(imgSrc),
+          alt: img.alt_text || `${projectData.title} image ${index + 1}`,
+          isCover: img.is_cover
+        };
+      });
+      
+      const project: ProjectDetail = {
+        id: projectData.id || slug,
+        title: projectData.title || 'Project',
+        slug: projectData.slug || slug,
+        description: projectData.description || 'No description available',
+        category: {
+          name: projectData.category?.name || 'Uncategorized',
+          slug: projectData.category?.slug || 'uncategorized'
+        },
+        client: projectData.client || undefined,
+        location: projectData.location || undefined,
+        area: projectData.area || undefined,
+        completedDate: projectData.completed_date || undefined,
+        tags: Array.isArray(projectData.tags) ? projectData.tags : [],
+        images: safeImages || []
+      };
       
       return {
-        id: img.id || `image-${index + 1}`,
-        src: normalizeImageUrl(imgSrc),
-        alt: img.alt_text || `${projectData.title} image ${index + 1}`,
-        isCover: img.is_cover
+        props: {
+          initialProject: project,
+          ...(await serverSideTranslations(locale, ['common'])),
+        },
+        revalidate: 300 // Revalidate the page every 5 minutes
       };
-    });
-    
-    const project: ProjectDetail = {
-      id: projectData.id || slug,
-      title: projectData.title || 'Project',
-      slug: projectData.slug || slug,
-      description: projectData.description || 'No description available',
-      category: {
-        name: projectData.category?.name || 'Uncategorized',
-        slug: projectData.category?.slug || 'uncategorized'
-      },
-      client: projectData.client || undefined,
-      location: projectData.location || undefined,
-      area: projectData.area || undefined,
-      completedDate: projectData.completed_date || undefined,
-      tags: Array.isArray(projectData.tags) ? projectData.tags : [],
-      images: safeImages || []
-    };
-    
-    return {
-      props: {
-        initialProject: project,
-        ...(await serverSideTranslations(locale, ['common'])),
-      },
-      revalidate: 300 // Revalidate the page every 5 minutes
-    };
+    } catch (projectError) {
+      // Check if this might be a service slug instead
+      try {
+        const serviceResponse = await axios.get(`${API_BASE_URL}/services/${slug}/?${projectParams.toString()}`);
+        if (serviceResponse.data && serviceResponse.data.id) {
+          // This is a service, not a project - set notFound to trigger a redirect in client
+          return {
+            notFound: true,
+            props: {} // Required by TypeScript
+          };
+        }
+      } catch (serviceError) {
+        // Not a service either, continue with fallback
+      }
+      
+      // If API call fails, fall back to mock data
+      const mockProject: ProjectDetail = {
+        id: '1',
+        title: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+        slug,
+        description: 'Project description unavailable',
+        category: {
+          name: 'Unknown',
+          slug: 'unknown'
+        },
+        tags: [],
+        images: []
+      };
+      
+      return { 
+        props: {
+          initialProject: mockProject,
+          ...(await serverSideTranslations(locale, ['common'])),
+        },
+        revalidate: 60
+      };
+    }
   } catch (error: any) {
     console.error(`Error fetching project details for ${slug}:`, error.message || 'Unknown error');
     
-    // If API call fails, fall back to mock data
-    const mockProject: ProjectDetail = {
-      id: '1',
-      title: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-      slug,
-      description: 'Project description unavailable',
-      category: {
-        name: 'Unknown',
-        slug: 'unknown'
-      },
-      tags: [],
-      images: []
-    };
-    
-    return { 
-      props: {
-        initialProject: mockProject,
-        ...(await serverSideTranslations(locale, ['common'])),
-      },
-      revalidate: 60
+    // Return 404 for serious errors
+    return {
+      notFound: true,
+      props: {} // Required by TypeScript
     };
   }
 };

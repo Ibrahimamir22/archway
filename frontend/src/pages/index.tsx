@@ -11,8 +11,12 @@ import axios from 'axios';
 import OptimizedImage from '../components/common/OptimizedImage/index';
 import { GetStaticProps } from 'next';
 import { dehydrate, QueryClient } from 'react-query';
-import DirectServiceImage from '../components/services/DirectServiceImage';
+import DirectServiceImage from '../components/services/common/DirectServiceImage';
 import DirectProjectImage from '../components/portfolio/DirectProjectImage';
+import { getApiBaseUrl, validateServiceSlug, validateProjectSlug, getCorrectRoute } from '@/utils/urls';
+import ServiceLink from '@/components/services/common/ServiceLink';
+import ServiceIcon from '@/components/services/icons/ServiceIcon';
+import { getServiceImageSrc } from '@/utils/services';
 
 // Define fallback project interface
 interface FallbackProject {
@@ -22,27 +26,6 @@ interface FallbackProject {
   image: string;
   id?: string;
 }
-
-// Smart detection of environment to handle both browser and container contexts
-const getApiBaseUrl = () => {
-  // Check if we're in a browser environment
-  const isBrowser = typeof window !== 'undefined';
-  
-  // Get the configured API URLs (from environment variables)
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-  
-  if (apiUrl) {
-    // When in browser, use the NEXT_PUBLIC_API_URL directly
-    // This should point to localhost:8000 for browser access
-    return apiUrl;
-  }
-  
-  // Default fallback - use appropriate URL based on environment
-  return isBrowser 
-    ? 'http://localhost:8000/api/v1' 
-    : 'http://backend:8000/api/v1';
-};
 
 interface HomeProps {
   initialProjects: Project[];
@@ -88,7 +71,7 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
     initialProjects
   );
   
-  // Fetch services data
+  // Fetch services data - using the new useServicesList hook
   const { services } = useServices(
     { featured: true, limit: 3 },
     initialServices
@@ -109,33 +92,6 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
     }
     
     return '/images/placeholder.jpg';
-  };
-  
-  // Function to get appropriate icon for services
-  const getServiceIcon = (service: Service): JSX.Element => {
-    const iconMap: { [key: string]: JSX.Element } = {
-      home: (
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-      ),
-      building: (
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-      ),
-      image: (
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-      ),
-      consultation: (
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-      ),
-      default: (
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-      )
-    };
-    
-    if (service.icon && iconMap[service.icon]) {
-      return iconMap[service.icon];
-    }
-    
-    return iconMap.default;
   };
 
   return (
@@ -250,29 +206,34 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
               {services.map((service, index) => (
                 <div key={service.id || `service-${index}`} className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden ${isRtl ? 'text-right' : ''}`}>
                   {/* Service Image */}
-                  <Link href={`/services/${service.slug}`}>
+                  <ServiceLink slug={service.slug}>
                     <div className="relative h-48 w-full overflow-hidden">
                       <DirectServiceImage
-                        src={service.image_url || service.cover_image_url || `/images/service-placeholder.jpg`}
+                        src={getServiceImageSrc(service)}
                         alt={getServiceTitle(service)}
                         className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                       />
                     </div>
-                  </Link>
+                  </ServiceLink>
                   
                   <div className="p-6">
                     <div className={`w-12 h-12 bg-brand-blue-light/10 rounded-full flex items-center justify-center mb-4 ${isRtl ? 'ms-auto' : ''}`}>
-                      <svg className="w-6 h-6 text-brand-blue-light" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        {getServiceIcon(service)}
-                      </svg>
+                      <ServiceIcon 
+                        iconName={service.icon}
+                        categorySlug={service.category?.slug}
+                        className="w-6 h-6 text-brand-blue-light"
+                      />
                     </div>
                     <h3 className="text-xl font-bold mb-3">{getServiceTitle(service)}</h3>
                     <p className="text-gray-600 mb-4 line-clamp-3">
                       {getServiceDescription(service)}
                     </p>
-                    <Link href={`/services/${service.slug}`} className={`text-brand-blue-light font-medium hover:underline ${isRtl ? 'block text-right' : ''}`}>
+                    <ServiceLink 
+                      slug={service.slug}
+                      className={`text-brand-blue-light font-medium hover:underline ${isRtl ? 'block text-right' : ''}`}
+                    >
                       {t('home.learnMore')} {isRtl ? '←' : '→'}
-                    </Link>
+                    </ServiceLink>
                   </div>
                 </div>
               ))}

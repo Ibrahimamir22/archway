@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import { useNewsletterSubscription } from '../../../hooks/ui/useFooter';

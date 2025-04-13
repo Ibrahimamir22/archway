@@ -20,10 +20,12 @@ const config: Config = {
         'brand-gray': '#718096',
       },
       fontFamily: {
-        heading: ['Playfair Display', 'Noto Serif Arabic', 'serif'],
-        body: ['Nunito Sans', 'Noto Sans Arabic', 'sans-serif'],
-        cairo: ['Cairo', 'sans-serif'],
-        tajawal: ['Tajawal', 'sans-serif'],
+        heading: ['var(--font-playfair)', 'Noto Serif Arabic', 'serif'],
+        body: ['var(--font-nunito)', 'Noto Sans Arabic', 'sans-serif'],
+        cairo: ['var(--font-cairo)', 'sans-serif'],
+        tajawal: ['var(--font-tajawal)', 'sans-serif'],
+        nunito: ['var(--font-nunito)', 'sans-serif'],
+        inter: ['var(--font-inter)', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
@@ -45,10 +47,20 @@ const config: Config = {
           '100%': { transform: 'scale(1)' },
         },
       },
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '1rem',
+          sm: '1.5rem',
+          lg: '2rem',
+        },
+      },
     },
   },
   plugins: [
+    // @ts-ignore
     require('tailwindcss-rtl'),
   ],
-};
+} as Config;
+
 export default config; 

@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const { i18n } = require('./next-i18next.config');
+const path = require('path');
 
 const nextConfig = {
   i18n,
@@ -19,6 +20,16 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384], // Additional sizes for smaller images
     loader: 'custom',
     loaderFile: './src/utils/image-loader.js',
+  },
+  // Add webpack config for better module resolution
+  webpack: (config, { isServer }) => {
+    // Configure path aliases for cleaner imports
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname, 'src/'),
+    };
+    
+    return config;
   },
   async rewrites() {
     return [

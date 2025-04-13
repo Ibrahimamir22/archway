@@ -482,4 +482,51 @@ declare module '@/components/common/Modal' {
     rtl?: boolean;
     [key: string]: any;
   }
+}
+
+// Add Navbar and Footer component declarations
+declare module '@/components/common/Navbar/index' {
+  import { FC } from 'react';
+  const Navbar: FC;
+  export default Navbar;
+}
+
+declare module '@/components/common/Footer/index' {
+  import { FC } from 'react';
+  const Footer: FC;
+  export default Footer;
+}
+
+// Add LoadingState component declaration
+declare module '@/components/common/LoadingState' {
+  import { FC } from 'react';
+  interface LoadingStateProps {
+    type?: 'spinner' | 'dots' | 'text';
+    className?: string;
+    [key: string]: any;
+  }
+  const LoadingState: FC<LoadingStateProps>;
+  export default LoadingState;
+}
+
+declare module '@/components/common/LoadingState/index' {
+  import LoadingState from '@/components/common/LoadingState';
+  export default LoadingState;
+}
+
+// Add ErrorMessage component declaration
+declare module '@/components/common/ErrorMessage' {
+  import { FC } from 'react';
+  interface ErrorMessageProps {
+    message?: string;
+    className?: string;
+    [key: string]: any;
+  }
+  const ErrorMessage: FC<ErrorMessageProps>;
+  export default ErrorMessage;
+}
+
+declare module '@/components/common/ErrorMessage/index' {
+  import ErrorMessage from '@/components/common/ErrorMessage';
+  export default ErrorMessage;
 } 

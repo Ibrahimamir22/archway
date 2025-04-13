@@ -8,7 +8,46 @@ import { QueryClient, QueryClientProvider, DehydratedState } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { useState, useEffect } from 'react';
 import { Hydrate } from 'react-query/hydration';
+// Import optimized fonts
+import { Inter, Playfair_Display, Cairo, Nunito_Sans, Tajawal } from 'next/font/google';
 
+// Define fonts with subsets and weights
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-inter',
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-playfair',
+});
+
+const cairo = Cairo({
+  subsets: ['arabic'],
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-cairo',
+});
+
+const nunitoSans = Nunito_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-nunito',
+});
+
+const tajawal = Tajawal({
+  subsets: ['arabic'],
+  display: 'swap',
+  weight: ['300', '400', '500', '700'],
+  variable: '--font-tajawal',
+});
+
+// Extend AppProps with custom properties
 interface MyAppProps extends AppProps {
   pageProps: {
     dehydratedState?: DehydratedState;
@@ -89,10 +128,13 @@ function MyApp({ Component, pageProps }: MyAppProps) {
     };
   }, [router, queryClient]);
 
+  // Combine all font variables
+  const fontClasses = `${inter.variable} ${playfair.variable} ${cairo.variable} ${nunitoSans.variable} ${tajawal.variable}`;
+
   return (
     <QueryClientProvider client={queryClient}>
       <Hydrate state={pageProps.dehydratedState}>
-        <div dir={dir} className={`min-h-screen flex flex-col ${locale === 'ar' ? 'font-cairo' : 'font-body'}`}>
+        <div dir={dir} className={`${fontClasses} min-h-screen flex flex-col ${locale === 'ar' ? 'font-cairo' : 'font-nunito'}`}>
           <Navbar />
           <main className="flex-grow">
             <Component {...pageProps} />

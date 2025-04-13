@@ -36,12 +36,13 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     "strictNullChecks": false,
-    "ignoreDeprecations": "5.0"
+    "ignoreDeprecations": "5.0",
+    "allowSyntheticDefaultImports": true,
+    "checkJs": false,
+    "noErrorTruncation": true
   },
   "include": [
     "next-env.d.ts",
@@ -52,7 +53,8 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     ".next/types/**/*.ts",
-    "src/@types/*.d.ts"
+    "src/@types/*.d.ts",
+    "src/NoTypeScript.js"
   ],
   "exclude": [
     "node_modules"

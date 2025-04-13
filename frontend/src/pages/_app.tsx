@@ -9,7 +9,8 @@ import { ReactQueryDevtools } from 'react-query/devtools';
 import { useState, useEffect } from 'react';
 import { Hydrate } from 'react-query/hydration';
 // Import optimized fonts
-import { Inter, Playfair_Display, Cairo, Nunito_Sans, Tajawal } from 'next/font/google';
+import { Inter, Playfair_Display, Cairo, Tajawal } from 'next/font/google';
+import { Nunito_Sans } from 'next/font/google';
 
 // Define fonts with subsets and weights
 const inter = Inter({
@@ -60,63 +61,76 @@ function MyApp({ Component, pageProps }: MyAppProps) {
   const { locale } = router;
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
 
+  // Create a static QueryClient instance to prevent rerenders
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        retry: 2,
+        retry: 1,  // Reduce retries to speed up
         refetchOnWindowFocus: false,
-        staleTime: 60000, // 1 minute
+        staleTime: 300000, // 5 minutes instead of 1
+        cacheTime: 600000,  // 10 minutes
       },
     },
   }));
 
-  // Add a router change start event handler to preload data
+  // Improved route change handler with caching
   useEffect(() => {
+    // Prefetch common routes to reduce navigation delay
+    router.prefetch('/portfolio');
+    router.prefetch('/services');
+    router.prefetch('/about');
+    router.prefetch('/contact');
+
+    // Mounting status for memory leak prevention
+    let isMounted = true;
+    
     const handleRouteChangeStart = (url: string) => {
-      // Preload footer data for consistent experience across page transitions
-      queryClient.prefetchQuery(['footer', router.locale], async () => {
-        try {
-          // Smart detection of environment to handle both browser and container contexts
-          const isBrowser = typeof window !== 'undefined';
-          const configuredUrl = process.env.NEXT_PUBLIC_API_URL;
-          const API_BASE_URL = isBrowser && configuredUrl?.includes('backend')
-            ? configuredUrl.replace('backend', 'localhost')
-            : configuredUrl || (isBrowser ? 'http://localhost:8000/api/v1' : 'http://backend:8000/api/v1');
-          
-          const params = new URLSearchParams();
-          params.append('lang', router.locale || 'en');
-          
-          // Dynamic import axios only when needed
-          const { default: axios } = await import('axios');
-          const response = await axios.get(`${API_BASE_URL}/footer/?${params.toString()}`);
-          return response.data;
-        } catch (error) {
-          console.error('Error prefetching footer data:', error);
-          return null;
-        }
-      });
+      // Skip if unmounted
+      if (!isMounted) return;
       
-      // Look for portfolio detail page navigation
+      // Set loadingTimeout to null initially
+      if (window.loadingTimeout) {
+        clearTimeout(window.loadingTimeout);
+        window.loadingTimeout = null;
+      }
+      
+      // Check cached data before prefetching
+      if (!queryClient.getQueryData(['footer', router.locale])) {
+        queryClient.prefetchQuery(['footer', router.locale], async () => {
+          try {
+            // Use consistent API URL
+            const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
+              (typeof window !== 'undefined' ? 'http://localhost:8000/api/v1' : 'http://backend:8000/api/v1');
+            
+            const params = new URLSearchParams();
+            params.append('lang', router.locale || 'en');
+            
+            // Efficient dynamic import
+            const axios = (await import('axios')).default;
+            const response = await axios.get(`${API_BASE_URL}/footer/?${params.toString()}`);
+            return response.data;
+          } catch (error) {
+            console.error('Error prefetching footer data:', error);
+            return null;
+          }
+        });
+      }
+      
+      // Only preload crucial portfolio details
       if (url.includes('/portfolio/') && !url.endsWith('/portfolio/')) {
-        // Extract slug
-        const slug = url.split('/portfolio/')[1].split('/')[0].split('?')[0];
+        const slug = url.split('/portfolio/')[1]?.split(/[/?#]/)[0];
+        if (!slug) return;
         
-        console.log(`Navigation to project detected: ${slug}`);
-        
-        // If we have the project data in cache, force preload its images
+        // Check cache first
         const cachedData = queryClient.getQueryData(['projectDetail', slug, router.locale]) as any;
         
-        if (cachedData && cachedData.images && Array.isArray(cachedData.images)) {
-          console.log(`Found cached data for ${slug}, preloading ${cachedData.images.length} images`);
-          
-          // Force preload the images
-          cachedData.images.forEach((image: any) => {
-            if (image && image.src) {
-              const img = new Image();
-              img.src = image.src;
-              console.log(`Pre-navigation preload: ${image.src}`);
-            }
-          });
+        if (cachedData?.images?.length) {
+          // Preload only the first image to reduce load time
+          const firstImage = cachedData.images[0];
+          if (firstImage?.src) {
+            const img = new Image();
+            img.src = firstImage.src;
+          }
         }
       }
     };
@@ -124,11 +138,34 @@ function MyApp({ Component, pageProps }: MyAppProps) {
     router.events.on('routeChangeStart', handleRouteChangeStart);
     
     return () => {
+      isMounted = false;
       router.events.off('routeChangeStart', handleRouteChangeStart);
     };
   }, [router, queryClient]);
 
-  // Combine all font variables
+  // Fix title element array warning
+  useEffect(() => {
+    const fixTitleElement = () => {
+      const titleElement = document.querySelector('title');
+      if (titleElement && Array.isArray(titleElement.childNodes) && titleElement.childNodes.length > 1) {
+        const titleText = titleElement.textContent;
+        titleElement.textContent = titleText;
+      }
+    };
+    
+    const handleRouteChangeComplete = () => {
+      fixTitleElement();
+    };
+    
+    fixTitleElement();
+    router.events.on('routeChangeComplete', handleRouteChangeComplete);
+    
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChangeComplete);
+    };
+  }, [router]);
+
+  // Combine font variables
   const fontClasses = `${inter.variable} ${playfair.variable} ${cairo.variable} ${nunitoSans.variable} ${tajawal.variable}`;
 
   return (
@@ -145,6 +182,13 @@ function MyApp({ Component, pageProps }: MyAppProps) {
       </Hydrate>
     </QueryClientProvider>
   );
+}
+
+// Add this to the global Window interface
+declare global {
+  interface Window {
+    loadingTimeout: NodeJS.Timeout | null;
+  }
 }
 
 export default appWithTranslation(MyApp); 

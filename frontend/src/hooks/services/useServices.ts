@@ -2,7 +2,7 @@ import { useInfiniteQuery, useQuery } from 'react-query';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { ServiceCategory } from './useServiceCategories';
-import { getApiBaseUrl, fixImageUrl } from '../utils/useApi';
+import { getApiBaseUrl, fixImageUrl } from '../../utils/urls';
 
 export interface ServiceFeature {
   id: string;

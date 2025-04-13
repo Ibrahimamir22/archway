@@ -200,5 +200,39 @@
   "interestedInThisStyle": "Interested in this style?",
   "contactUsForSimilarProject": "Contact us to get a similar project for your space",
   "getInTouch": "Get in Touch",
-  "noImageAvailable": "No image available"
+  "noImageAvailable": "No image available",
+  "projects": {
+    "madinaty-villa": "Madinaty Villa",
+    "urban-apartment": "Urban Apartment",
+    "office-renovation": "Office Renovation",
+    "madinaty": "Madinaty"
+  },
+  "serviceTypes": {
+    "interior-design": "Interior Design",
+    "interior-architecture": "Interior Architecture",
+    "3d-visualization": "3D Visualization",
+    "furniture-design": "Furniture Design",
+    "lighting-design": "Lighting Design",
+    "renovation": "Renovation",
+    "madinaty": "Madinaty",
+    "descriptions": {
+      "interior-design": "Comprehensive interior design that combines functionality and aesthetics to transform your space into an ideal environment.",
+      "interior-architecture": "Specialized interior engineering solutions to reimagine and enhance your spaces.",
+      "3d-visualization": "See your project before construction begins through realistic 3D visualizations.",
+      "furniture-design": "Custom furniture designs that combine elegance, comfort, and practical functions.",
+      "lighting-design": "Innovative lighting solutions to enhance the atmosphere and function in your space.",
+      "renovation": "Comprehensive renovation services to renew your home or workspace.",
+      "madinaty": "Modern designs in Madinaty that combine comfort and elegance"
+    }
+  },
+  "categories": {
+    "residential": "Residential",
+    "commercial": "Commercial"
+  },
+  "descriptions": {
+    "madinaty-villa": "Luxury villa design in Madinaty featuring elegant interior design, open living spaces, and distinctive finishing touches that blend comfort with sophisticated aesthetics.",
+    "urban-apartment": "Compact apartment design that maximizes space and functionality in urban environments with smart storage solutions and multifunctional furniture.",
+    "office-renovation": "Professional workspace designed for productivity and collaboration with comfortable solutions, ideal lighting, and flexible meeting areas.",
+    "madinaty": "Distinctive interior designs for Madinaty homes that reflect contemporary lifestyle with elegant touches"
+  }
 } 

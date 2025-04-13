@@ -23,41 +23,35 @@ class MyDocument extends Document {
       <Html lang={locale} dir={dir}>
         {/* @ts-ignore */}
         <Head>
-          <link 
-            href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Nunito+Sans:wght@300;400;500;600;700&family=Noto+Serif+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Tajawal:wght@300;400;500;700&family=Cairo:wght@300;400;500;600;700&display=swap" 
-            rel="stylesheet" 
-          />
-          {/* Early URL normalization script */}
+          {/* Removed external Google Fonts link as fonts are already loaded via next/font in _app.tsx */}
+          {/* Optimized URL normalization script */}
           <script dangerouslySetInnerHTML={{
             __html: `
-              // This script runs very early to normalize backend URLs
+              // More efficient backend URL normalization
               (function() {
-                // Normalize image URLs in meta tags and preloaded resources
-                function fixBackendUrls() {
-                  // Find all link elements with rel=preload
-                  const preloads = document.querySelectorAll('link[rel="preload"]');
-                  preloads.forEach(link => {
-                    const href = link.getAttribute('href');
-                    if (href && href.includes('backend:8000')) {
-                      link.setAttribute('href', href.replace(/backend:8000/g, 'localhost:8000'));
-                    }
-                  });
+                if (typeof window !== 'undefined') {
+                  // Run only once using a more efficient selector
+                  const fixBackendUrls = () => {
+                    const elements = document.querySelectorAll('link[rel="preload"][href*="backend:8000"], meta[content*="backend:8000"]');
+                    elements.forEach(el => {
+                      if (el.hasAttribute('href')) {
+                        el.setAttribute('href', el.getAttribute('href').replace(/backend:8000/g, 'localhost:8000'));
+                      } else if (el.hasAttribute('content')) {
+                        el.setAttribute('content', el.getAttribute('content').replace(/backend:8000/g, 'localhost:8000'));
+                      }
+                    });
+                  };
                   
-                  // Fix image sources that might be in meta tags
-                  const metas = document.querySelectorAll('meta');
-                  metas.forEach(meta => {
-                    const content = meta.getAttribute('content');
-                    if (content && content.includes('backend:8000')) {
-                      meta.setAttribute('content', content.replace(/backend:8000/g, 'localhost:8000'));
-                    }
-                  });
+                  // Execute immediately
+                  fixBackendUrls();
+                  
+                  // Clean up the event listener after it runs once
+                  const onLoad = () => {
+                    fixBackendUrls();
+                    document.removeEventListener('DOMContentLoaded', onLoad);
+                  };
+                  document.addEventListener('DOMContentLoaded', onLoad);
                 }
-
-                // Run immediately
-                fixBackendUrls();
-                
-                // Also run when DOM is loaded
-                document.addEventListener('DOMContentLoaded', fixBackendUrls);
               })();
             `
           }} />

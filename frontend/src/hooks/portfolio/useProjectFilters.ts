@@ -2,7 +2,7 @@ import { useQuery } from 'react-query';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { Category, Tag } from './types';
-import { getApiBaseUrl } from '../utils/useApi';
+import { getApiBaseUrl } from '../../utils/urls';
 
 /**
  * Hook for fetching project categories

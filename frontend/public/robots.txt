@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Prevent indexing in development environment
+Host: localhost
+Disallow: /
+
+Host: 127.0.0.1
+Disallow: / 

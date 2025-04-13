@@ -2,7 +2,7 @@ import { useInfiniteQuery } from 'react-query';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { Project, UseProjectsOptions, ProjectsResponse } from './types';
-import { getApiBaseUrl } from '../utils/useApi';
+import { getApiBaseUrl } from '../../utils/urls';
 
 /**
  * Hook for fetching projects with pagination, filtering, and search

@@ -2,7 +2,7 @@ import { useQuery } from 'react-query';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { Project } from './types';
-import { getApiBaseUrl, fixImageUrl } from '../utils/useApi';
+import { getApiBaseUrl, fixImageUrl } from '../../utils/urls';
 
 /**
  * Hook for fetching details of a specific project

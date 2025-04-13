@@ -39,8 +39,8 @@ export const useApi = () => {
 
 // Re-export URL utilities for backward compatibility
 export { 
-  getApiBaseUrl, 
   normalizeImageUrl, 
   fixImageUrl, 
-  containsUUIDHash 
+  containsUUIDHash,
+  getApiBaseUrl 
 }; 

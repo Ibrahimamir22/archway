@@ -34,8 +34,16 @@ export const useProjectList = (options: UseProjectsOptions = {}, prefetchedData?
     }
     
     // Add explicit support for is_published filter
-    if (options.is_published !== undefined) {
-      params.append('is_published', options.is_published ? 'true' : 'false');
+    // When is_published is null, don't send any is_published parameter to the API
+    // This allows fetching both published and unpublished projects
+    if (options.is_published !== null) {
+      // Only append the parameter if it's not null, meaning we want to filter by published status
+      if (options.is_published !== undefined) {
+        params.append('is_published', options.is_published ? 'true' : 'false');
+      } else {
+        // Default behavior: only published projects (when is_published is undefined but not null)
+        params.append('is_published', 'true');
+      }
     }
     
     if (options.limit) {

@@ -52,6 +52,14 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
   const router = useRouter();
   const isRtl = router.locale === 'ar';
   
+  // Add state to track client-side hydration
+  const [isClient, setIsClient] = useState(false);
+  
+  // After mounting, set isClient to true
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
   // Get translated project title
   const getProjectTitle = (project: Project) => {
     return t(`projects.${project.slug}`, { defaultValue: project.title });
@@ -74,7 +82,7 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
   
   // Fetch projects data
   const { projects, loading, error } = useProjects(
-    { featured: true, limit: 3 },
+    { featured: true, limit: 3, is_published: true },
     initialProjects
   );
   
@@ -289,7 +297,21 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
               </p>
             </div>
             
-            {loading ? (
+            {/* Server-side rendering for loading state */}
+            {!isClient ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {Array(3).fill(0).map((_, index) => (
+                  <div key={`skeleton-${index}`} className="rounded-lg shadow-md bg-white">
+                    <div className="relative h-64 bg-gray-200"></div>
+                    <div className="p-6">
+                      <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                      <div className="h-4 w-1/3 bg-gray-200 rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : loading ? (
               // Show skeleton loaders while loading
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {Array(3).fill(0).map((_, index) => (
@@ -314,11 +336,8 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
                   {t('common.tryAgain')}
                 </button>
               </div>
-            ) : projects.length === 0 ? (
-              // Show placeholder projects when no real projects exist
-              <PlaceholderProjects count={3} />
-            ) : (
-              // Show real projects
+            ) : projects.length > 0 ? (
+              // Show real projects when they exist
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {projects.map((project, index) => (
                   <div key={project.id || `project-${index}`} className="group overflow-hidden rounded-lg shadow-md bg-white">
@@ -342,6 +361,9 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
                   </div>
                 ))}
               </div>
+            ) : (
+              // Show placeholder projects when no real ones exist
+              <PlaceholderProjects count={3} />
             )}
             
             <div className="text-center mt-12">
@@ -383,10 +405,10 @@ export const getStaticProps: GetStaticProps = async ({ locale = 'en' }) => {
     
     // Prefetch projects, services, and footer data in parallel
     await Promise.all([
-      // Prefetch featured projects
-      queryClient.prefetchQuery(['projects', { featured: true }, locale], async () => {
+      // Prefetch featured projects - explicitly only get published projects on server to match default client behavior
+      queryClient.prefetchQuery(['projects', { featured: true, is_published: true }, locale], async () => {
         const projectsResponse = await axios.get(
-          `${apiBaseUrl}/projects/?${params.toString()}&is_featured=true&limit=6`
+          `${apiBaseUrl}/projects/?${params.toString()}&is_featured=true&is_published=true&limit=6`
         );
         return projectsResponse.data;
       }),
@@ -409,7 +431,7 @@ export const getStaticProps: GetStaticProps = async ({ locale = 'en' }) => {
     ]);
     
     // Extract the prefetched data for direct use in the component
-    const projectsData = queryClient.getQueryData(['projects', { featured: true }, locale]) as any;
+    const projectsData = queryClient.getQueryData(['projects', { featured: true, is_published: true }, locale]) as any;
     const servicesData = queryClient.getQueryData(['services', { featured: true }, locale]) as any;
     
     const initialProjects = projectsData?.results || [];

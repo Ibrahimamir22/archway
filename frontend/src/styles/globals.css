@@ -53,7 +53,7 @@
     @apply mb-4 leading-relaxed;
   }
   a {
-    @apply text-brand-blue hover:text-opacity-80 transition-colors;
+    @apply text-brand-blue hover:text-brand-blue-light transition-colors;
   }
 }
 

@@ -138,6 +138,10 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
       <div className="min-h-screen">
         {/* Hero Section */}
         <section className="hero-section bg-brand-blue text-white py-20 md:py-32 relative">
+          {/* Add priority background image preloading */}
+          <Head>
+            <link rel="preload" as="image" href="/images/hero-bg.jpg" />
+          </Head>
           <div className="container-custom relative z-10">
             <div className={`text-center max-w-3xl mx-auto ${isRtl ? 'rtl' : ''}`}>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6">

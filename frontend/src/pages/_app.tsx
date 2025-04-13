@@ -2,8 +2,7 @@ import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
 import { appWithTranslation } from 'next-i18next';
-import Navbar from '@/components/common/Navbar/index';
-import Footer from '@/components/common/Footer/index';
+import dynamic from 'next/dynamic';
 import { QueryClient, QueryClientProvider, DehydratedState } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { useState, useEffect, useCallback } from 'react';
@@ -11,6 +10,10 @@ import { Hydrate } from 'react-query/hydration';
 // Import only the fonts that work correctly
 import { Inter, Playfair_Display, Cairo, Tajawal } from 'next/font/google';
 import Head from 'next/head';
+
+// Dynamically import components that aren't needed for initial paint
+const Navbar = dynamic(() => import('@/components/common/Navbar/index'), { ssr: true });
+const Footer = dynamic(() => import('@/components/common/Footer/index'), { ssr: true });
 
 // Define fonts with subsets and weights
 const inter = Inter({
@@ -41,6 +44,18 @@ const tajawal = Tajawal({
   variable: '--font-tajawal',
 });
 
+// Configure the QueryClient outside of the component
+const defaultQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 300000, // 5 minutes
+      cacheTime: 600000,  // 10 minutes
+    },
+  },
+});
+
 // Extend AppProps with custom properties
 interface MyAppProps extends AppProps {
   pageProps: {
@@ -54,18 +69,6 @@ function MyApp({ Component, pageProps }: MyAppProps) {
   const { locale } = router;
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
 
-  // Create a static QueryClient instance to prevent rerenders
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: 1,  // Reduce retries to speed up
-        refetchOnWindowFocus: false,
-        staleTime: 300000, // 5 minutes instead of 1
-        cacheTime: 600000,  // 10 minutes
-      },
-    },
-  }));
-  
   // Fix for title element array warning using the Head component
   const DefaultSeo = useCallback(() => {
     return (
@@ -74,24 +77,31 @@ function MyApp({ Component, pageProps }: MyAppProps) {
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta charSet="UTF-8" />
         {/* Use a single string for title to avoid array children issues */}
-        <title key="default-title">Archway Interior Design</title>
+        <title>Archway Interior Design</title>
       </Head>
     );
   }, []);
 
-  // Modern prefetching using the Router API
+  // Modern prefetching and language optimizations
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
     // Use the modern router prefetch method
     const prefetchRoutes = async () => {
-      // Main navigation routes
+      // Preload the other language files
+      const otherLocale = router.locale === 'en' ? 'ar' : 'en';
+      
+      // Main navigation routes in current language
       await Promise.all([
-        router.prefetch('/portfolio'),
-        router.prefetch('/services'),
-        router.prefetch('/about'),
-        router.prefetch('/contact')
+        router.prefetch('/portfolio', undefined, { locale: router.locale }),
+        router.prefetch('/services', undefined, { locale: router.locale }),
+        router.prefetch('/about', undefined, { locale: router.locale }),
+        router.prefetch('/contact', undefined, { locale: router.locale })
       ]);
+      
+      // Preload same page in other language
+      const currentPath = router.pathname;
+      router.prefetch(currentPath, undefined, { locale: otherLocale });
       
       // Secondary routes if needed
       setTimeout(() => {
@@ -116,8 +126,8 @@ function MyApp({ Component, pageProps }: MyAppProps) {
       }
       
       // Check cached data before prefetching
-      if (!queryClient.getQueryData(['footer', router.locale])) {
-        queryClient.prefetchQuery(['footer', router.locale], async () => {
+      if (!defaultQueryClient.getQueryData(['footer', router.locale])) {
+        defaultQueryClient.prefetchQuery(['footer', router.locale], async () => {
           try {
             // Use consistent API URL
             const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
@@ -147,7 +157,7 @@ function MyApp({ Component, pageProps }: MyAppProps) {
         if (!slug) return;
         
         // Check cache first
-        const cachedData = queryClient.getQueryData(['projectDetail', slug, router.locale]) as any;
+        const cachedData = defaultQueryClient.getQueryData(['projectDetail', slug, router.locale]) as any;
         
         if (cachedData?.images?.length) {
           // Preload only the first image to reduce load time
@@ -166,13 +176,13 @@ function MyApp({ Component, pageProps }: MyAppProps) {
       isMounted = false;
       router.events.off('routeChangeStart', handleRouteChangeStart);
     };
-  }, [router, queryClient]);
+  }, [router]);
 
   // Combine font variables - excluding problematic nunitoSans
   const fontClasses = `${inter.variable} ${playfair.variable} ${cairo.variable} ${tajawal.variable}`;
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={defaultQueryClient}>
       <Hydrate state={pageProps.dehydratedState}>
         <DefaultSeo />
         <div dir={dir} className={`${fontClasses} min-h-screen flex flex-col ${locale === 'ar' ? 'font-cairo' : 'font-sans'}`}>

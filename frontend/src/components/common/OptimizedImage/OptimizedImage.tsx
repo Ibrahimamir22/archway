@@ -1,7 +1,7 @@
 import Image, { ImageProps } from 'next/image';
 import { useState, useEffect } from 'react';
 
-interface OptimizedImageProps extends Omit<ImageProps, 'src'> {
+export interface OptimizedImageProps extends Omit<ImageProps, 'src'> {
   src: string;
 }
 
@@ -9,7 +9,7 @@ interface OptimizedImageProps extends Omit<ImageProps, 'src'> {
  * Optimized Image component that ensures consistent image loading across all pages
  * and handles URL normalization for both server and client environments
  */
-export default function OptimizedImage({ src, alt, priority, ...props }: OptimizedImageProps) {
+const OptimizedImage = ({ src, alt, priority, ...props }: OptimizedImageProps) => {
   // Normalize URL consistently for both server and client
   const normalizeUrl = (url: string): string => {
     if (!url) return '/images/placeholder.jpg';
@@ -94,4 +94,6 @@ export default function OptimizedImage({ src, alt, priority, ...props }: Optimiz
       {...props} 
     />
   );
-} 
+};
+
+export default OptimizedImage; 

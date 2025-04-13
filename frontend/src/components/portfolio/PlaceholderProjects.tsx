@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
-import OptimizedImage from '../common/OptimizedImage';
+import OptimizedImage from '../common/OptimizedImage/index';
 import { 
   getPlaceholderProjectsWithLimit,
   getCoverImageUrl 

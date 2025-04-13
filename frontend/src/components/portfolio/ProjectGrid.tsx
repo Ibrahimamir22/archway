@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'next-i18next';
-import { Project } from '@/hooks/useProjects';
+import { Project } from '@/hooks';
 import ProjectCard from '@/components/portfolio/ProjectCard';
-import LoadingState from '@/components/common/LoadingState';
+import LoadingState from '@/components/common/LoadingState/index';
 import PlaceholderProjects from '@/components/portfolio/PlaceholderProjects';
 
 interface ProjectGridProps {

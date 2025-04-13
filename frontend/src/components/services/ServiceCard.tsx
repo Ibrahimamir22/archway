@@ -5,7 +5,7 @@ import { useTranslation } from 'next-i18next';
 import { Service, fixImageUrl } from '@/hooks';
 import { useQueryClient } from 'react-query';
 import axios from 'axios';
-import OptimizedImage from '../common/OptimizedImage';
+import OptimizedImage from '../common/OptimizedImage/index';
 
 // Track loaded images and preloaded services globally across all components
 const loadedImages = typeof window !== 'undefined' ? new Set<string>() : new Set();

@@ -5,9 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
-import LanguageSwitcher from './LanguageSwitcher';
+import LanguageSwitcher from '../LanguageSwitcher';
 
-const Navbar = () => {
+export interface NavbarProps {
+  // Add any props if needed in the future
+}
+
+const Navbar = (props: NavbarProps): JSX.Element => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
   const { locale } = router;

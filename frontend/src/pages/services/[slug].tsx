@@ -6,7 +6,7 @@ import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useServiceDetail, Service, fixImageUrl } from '@/hooks';
 import Link from 'next/link';
-import OptimizedImage from '@/components/common/OptimizedImage';
+import OptimizedImage from '@/components/common/OptimizedImage/index';
 import axios from 'axios';
 
 // Smart detection of environment to handle both browser and container contexts
@@ -297,11 +297,15 @@ export const getStaticPaths: GetStaticPaths = async ({ locales = ['en'] }) => {
   }
 };
 
-export const getStaticProps: GetStaticProps = async ({ params, locale = 'en' }) => {
+export const getStaticProps: GetStaticProps<ServiceDetailPageProps> = async ({ 
+  params, 
+  locale = 'en' 
+}) => {
   try {
     if (!params?.slug) {
       return {
-        notFound: true
+        notFound: true,
+        props: {} // Required by TypeScript
       };
     }
     
@@ -327,6 +331,7 @@ export const getStaticProps: GetStaticProps = async ({ params, locale = 'en' }) 
     console.error('Error fetching service data:', error);
     return {
       notFound: true,
+      props: {} // Required by TypeScript
     };
   }
 };

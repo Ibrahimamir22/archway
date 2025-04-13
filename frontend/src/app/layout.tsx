@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/common/Navbar";
-import Footer from "@/components/common/Footer";
+import Navbar from "@/components/common/Navbar/index";
+import Footer from "@/components/common/Footer/index";
 
 export const metadata: Metadata = {
   title: "Archway Design | Interior Design Portfolio Platform",

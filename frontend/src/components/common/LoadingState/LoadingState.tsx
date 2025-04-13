@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface LoadingStateProps {
+export interface LoadingStateProps {
   type?: 'card' | 'list' | 'text' | 'form';
   count?: number;
   className?: string;

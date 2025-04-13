@@ -1,7 +1,7 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, ReactNode } from 'react';
 
 export interface ButtonProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;  // Make children optional
   variant?: 'primary' | 'secondary' | 'outline';
   fullWidth?: boolean;
   className?: string;
@@ -38,6 +38,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
       variantClasses = 'bg-brand-blue hover:bg-brand-blue-light text-white';
   }
   
+  // The button uses Tailwind classes for styling
   return (
     <button
       ref={ref}

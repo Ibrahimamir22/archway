@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
-interface Language {
+export interface Language {
   code: string;
   name: string;
   nativeName: string;
   dir: 'ltr' | 'rtl';
 }
 
-const languages: Language[] = [
+export const languages: Language[] = [
   { code: 'en', name: 'English', nativeName: 'English', dir: 'ltr' },
   { code: 'ar', name: 'Arabic', nativeName: 'العربية', dir: 'rtl' },
 ];

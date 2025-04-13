@@ -3,11 +3,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { Project, fixImageUrl } from '@/hooks';
-import Modal from '@/components/common/Modal';
-import Button from '@/components/common/Button';
+import Modal from '@/components/common/Modal/index';
+import Button from '@/components/common/Button/index';
 import { useQueryClient } from 'react-query';
 import axios from 'axios';
-import OptimizedImage from '../common/OptimizedImage';
+import OptimizedImage from '../common/OptimizedImage/index';
 import { getCoverImageUrl } from '@/data/placeholders/projectPlaceholders';
 
 // Track loaded images globally across all components

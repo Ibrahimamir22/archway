@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
 import { useProjectCategories, useProjectTags, Category, Tag } from '@/hooks';
-import LoadingState from '@/components/common/LoadingState';
+import LoadingState from '@/components/common/LoadingState/index';
 
 interface ProjectFiltersProps {
   onFilterChange: (filters: { category?: string; tag?: string; search?: string }) => void;

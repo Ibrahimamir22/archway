@@ -6,8 +6,8 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { useRouter } from 'next/router';
-import Button from '@/components/common/Button';
-import LoadingState from '@/components/common/LoadingState';
+import Button from '@/components/common/Button/index';
+import LoadingState from '@/components/common/LoadingState/index';
 import { useProjectDetail } from '@/hooks';
 import axios from 'axios';
 import { 

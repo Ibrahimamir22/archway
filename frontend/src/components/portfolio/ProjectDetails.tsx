@@ -2,8 +2,8 @@ import React from 'react';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import Button from '@/components/common/Button';
-import OptimizedImage from '@/components/common/OptimizedImage';
+import Button from '@/components/common/Button/index';
+import OptimizedImage from '@/components/common/OptimizedImage/index';
 import { useProjectImages } from '@/hooks';
 
 interface ProjectImage {

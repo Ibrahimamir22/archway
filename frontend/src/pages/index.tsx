@@ -8,7 +8,7 @@ import { useProjects, Project } from '../hooks';
 import { useServices, Service } from '../hooks';
 import PlaceholderProjects from '../components/portfolio/PlaceholderProjects';
 import axios from 'axios';
-import OptimizedImage from '../components/common/OptimizedImage';
+import OptimizedImage from '../components/common/OptimizedImage/index';
 import { GetStaticProps } from 'next';
 import { dehydrate, QueryClient } from 'react-query';
 

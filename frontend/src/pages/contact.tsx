@@ -7,8 +7,8 @@ import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import Link from 'next/link';
-import FormInput from '@/components/common/FormInput';
-import Button from '@/components/common/Button';
+import FormInput from '@/components/common/FormInput/index';
+import Button from '@/components/common/Button/index';
 
 // Replace the API_BASE_URL with a more direct approach
 const API_BASE_URL = typeof window !== 'undefined'

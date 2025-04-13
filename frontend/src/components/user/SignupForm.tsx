@@ -3,9 +3,9 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import FormInput from '@/components/common/FormInput';
-import Button from '@/components/common/Button';
-import ErrorMessage from '@/components/common/ErrorMessage';
+import FormInput from '@/components/common/FormInput/index';
+import Button from '@/components/common/Button/index';
+import ErrorMessage from '@/components/common/ErrorMessage/index';
 
 interface SignupFormData {
   fullName: string;

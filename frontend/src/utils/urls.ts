@@ -3,34 +3,63 @@
  */
 
 /**
- * Normalizes image URLs for proper display in browser
+ * Core URL normalization function that handles common URL transformations
+ * @param url The URL to normalize
+ * @param options Options for normalization
  */
-export const normalizeImageUrl = (url: string): string => {
+export const normalizeUrl = (url: string, options: {
+  useDefaultImage?: boolean;
+  checkHttpProtocol?: boolean;
+} = {}): string => {
   if (!url) {
-    return '/images/placeholder.jpg';
+    return options.useDefaultImage ? '/images/placeholder.jpg' : '';
   }
   
   // Clean URL for browser consumption
-  if (url.includes('backend:8000')) {
-    return url.replace(/backend:8000/g, 'localhost:8000');
+  if (url.indexOf('backend:8000') !== -1) {
+    url = url.replace(/backend:8000/g, 'localhost:8000');
   }
   
   // Handle absolute media paths
-  if (url.startsWith('/media/')) {
-    return `http://localhost:8000${url}`;
+  if (url.charAt(0) === '/' && url.indexOf('media/') === 0) {
+    url = `http://localhost:8000${url}`;
   }
   
   // Handle relative media paths
-  if (url.startsWith('media/')) {
-    return `http://localhost:8000/${url}`;
+  if (url.indexOf('media/') === 0) {
+    url = `http://localhost:8000/${url}`;
   }
   
-  // Handle missing URLs
-  if (!url.includes('http') && !url.includes('media')) {
-    return '/images/placeholder.jpg';
+  // Handle missing HTTP protocol if option enabled
+  if (options.checkHttpProtocol && url.indexOf('http') === -1 && url.indexOf('media') === -1) {
+    return options.useDefaultImage ? '/images/placeholder.jpg' : url;
   }
   
   return url;
+};
+
+/**
+ * Normalizes image URLs for proper display in browser
+ */
+export const normalizeImageUrl = (url: string): string => {
+  return normalizeUrl(url, { useDefaultImage: true, checkHttpProtocol: true });
+};
+
+/**
+ * Fixes image URLs to ensure they work in the browser environment
+ * Less strict than normalizeImageUrl - doesn't check for HTTP protocol
+ */
+export const fixImageUrl = (url: string): string => {
+  return normalizeUrl(url, { useDefaultImage: true });
+};
+
+/**
+ * Checks if a URL contains a potentially problematic UUID hash
+ */
+export const containsUUIDHash = (url: string): boolean => {
+  if (!url) return false;
+  const hashPattern = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/;
+  return hashPattern.test(url);
 };
 
 /**
@@ -41,11 +70,11 @@ export const getApiBaseUrl = (): string => {
   const isBrowser = typeof window !== 'undefined';
   
   // Get the configured API URL (from environment variables)
-  const configuredUrl = process.env.NEXT_PUBLIC_API_URL;
+  const configuredUrl = process.env.NEXT_PUBLIC_API_URL || '';
   
   if (configuredUrl) {
     // If we're in a browser and the URL contains 'backend', replace with 'localhost'
-    if (isBrowser && configuredUrl.includes('backend')) {
+    if (isBrowser && configuredUrl.indexOf('backend') !== -1) {
       return configuredUrl.replace('backend', 'localhost');
     }
     return configuredUrl;

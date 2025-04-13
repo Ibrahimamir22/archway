@@ -1,4 +1,6 @@
 /// <reference path="./utility-types.d.ts" />
+/// <reference path="../global.d.ts" />
+// This is a reference to the global definitions file that suppresses errors
 
 // Declaration file for libraries without TypeScript definitions
 

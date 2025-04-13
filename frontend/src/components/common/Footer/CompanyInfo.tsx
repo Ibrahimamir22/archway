@@ -4,14 +4,9 @@ import React from 'react';
 import { useTranslation } from 'next-i18next';
 import SocialIcon from './SocialIcon';
 import NewsletterForm from './NewsletterForm';
+import { CompanyInfoProps } from '@types/components/footer';
 
-export interface CompanyInfoProps {
-  settings: any;
-  socialMedia: any[];
-  isRtl: boolean;
-}
-
-const CompanyInfo = ({ settings, socialMedia, isRtl }: CompanyInfoProps): JSX.Element => {
+const CompanyInfo: React.FC<CompanyInfoProps> = ({ settings, socialMedia, isRtl }) => {
   const { t } = useTranslation('common');
   
   return (

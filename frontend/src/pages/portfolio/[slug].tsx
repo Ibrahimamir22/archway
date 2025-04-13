@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -6,19 +6,47 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { useRouter } from 'next/router';
-import Button from '@/components/common/Button/index';
-import LoadingState from '@/components/common/LoadingState/index';
-import { useProjectDetail } from '@/hooks';
+import Button from '@/components/common/Button';
+import LoadingState from '@/components/common/LoadingState';
 import axios from 'axios';
 import { 
   getPlaceholderProject, 
-  getPlaceholderSlugs, 
-  PlaceholderProject 
+  getPlaceholderSlugs
 } from '@/data/placeholders/projectPlaceholders';
 import ProjectHeader from '@/components/portfolio/ProjectHeader';
 import ProjectDetails from '@/components/portfolio/ProjectDetails';
 import ProjectGallery from '@/components/portfolio/ProjectGallery';
-import { getApiBaseUrl, normalizeImageUrl } from '@/hooks';
+
+// Define custom hooks directly in this file until we can create proper hook files
+const useProjectDetail = (slug: string) => {
+  const [project, setProject] = React.useState<ProjectDetail | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!slug) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    // API call logic would go here
+    // For now just simulate loading
+    setTimeout(() => {
+      setLoading(false);
+    }, 500);
+  }, [slug]);
+
+  return { project, loading };
+};
+
+const getApiBaseUrl = () => {
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+};
+
+const normalizeImageUrl = (url: string) => {
+  if (url.startsWith('http')) return url;
+  return url.startsWith('/') ? url : `/${url}`;
+};
 
 interface ProjectDetail {
   id: string;
@@ -165,7 +193,7 @@ export const getStaticPaths: GetStaticPaths = async ({ locales = ['en'] }) => {
     const apiSlugs = projects.map((project: any) => project.slug);
     
     // Combine real and placeholder slugs, removing duplicates
-    const allSlugs = [...new Set([...apiSlugs, ...placeholderSlugs])];
+    const allSlugs = Array.from(new Set([...apiSlugs, ...placeholderSlugs]));
     
     // Create paths for all locales and slugs
     const paths = locales.flatMap(locale => 

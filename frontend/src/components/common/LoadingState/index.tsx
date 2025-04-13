@@ -1,7 +1,7 @@
-import LoadingStateComponent, { LoadingStateProps } from './LoadingState';
+import LoadingState from './LoadingState';
 
 // Export the types
-export type { LoadingStateProps };
+export type { LoadingStateProps } from './LoadingState';
 
 // Export the LoadingState component
-export default LoadingStateComponent; 
+export default LoadingState; 

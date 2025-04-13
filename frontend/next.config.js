@@ -5,6 +5,7 @@ const path = require('path');
 const nextConfig = {
   i18n,
   reactStrictMode: true,
+  swcMinify: true,
   output: 'standalone',
   images: {
     domains: [
@@ -44,13 +45,16 @@ const nextConfig = {
       },
     ];
   },
-  typescript: {
-    // Dangerously allow production builds to successfully complete even with TypeScript errors
-    ignoreBuildErrors: true,
-  },
   eslint: {
     // Dangerously allow production builds to successfully complete even with ESLint errors
     ignoreDuringBuilds: true,
+  },
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
+    ignoreBuildErrors: true,
   },
 };
 

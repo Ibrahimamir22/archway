@@ -9,6 +9,7 @@ COPY package*.json ./
 RUN npm ci --no-optional && \
     # Ensure critical packages are installed even if npm ci fails
     npm list react-query || npm install --save react-query && \
+    npm list react-icons || npm install --save react-icons && \
     npm list i18next framer-motion react-i18next || npm install --save i18next framer-motion react-i18next && \
     npm list tailwindcss-rtl || npm install --save tailwindcss-rtl && \
     npm list @types/react-query || npm install --save-dev @types/react-query

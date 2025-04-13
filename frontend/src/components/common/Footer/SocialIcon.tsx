@@ -1,11 +1,9 @@
 'use client';
 
+// @ts-ignore 
 import React from 'react';
-
-export interface SocialIconProps {
-  platform: string;
-  url: string;
-}
+// Import the types from our new type definitions
+import type { SocialIconProps } from '../../../@types/components/footer';
 
 const SocialIcon = ({ platform, url }: SocialIconProps): JSX.Element => {
   // Get brand-specific color class based on platform

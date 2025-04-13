@@ -6,10 +6,11 @@ import Navbar from '@/components/common/Navbar/index';
 import Footer from '@/components/common/Footer/index';
 import { QueryClient, QueryClientProvider, DehydratedState } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Hydrate } from 'react-query/hydration';
 // Import only the fonts that work correctly
 import { Inter, Playfair_Display, Cairo, Tajawal } from 'next/font/google';
+import Head from 'next/head';
 
 // Define fonts with subsets and weights
 const inter = Inter({
@@ -64,16 +65,42 @@ function MyApp({ Component, pageProps }: MyAppProps) {
       },
     },
   }));
+  
+  // Fix for title element array warning using the Head component
+  const DefaultSeo = useCallback(() => {
+    return (
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+        <meta charSet="UTF-8" />
+        {/* Use a single string for title to avoid array children issues */}
+        <title key="default-title">Archway Interior Design</title>
+      </Head>
+    );
+  }, []);
 
-  // Improved route change handler with caching
+  // Modern prefetching using the Router API
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Prefetch common routes to reduce navigation delay
-      router.prefetch('/portfolio');
-      router.prefetch('/services');
-      router.prefetch('/about');
-      router.prefetch('/contact');
-    }
+    if (typeof window === 'undefined') return;
+    
+    // Use the modern router prefetch method
+    const prefetchRoutes = async () => {
+      // Main navigation routes
+      await Promise.all([
+        router.prefetch('/portfolio'),
+        router.prefetch('/services'),
+        router.prefetch('/about'),
+        router.prefetch('/contact')
+      ]);
+      
+      // Secondary routes if needed
+      setTimeout(() => {
+        router.prefetch('/404');
+        router.prefetch('/_error');
+      }, 2000);
+    };
+    
+    prefetchRoutes();
 
     // Mounting status for memory leak prevention
     let isMounted = true;
@@ -141,36 +168,13 @@ function MyApp({ Component, pageProps }: MyAppProps) {
     };
   }, [router, queryClient]);
 
-  // Fix title element array warning
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const fixTitleElement = () => {
-      const titleElement = document.querySelector('title');
-      if (titleElement && Array.isArray(titleElement.childNodes) && titleElement.childNodes.length > 1) {
-        const titleText = titleElement.textContent;
-        titleElement.textContent = titleText;
-      }
-    };
-    
-    const handleRouteChangeComplete = () => {
-      fixTitleElement();
-    };
-    
-    fixTitleElement();
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
-    
-    return () => {
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
-    };
-  }, [router]);
-
   // Combine font variables - excluding problematic nunitoSans
   const fontClasses = `${inter.variable} ${playfair.variable} ${cairo.variable} ${tajawal.variable}`;
 
   return (
     <QueryClientProvider client={queryClient}>
       <Hydrate state={pageProps.dehydratedState}>
+        <DefaultSeo />
         <div dir={dir} className={`${fontClasses} min-h-screen flex flex-col ${locale === 'ar' ? 'font-cairo' : 'font-sans'}`}>
           <Navbar />
           <main className="flex-grow">

@@ -3,28 +3,25 @@ const { i18n } = require('./next-i18next.config');
 const path = require('path');
 
 const nextConfig = {
-  // Force Pages Router, disable App Router completely
-  experimental: {
-    appDir: false,
-    // Speed up compilation
-    legacyBrowsers: false,
-    // Enable browser optimizations
-    optimizeFonts: true,
-    // Reduce page refresh delays in development
-    concurrentFeatures: true,
-    // Speed up image processing
-    scrollRestoration: true,
-    // Improve memory usage
-    esmExternals: true,
-    // Improve bundle size
-    optimizePackageImports: ['react-icons', 'framer-motion'],
-  },
-  appDir: false, // Explicitly disable app router
+  // Core Next.js options
   i18n,
-  reactStrictMode: false, // Disable strict mode in production for better performance
+  reactStrictMode: false, 
   swcMinify: true,
   output: 'standalone',
   poweredByHeader: false,
+  
+  // Performance improvements for development
+  onDemandEntries: {
+    // Keep pages in memory for longer during development
+    maxInactiveAge: 60 * 60 * 1000, // 1 hour
+    // Number of pages to keep in memory
+    pagesBufferLength: 5,
+  },
+  
+  // Cache optimization
+  generateEtags: true,
+  
+  // Image optimization
   images: {
     domains: [
       'localhost', 
@@ -45,7 +42,8 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
-  // Add webpack config for better module resolution
+  
+  // Webpack optimization
   webpack: (config, { isServer, dev }) => {
     // Configure path aliases for cleaner imports
     config.resolve.alias = {
@@ -55,60 +53,41 @@ const nextConfig = {
     
     // Production optimizations
     if (!dev) {
-      // Enable tree shaking
-      config.optimization.usedExports = true;
-      
-      // Optimize client-side bundles
-      if (!isServer) {
-        config.optimization.splitChunks = {
-          chunks: 'all',
-          maxInitialRequests: 25,
-          minSize: 20000,
-          maxSize: 300000, // 300kb max chunk size for better loading
-          cacheGroups: {
-            default: false,
-            vendors: false,
-            framework: {
-              name: 'framework',
-              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-              priority: 40,
-              enforce: true,
-            },
-            lib: {
-              test: /[\\/]node_modules[\\/]/,
-              priority: 30,
-              name(module) {
-                // Get the name of the npm package
-                const packageNameMatch = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/);
-                const packageName = packageNameMatch ? packageNameMatch[1] : null;
-                
-                // Return a name for the chunk
-                return `npm.${packageName.replace('@', '')}`;
-              },
-            },
-            styles: {
-              name: 'styles',
-              test: /\.css$/,
-              chunks: 'all',
-              enforce: true,
-            },
-            commons: {
-              name: 'commons',
-              minChunks: 2,
-              priority: 20,
-            },
+      // Optimize chunk size
+      config.optimization.mergeDuplicateChunks = true;
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        maxInitialRequests: 25,
+        minSize: 20000,
+        maxSize: 300000, // 300kb max chunk size for better loading
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          framework: {
+            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+            name: 'framework',
+            priority: 40,
+            enforce: true,
           },
-        };
-        
-        // Disable source maps in production
-        if (process.env.NODE_ENV === 'production') {
-          config.devtool = false;
-        }
+          commons: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'commons',
+            priority: 20,
+            minChunks: 2,
+          },
+        },
+      };
+      
+      // Reduce source map size in production
+      if (!isServer) {
+        config.devtool = 'source-map';
       }
     }
     
     return config;
   },
+  
+  // API routes configuration
   async rewrites() {
     return [
       // API proxying with better error handling
@@ -136,15 +115,12 @@ const nextConfig = {
       }
     ];
   },
+  
+  // Error handling
   eslint: {
-    // Dangerously allow production builds to successfully complete even with ESLint errors
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
     ignoreBuildErrors: true,
   },
 };

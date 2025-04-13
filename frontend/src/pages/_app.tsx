@@ -8,9 +8,8 @@ import { QueryClient, QueryClientProvider, DehydratedState } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { useState, useEffect } from 'react';
 import { Hydrate } from 'react-query/hydration';
-// Import optimized fonts
+// Import only the fonts that work correctly
 import { Inter, Playfair_Display, Cairo, Tajawal } from 'next/font/google';
-import { Nunito_Sans } from 'next/font/google';
 
 // Define fonts with subsets and weights
 const inter = Inter({
@@ -32,13 +31,6 @@ const cairo = Cairo({
   display: 'swap',
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-cairo',
-});
-
-const nunitoSans = Nunito_Sans({
-  subsets: ['latin'],
-  display: 'swap',
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-nunito',
 });
 
 const tajawal = Tajawal({
@@ -75,11 +67,13 @@ function MyApp({ Component, pageProps }: MyAppProps) {
 
   // Improved route change handler with caching
   useEffect(() => {
-    // Prefetch common routes to reduce navigation delay
-    router.prefetch('/portfolio');
-    router.prefetch('/services');
-    router.prefetch('/about');
-    router.prefetch('/contact');
+    if (typeof window !== 'undefined') {
+      // Prefetch common routes to reduce navigation delay
+      router.prefetch('/portfolio');
+      router.prefetch('/services');
+      router.prefetch('/about');
+      router.prefetch('/contact');
+    }
 
     // Mounting status for memory leak prevention
     let isMounted = true;
@@ -88,8 +82,8 @@ function MyApp({ Component, pageProps }: MyAppProps) {
       // Skip if unmounted
       if (!isMounted) return;
       
-      // Set loadingTimeout to null initially
-      if (window.loadingTimeout) {
+      // Clear any loading timeouts
+      if (typeof window !== 'undefined' && window.loadingTimeout) {
         clearTimeout(window.loadingTimeout);
         window.loadingTimeout = null;
       }
@@ -111,7 +105,11 @@ function MyApp({ Component, pageProps }: MyAppProps) {
             return response.data;
           } catch (error) {
             console.error('Error prefetching footer data:', error);
-            return null;
+            // Return fallback data when API fails
+            return {
+              copyright: "© Archway Innovations",
+              social_links: []
+            };
           }
         });
       }
@@ -145,6 +143,8 @@ function MyApp({ Component, pageProps }: MyAppProps) {
 
   // Fix title element array warning
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const fixTitleElement = () => {
       const titleElement = document.querySelector('title');
       if (titleElement && Array.isArray(titleElement.childNodes) && titleElement.childNodes.length > 1) {
@@ -165,13 +165,13 @@ function MyApp({ Component, pageProps }: MyAppProps) {
     };
   }, [router]);
 
-  // Combine font variables
-  const fontClasses = `${inter.variable} ${playfair.variable} ${cairo.variable} ${nunitoSans.variable} ${tajawal.variable}`;
+  // Combine font variables - excluding problematic nunitoSans
+  const fontClasses = `${inter.variable} ${playfair.variable} ${cairo.variable} ${tajawal.variable}`;
 
   return (
     <QueryClientProvider client={queryClient}>
       <Hydrate state={pageProps.dehydratedState}>
-        <div dir={dir} className={`${fontClasses} min-h-screen flex flex-col ${locale === 'ar' ? 'font-cairo' : 'font-nunito'}`}>
+        <div dir={dir} className={`${fontClasses} min-h-screen flex flex-col ${locale === 'ar' ? 'font-cairo' : 'font-sans'}`}>
           <Navbar />
           <main className="flex-grow">
             <Component {...pageProps} />

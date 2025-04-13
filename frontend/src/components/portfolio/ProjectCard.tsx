@@ -8,6 +8,7 @@ import Button from '@/components/common/Button';
 import { useQueryClient } from 'react-query';
 import axios from 'axios';
 import OptimizedImage from '../common/OptimizedImage';
+import { getCoverImageUrl } from '@/data/placeholders/projectPlaceholders';
 
 // Track loaded images globally across all components
 const loadedImages = typeof window !== 'undefined' ? new Set<string>() : new Set();

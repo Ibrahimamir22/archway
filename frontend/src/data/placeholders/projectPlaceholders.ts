@@ -35,49 +35,92 @@ export interface PlaceholderProject {
   completedDate?: string;
   tags: ProjectTag[];
   images: ProjectImage[];
-  image?: string; // For simpler card display
 }
 
 /**
  * Generates an array of image objects for a project
  * @param slug - The project slug
  * @param category - The category slug (used in path)
- * @param startIndex - Starting image index
- * @param endIndex - Ending image index
- * @param coverImageName - Name of the cover image file
+ * @param options - Configuration options
  * @returns Array of image objects
  */
 export const generateImageArray = (
   slug: string, 
-  category: string, 
-  startIndex: number = 1,
-  endIndex: number = 43,  // Set a reasonable limit based on what you know exists
-  coverImageName: string = `${slug}.jpg`
+  category: string,
+  options: {
+    useExistingImages?: boolean;
+    startIndex?: number; 
+    endIndex?: number;
+    coverImageName?: string;
+    fallbackPrefix?: string;
+  } = {}
 ): ProjectImage[] => {
+  const {
+    useExistingImages = true,
+    startIndex = 1,
+    endIndex = 10,
+    coverImageName = `${slug}.jpg`,
+    fallbackPrefix = 'project'
+  } = options;
+  
   const images: ProjectImage[] = [];
+  const title = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   
-  // Add cover image
-  images.push({
-    id: 'image-cover',
-    src: `/images/projects/${category}/${slug}/${coverImageName}`,
-    alt: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-    isCover: true
-  });
-  
-  // Add only images in the specified range
-  for (let i = startIndex; i <= endIndex; i++) {
-    const imageName = i < 10 ? `image-0${i}.jpg` : `image-${i}.jpg`;
-    const imageUrl = `/images/projects/${category}/${slug}/${imageName}`;
-    
+  if (useExistingImages) {
+    // Add cover image for projects with real images
     images.push({
-      id: `image-${i}`,
-      src: imageUrl,
-      alt: `${slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} - Image ${i}`,
-      isCover: false
+      id: 'image-cover',
+      src: `/images/projects/${category}/${slug}/${coverImageName}`,
+      alt: title,
+      isCover: true
     });
+    
+    // Add only images in the specified range
+    for (let i = startIndex; i <= endIndex; i++) {
+      const imageName = i < 10 ? `image-0${i}.jpg` : `image-${i}.jpg`;
+      const imageUrl = `/images/projects/${category}/${slug}/${imageName}`;
+      
+      images.push({
+        id: `image-${i}`,
+        src: imageUrl,
+        alt: `${title} - Image ${i}`,
+        isCover: false
+      });
+    }
+  } else {
+    // Create fallback images for projects without real assets
+    const fallbackCoverIndex = 1;
+    
+    // Add fallback cover image
+    images.push({
+      id: 'image-cover',
+      src: `/images/${fallbackPrefix}-${fallbackCoverIndex}.jpg`,
+      alt: title,
+      isCover: true
+    });
+    
+    // Add fallback images using sequential numbers
+    for (let i = 1; i < endIndex; i++) {
+      const fallbackIndex = (i + fallbackCoverIndex) % 5 + 1; // Cycle through 1-5
+      
+      images.push({
+        id: `image-${i}`,
+        src: `/images/${fallbackPrefix}-${fallbackIndex}.jpg`,
+        alt: `${title} - ${i === 1 ? 'Living Room' : i === 2 ? 'Kitchen' : 'Room ' + i}`,
+        isCover: false
+      });
+    }
   }
   
   return images;
+};
+
+/**
+ * Get the cover image URL from an images array
+ */
+export const getCoverImageUrl = (images: ProjectImage[]): string => {
+  const coverImage = images.find(img => img.isCover);
+  return coverImage ? coverImage.src : images[0]?.src || '/images/placeholder.jpg';
 };
 
 /**
@@ -100,9 +143,10 @@ export const placeholderProjects: Record<string, PlaceholderProject> = {
       { id: 'tag-3', name: 'Modern', slug: 'modern' }
     ],
     // Generate images with known range
-    images: generateImageArray('madinaty-villa', 'residential', 1, 43),
-    // Add single image for card display
-    image: '/images/projects/residential/madinaty-villa/madinaty-villa.jpg'
+    images: generateImageArray('madinaty-villa', 'residential', {
+      startIndex: 1,
+      endIndex: 43
+    })
   },
   'urban-apartment': {
     id: 'placeholder-2',
@@ -115,30 +159,16 @@ export const placeholderProjects: Record<string, PlaceholderProject> = {
     area: 120,
     completedDate: '2023',
     tags: [
-      { id: 'tag-3', name: 'Urban', slug: 'urban' },
-      { id: 'tag-4', name: 'Compact', slug: 'compact' },
-      { id: 'tag-5', name: 'Smart Home', slug: 'smart-home' }
+      { id: 'tag-4', name: 'Urban', slug: 'urban' },
+      { id: 'tag-5', name: 'Compact', slug: 'compact' },
+      { id: 'tag-6', name: 'Smart Home', slug: 'smart-home' }
     ],
-    // Use fallback images since these don't exist yet
-    images: [
-      {
-        id: 'image-1', 
-        src: '/images/project-2.jpg', 
-        alt: 'Urban Apartment', 
-        isCover: true 
-      },
-      {
-        id: 'image-2', 
-        src: '/images/project-3.jpg', 
-        alt: 'Urban Apartment Living Room'
-      },
-      {
-        id: 'image-3', 
-        src: '/images/project-4.jpg', 
-        alt: 'Urban Apartment Kitchen'
-      }
-    ],
-    image: '/images/project-2.jpg'
+    // Generate fallback images since these don't exist yet
+    images: generateImageArray('urban-apartment', 'residential', { 
+      useExistingImages: false,
+      endIndex: 3,
+      fallbackPrefix: 'project'
+    })
   },
   'office-renovation': {
     id: 'placeholder-3',
@@ -151,30 +181,16 @@ export const placeholderProjects: Record<string, PlaceholderProject> = {
     area: 300,
     completedDate: '2023',
     tags: [
-      { id: 'tag-5', name: 'Office', slug: 'office' },
-      { id: 'tag-6', name: 'Professional', slug: 'professional' },
-      { id: 'tag-7', name: 'Corporate', slug: 'corporate' }
+      { id: 'tag-7', name: 'Office', slug: 'office' },
+      { id: 'tag-8', name: 'Professional', slug: 'professional' },
+      { id: 'tag-9', name: 'Corporate', slug: 'corporate' }
     ],
-    // Use fallback images since these don't exist yet
-    images: [
-      {
-        id: 'image-1', 
-        src: '/images/project-3.jpg', 
-        alt: 'Office Renovation', 
-        isCover: true 
-      },
-      {
-        id: 'image-2', 
-        src: '/images/project-4.jpg', 
-        alt: 'Office Renovation Meeting Room'
-      },
-      {
-        id: 'image-3', 
-        src: '/images/project-5.jpg', 
-        alt: 'Office Renovation Workspace'
-      }
-    ],
-    image: '/images/project-3.jpg'
+    // Generate fallback images since these don't exist yet
+    images: generateImageArray('office-renovation', 'commercial', { 
+      useExistingImages: false,
+      endIndex: 3,
+      fallbackPrefix: 'project'
+    })
   }
 };
 
@@ -203,5 +219,11 @@ export const getAllPlaceholderProjects = (): PlaceholderProject[] => {
  * Get a specified number of placeholder projects
  */
 export const getPlaceholderProjectsWithLimit = (limit: number = 3): PlaceholderProject[] => {
-  return Object.values(placeholderProjects).slice(0, limit);
+  const projects = Object.values(placeholderProjects).slice(0, limit);
+  
+  // Add image property dynamically when needed for backward compatibility
+  return projects.map(project => ({
+    ...project,
+    image: getCoverImageUrl(project.images)
+  }));
 }; 

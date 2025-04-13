@@ -3,7 +3,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import OptimizedImage from '../common/OptimizedImage';
-import { getPlaceholderProjectsWithLimit } from '@/data/placeholders/projectPlaceholders';
+import { 
+  getPlaceholderProjectsWithLimit,
+  getCoverImageUrl 
+} from '@/data/placeholders/projectPlaceholders';
 
 interface PlaceholderProjectsProps {
   count?: number;
@@ -45,7 +48,7 @@ const PlaceholderProjects: React.FC<PlaceholderProjectsProps> = ({ count = 3 }) 
           <Link href={`/portfolio/${project.slug}`}>
             <div className="relative h-48 w-full bg-gray-200">
               <OptimizedImage
-                src={project.image || (project.images[0]?.src || '/images/placeholder.jpg')}
+                src={getCoverImageUrl(project.images)}
                 alt={getProjectTitle(project.slug)}
                 fill
                 className="object-cover"

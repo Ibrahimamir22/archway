@@ -9,6 +9,7 @@ import ProjectCard from '@/components/portfolio/ProjectCard';
 import ProjectFilters from '@/components/portfolio/ProjectFilters';
 import LoadingState from '@/components/common/LoadingState';
 import ErrorMessage from '@/components/common/ErrorMessage';
+import PlaceholderProjects from '@/components/portfolio/PlaceholderProjects';
 import axios from 'axios';
 import { useQueryClient } from 'react-query';
 
@@ -49,7 +50,11 @@ interface PortfolioPageProps {
   initialProjects: Project[];
 }
 
-const PortfolioPage: NextPage<PortfolioPageProps> = ({ initialCategories, initialTags, initialProjects }) => {
+const PortfolioPage: NextPage<PortfolioPageProps> = ({ 
+  initialCategories, 
+  initialTags, 
+  initialProjects
+}) => {
   const { t } = useTranslation('common');
   const router = useRouter();
   const isRtl = router.locale === 'ar';
@@ -157,8 +162,8 @@ const PortfolioPage: NextPage<PortfolioPageProps> = ({ initialCategories, initia
           initialTags={initialTags}
         />
         
-        {/* Projects Grid */}
-        {loading && projects.length === 0 ? (
+        {/* Projects Grid - ULTRA SIMPLIFIED LOGIC */}
+        {loading ? (
           <LoadingState type="card" count={6} />
         ) : error ? (
           <div className={`bg-red-50 border border-red-200 p-6 rounded-md text-center ${isRtl ? 'text-right' : ''}`}>
@@ -170,15 +175,11 @@ const PortfolioPage: NextPage<PortfolioPageProps> = ({ initialCategories, initia
               {t('common.retry')}
             </button>
           </div>
-        ) : projects.length === 0 ? (
-          <div className={`text-center py-12 ${isRtl ? 'text-right' : ''}`}>
-            <p className="text-gray-600">
-              {filters.search
-                ? t('portfolio.noSearchResults', { search: filters.search })
-                : t('portfolio.noProjects')}
-            </p>
-          </div>
+        ) : initialProjects.length === 0 && projects.length === 0 ? (
+          // Show placeholders only when we have no projects at all - initial or fetched
+          <PlaceholderProjects count={3} />
         ) : (
+          // Otherwise show the real projects
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {projects.map((project: Project) => (
@@ -214,13 +215,6 @@ const PortfolioPage: NextPage<PortfolioPageProps> = ({ initialCategories, initia
                 </button>
               </div>
             )}
-            
-            {/* Loading indicator for pagination */}
-            {isFetchingNextPage && !hasNextPage && (
-              <div className="mt-8">
-                <LoadingState type="card" count={3} />
-              </div>
-            )}
           </>
         )}
       </div>
@@ -236,67 +230,42 @@ export async function getStaticProps({ locale = 'en' }) {
     const categoriesParams = new URLSearchParams();
     categoriesParams.append('lang', locale);
     const categoriesResponse = await axios.get(`${API_BASE_URL}/categories/?${categoriesParams.toString()}`);
-    console.log('Categories response:', categoriesResponse.status);
     const categories = categoriesResponse.data.results || categoriesResponse.data || [];
     
     // Fetch tags data
     const tagsParams = new URLSearchParams();
     tagsParams.append('lang', locale);
     const tagsResponse = await axios.get(`${API_BASE_URL}/tags/?${tagsParams.toString()}`);
-    console.log('Tags response:', tagsResponse.status);
     const tags = tagsResponse.data.results || tagsResponse.data || [];
     
-    // Fetch initial projects
+    // Fetch initial projects - only published ones
     const projectsParams = new URLSearchParams();
     projectsParams.append('lang', locale);
     projectsParams.append('limit', '6'); // Limit to first 6 projects for initial load
-    const projectsResponse = await axios.get(`${API_BASE_URL}/projects/?${projectsParams.toString()}`);
-    console.log('Projects response:', projectsResponse.status);
-    const projects = projectsResponse.data.results || [];
+    projectsParams.append('is_published', 'true'); // Only fetch published projects
     
-    // Process image URLs on the server-side for consistent hydration
-    const processedProjects = projects.map((project: any) => {
-      // Process cover image URLs to ensure consistency
-      if (project.cover_image_url && project.cover_image_url.includes('backend:8000')) {
-        project.cover_image_url = project.cover_image_url.replace(/backend:8000/g, 'localhost:8000');
-      }
-      
-      if (project.cover_image && project.cover_image.includes('backend:8000')) {
-        project.cover_image = project.cover_image.replace(/backend:8000/g, 'localhost:8000');
-      }
-      
-      // Process all images in the project if they exist
-      if (project.images && Array.isArray(project.images)) {
-        project.images = project.images.map((img: any) => {
-          if (img.image_url && img.image_url.includes('backend:8000')) {
-            img.image_url = img.image_url.replace(/backend:8000/g, 'localhost:8000');
-          }
-          if (img.image && img.image.includes('backend:8000')) {
-            img.image = img.image.replace(/backend:8000/g, 'localhost:8000');
-          }
-          return img;
-        });
-      }
-      
-      return project;
-    });
+    let projects = [];
     
-    console.log(`Successfully fetched: ${processedProjects.length} projects, ${categories.length} categories, ${tags.length} tags`);
+    try {
+      const projectsResponse = await axios.get(`${API_BASE_URL}/projects/?${projectsParams.toString()}`);
+      projects = projectsResponse.data.results || [];
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      // Continue with empty projects array
+    }
 
     return {
       props: {
         initialCategories: categories,
         initialTags: tags,
-        initialProjects: processedProjects,
+        initialProjects: projects,
         ...(await serverSideTranslations(locale, ['common'])),
       },
       revalidate: 60 // Revalidate at most once per minute
     };
   } catch (error: any) {
     console.error('Error fetching filter data:', error.message || 'Unknown error');
-    if (error.response) {
-      console.error('Error response:', error.response.status, error.response.data);
-    }
+    
     // Return empty arrays if there's an error
     return {
       props: {

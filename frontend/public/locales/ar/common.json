@@ -102,7 +102,8 @@
     "location": "الموقع",
     "area": "المساحة",
     "completedDate": "تاريخ الإنجاز",
-    "relatedProjects": "مشاريع ذات صلة"
+    "relatedProjects": "مشاريع ذات صلة",
+    "sampleProjectLabel": "عرض التصميم"
   },
   "services": {
     "pageTitle": "خدماتنا",
@@ -173,6 +174,8 @@
   },
   "backToPortfolio": "العودة إلى المشاريع",
   "projectDetails": "تفاصيل المشروع",
+  "projectNotFound": "المشروع غير موجود",
+  "projectNotFoundDesc": "المشروع الذي تبحث عنه غير موجود أو ربما تمت إزالته.",
   "client": "العميل",
   "location": "الموقع",
   "area": "المساحة",
@@ -182,5 +185,56 @@
   "interestedInThisStyle": "هل أعجبك هذا التصميم؟",
   "contactUsForSimilarProject": "تواصل معنا للحصول على مشروع مماثل",
   "getInTouch": "تواصل معنا الآن",
-  "noImageAvailable": "لا توجد صورة متاحة"
+  "noImageAvailable": "لا توجد صورة متاحة",
+  "projects": {
+    "madinaty-villa": "فيلا مدينتي",
+    "urban-apartment": "شقة حضرية",
+    "office-renovation": "تجديد مكتب"
+  },
+  "serviceTypes": {
+    "interior-design": "التصميم الداخلي",
+    "interior-architecture": "الهندسة الداخلية",
+    "3d-visualization": "تصور ثلاثي الأبعاد",
+    "furniture-design": "تصميم الأثاث",
+    "lighting-design": "تصميم الإضاءة",
+    "renovation": "التجديد",
+    "descriptions": {
+      "interior-design": "تصميم داخلي شامل يجمع بين الوظائف والجماليات لتحويل مساحتك إلى بيئة مثالية.",
+      "interior-architecture": "حلول هندسية داخلية متخصصة لإعادة تصور وتحسين المساحات الخاصة بك.",
+      "3d-visualization": "رؤية مشروعك قبل بدء البناء من خلال تصورات ثلاثية الأبعاد واقعية.",
+      "furniture-design": "تصميمات أثاث مخصصة تجمع بين الأناقة والراحة والوظائف العملية.",
+      "lighting-design": "حلول إضاءة مبتكرة لتعزيز الجو والوظيفة في مساحتك.",
+      "renovation": "خدمات تجديد شاملة لتجديد منزلك أو مساحة عملك."
+    }
+  },
+  "categories": {
+    "residential": "سكني",
+    "commercial": "تجاري"
+  },
+  "tags": {
+    "villa": "فيلا",
+    "luxury": "فاخر",
+    "modern": "حديث",
+    "urban": "حضري",
+    "compact": "مدمج",
+    "smart-home": "منزل ذكي",
+    "office": "مكتب",
+    "professional": "احترافي", 
+    "corporate": "شركات"
+  },
+  "descriptions": {
+    "madinaty-villa": "تصميم فيلا فاخر في مدينتي يتميز بتصميم داخلي أنيق، ومساحات معيشة مفتوحة، ولمسات نهائية متميزة تمزج بين الراحة والجماليات المتطورة.",
+    "urban-apartment": "تصميم شقة مدمجة تستغل المساحة والوظائف في البيئات الحضرية مع حلول تخزين ذكية وأثاث متعدد الوظائف.",
+    "office-renovation": "مساحة عمل احترافية مصممة للإنتاجية والتعاون مع حلول مريحة، وإضاءة مثالية، ومناطق اجتماعات مرنة."
+  },
+  "clients": {
+    "Private Client": "عميل خاص",
+    "Modern Living Co.": "شركة الحياة العصرية",
+    "Corporate Solutions Inc.": "شركة الحلول المؤسسية"
+  },
+  "locations": {
+    "Madinaty, Cairo": "مدينتي، القاهرة",
+    "Downtown Cairo": "وسط القاهرة",
+    "New Cairo": "القاهرة الجديدة"
+  }
 } 

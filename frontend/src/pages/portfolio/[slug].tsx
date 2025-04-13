@@ -46,13 +46,52 @@ export const createImagePreloadTags = (images: {id: string, src: string}[]) => {
 };
 
 const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initialProject }) => {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const router = useRouter();
   const isRtl = router.locale === 'ar';
   const { slug } = router.query;
-  // @ts-ignore - This works fine at runtime but TypeScript is being overly strict
-  const [imageError, setImageError] = useState<Record<string, boolean>>({});
   
+  // Create a more robust error tracking state
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
+  
+  // Log current language for debugging and force reload translations when locale changes
+  useEffect(() => {
+    console.log('Current language:', i18n.language);
+    console.log('Router locale:', router.locale);
+    console.log('isRtl:', isRtl);
+    
+    // Force refresh translations when locale changes
+    if (router.locale && router.locale !== i18n.language) {
+      i18n.changeLanguage(router.locale);
+    }
+  }, [router.locale, i18n, isRtl]);
+  
+  // Filter out images that failed to load
+  const getFilteredImages = () => {
+    if (!project?.images) return [];
+    
+    // Only show images that haven't explicitly failed
+    return project.images.filter(img => !imageErrors[img.id]);
+  };
+  
+  // Improved error handler for images
+  const handleImageError = (imageId: string) => {
+    console.log(`Image failed to load: ${imageId}`);
+    // Use a direct object update instead of a function to satisfy TypeScript
+    const newErrors = { ...imageErrors };
+    newErrors[imageId] = true;
+    setImageErrors(newErrors);
+  };
+  
+  // Success handler for images
+  const handleImageLoad = (imageId: string) => {
+    // Use a direct object update instead of a function to satisfy TypeScript
+    const newLoaded = { ...loadedImages };
+    newLoaded[imageId] = true;
+    setLoadedImages(newLoaded);
+  };
+
   // Use the useProjectDetail hook to fetch the project
   const { project: fetchedProject, loading } = useProjectDetail(
     typeof slug === 'string' ? slug : ''
@@ -61,30 +100,21 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
   // Use fetched project or fall back to initial data
   const project = fetchedProject || initialProject;
   
-  // Simple error handler for images with TypeScript ignore
-  const handleImageError = (imageId: string) => {
-    // @ts-ignore - This works fine at runtime but TypeScript is being overly strict
-    setImageError({ ...imageError, [imageId]: true });
-  };
-
-  // Get cover image
-  const coverImage = project?.images?.find((img: {id: string, src: string, alt: string, isCover: boolean}) => img.isCover === true);
+  // Get cover image (first checking that it loaded successfully)
+  const coverImage = project?.images?.find((img: {id: string, src: string, alt: string, isCover: boolean}) => 
+    img.isCover === true && !imageErrors[img.id]
+  );
   
+  // If no valid cover, get first valid image
+  const firstValidImage = project?.images?.find((img: {id: string}) => !imageErrors[img.id]);
+
   // Update the getImageSrc function to ensure it always returns valid image URLs
   const getImageSrc = (image: {id: string, src: string}) => {
     if (!image || !image.src) {
-      console.log(`Missing image source for image ${image?.id || 'unknown'}`);
       return '/images/placeholder.jpg';
     }
     
-    if (imageError[image.id]) {
-      // Use a numeric fallback
-      const imageIndex = (parseInt(image.id) || 1) % 5 + 1;
-      return `/images/project-${imageIndex}.jpg`;
-    }
-    
-    // Use the image URL as is - no special case handling needed
-    // The URLs are already normalized by the useProjectDetail hook
+    // Return the actual image source
     return image.src;
   };
   
@@ -100,17 +130,52 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
   // If no project data is available
   if (!project) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <h1 className="text-2xl font-bold text-red-500">{t('projectNotFound')}</h1>
-        <p className="mt-4">{t('projectNotFoundDesc')}</p>
-        <Link href="/portfolio">
-          <Button variant="primary" className="mt-8">
-            {t('returnToPortfolio')}
-          </Button>
-        </Link>
-      </div>
+      <>
+        <Head>
+          <title>{t('projectNotFound')} | Archway Interior Design</title>
+          <meta name="description" content="Project not found" />
+        </Head>
+        
+        <div className="container mx-auto px-4 py-12 text-center">
+          <div className="max-w-lg mx-auto bg-white p-8 rounded-lg shadow-md">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">{t('projectNotFound') || 'Project Not Found'}</h1>
+            <p className="text-gray-600 mb-8">{t('projectNotFoundDesc') || 'The project you are looking for does not exist or may have been removed.'}</p>
+            <Link href="/portfolio">
+              <Button variant="primary">
+                {t('backToPortfolio') || '← Back to Portfolio'}
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </>
     );
   }
+  
+  // Get translated project title if available
+  const projectTitle = t(`projects.${project.slug}`, { defaultValue: project.title });
+  
+  // Get translated project description
+  const projectDescription = t(`descriptions.${project.slug}`, { defaultValue: project.description });
+  
+  // Function to get translated category name
+  const getCategoryName = (category: {name: string, slug: string}) => {
+    return t(`categories.${category.slug}`, { defaultValue: category.name });
+  };
+  
+  // Function to get translated tag name
+  const getTagName = (tag: {name: string, slug: string}) => {
+    return t(`tags.${tag.slug}`, { defaultValue: tag.name });
+  };
+  
+  // Function to get translated client name
+  const getClientName = (client?: string) => {
+    return client ? t(`clients.${client}`, { defaultValue: client }) : '';
+  };
+  
+  // Function to get translated location
+  const getLocationName = (location?: string) => {
+    return location ? t(`locations.${location}`, { defaultValue: location }) : '';
+  };
   
   // Add useEffect for preloading images when page first loads
   useEffect(() => {
@@ -150,8 +215,8 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
   return (
     <>
       <Head>
-        <title>{project.title} | Archway Interior Design</title>
-        <meta name="description" content={project.description} />
+        <title>{projectTitle} | Archway Interior Design</title>
+        <meta name="description" content={projectDescription} />
         
         {/* Preload critical project images */}
         {project.images && project.images.length > 0 && (
@@ -176,20 +241,20 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
           <Link href="/portfolio" className="text-brand-blue hover:underline mb-4 inline-block">
             ← {t('backToPortfolio')}
           </Link>
-          <h1 className="text-4xl font-heading font-bold mb-4">{project.title}</h1>
+          <h1 className="text-4xl font-heading font-bold mb-4">{projectTitle}</h1>
           
           <div className="flex flex-wrap gap-2 mb-6">
             <span className="bg-brand-blue/10 text-brand-blue px-3 py-1 rounded-full text-sm">
-              {project.category.name}
+              {getCategoryName(project.category)}
             </span>
             {project.tags.map((tag: {id: string, name: string, slug: string}) => (
               <span key={tag.id} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
-                {tag.name}
+                {getTagName(tag)}
               </span>
             ))}
           </div>
           
-          <p className="text-lg text-gray-700">{project.description}</p>
+          <p className="text-lg text-gray-700">{projectDescription}</p>
         </div>
         
         {/* Project Details */}
@@ -206,16 +271,18 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
                   priority={true}
                   onError={() => handleImageError(coverImage.id)}
+                  onLoad={() => handleImageLoad(coverImage.id)}
                 />
-              ) : project.images && project.images.length > 0 ? (
+              ) : firstValidImage ? (
                 <OptimizedImage
-                  src={getImageSrc(project.images[0])}
-                  alt={project.images[0].alt || project.title}
+                  src={getImageSrc(firstValidImage)}
+                  alt={firstValidImage.alt || project.title}
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
                   priority={true}
-                  onError={() => handleImageError(project.images[0].id)}
+                  onError={() => handleImageError(firstValidImage.id)}
+                  onLoad={() => handleImageLoad(firstValidImage.id)}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-400">
@@ -234,14 +301,14 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
                 {project.client && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">{t('client')}:</span>
-                    <span className="font-medium">{project.client}</span>
+                    <span className="font-medium">{getClientName(project.client)}</span>
                   </div>
                 )}
                 
                 {project.location && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">{t('location')}:</span>
-                    <span className="font-medium">{project.location}</span>
+                    <span className="font-medium">{getLocationName(project.location)}</span>
                   </div>
                 )}
                 
@@ -275,22 +342,25 @@ const ProjectDetailPage: NextPage<{ initialProject?: ProjectDetail }> = ({ initi
         </div>
         
         {/* Project Gallery */}
-        {project.images && project.images.length > 1 ? (
+        {getFilteredImages().length > 1 ? (
           <div className={`${isRtl ? 'text-right' : ''}`}>
             <h2 className="text-2xl font-heading font-semibold mb-6">{t('projectGallery')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {project.images.slice(1).map((image: {id: string, src: string, alt: string, isCover: boolean}, index: number) => (
-                <div key={image.id} className="relative h-64 rounded-lg overflow-hidden shadow-md bg-gray-100">
-                  <OptimizedImage 
-                    src={getImageSrc(image)}
-                    alt={image.alt || `Project image ${index + 1}`}
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    onError={() => handleImageError(image.id)}
-                  />
-                </div>
-              ))}
+              {getFilteredImages()
+                .filter(image => !image.isCover) // Skip the cover image
+                .map((image: {id: string, src: string, alt: string}, index: number) => (
+                  <div key={image.id} className="relative h-64 rounded-lg overflow-hidden shadow-md bg-gray-100">
+                    <OptimizedImage 
+                      src={getImageSrc(image)}
+                      alt={image.alt || `Project image ${index + 1}`}
+                      fill
+                      className="object-cover hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      onError={() => handleImageError(image.id)}
+                      onLoad={() => handleImageLoad(image.id)}
+                    />
+                  </div>
+                ))}
             </div>
           </div>
         ) : null}
@@ -324,17 +394,23 @@ const getApiBaseUrl = () => {
 export const getStaticPaths: GetStaticPaths = async ({ locales = ['en'] }) => {
   const API_BASE_URL = getApiBaseUrl();
   
+  // Define placeholder slugs
+  const placeholderSlugs = ['madinaty-villa', 'urban-apartment', 'office-renovation'];
+  
   try {
     // Fetch projects for static paths
     const projectsResponse = await axios.get(`${API_BASE_URL}/projects/?limit=100`);
     const projects = projectsResponse.data.results || [];
     
     // Extract slugs from projects
-    const slugs = projects.map((project: any) => project.slug);
+    const apiSlugs = projects.map((project: any) => project.slug);
+    
+    // Combine real and placeholder slugs, removing duplicates
+    const allSlugs = [...new Set([...apiSlugs, ...placeholderSlugs])];
     
     // Create paths for all locales and slugs
     const paths = locales.flatMap(locale => 
-      slugs.map((slug: string) => ({
+      allSlugs.map((slug: string) => ({
         params: { slug },
         locale
       }))
@@ -346,17 +422,165 @@ export const getStaticPaths: GetStaticPaths = async ({ locales = ['en'] }) => {
     };
   } catch (error: any) {
     console.error('Error fetching project slugs:', error.message || 'Unknown error');
+    
+    // Even if API call fails, still generate paths for placeholders
+    const fallbackPaths = locales.flatMap(locale => 
+      placeholderSlugs.map(slug => ({
+        params: { slug },
+        locale
+      }))
+    );
+    
     return {
-      paths: [],
+      paths: fallbackPaths,
       fallback: true,
     };
   }
+};
+
+// Replace the file system based approach with a more Next.js friendly approach
+// This function will only run during build time on the server
+const generateImageArray = (
+  slug: string, 
+  category: string, 
+  startIndex: number = 1,
+  endIndex: number = 43,  // Set a reasonable limit based on what you know exists
+  coverImageName: string = `${slug}.jpg`
+) => {
+  const images = [];
+  
+  // Add cover image
+  images.push({
+    id: 'image-cover',
+    src: `/images/projects/${category}/${slug}/${coverImageName}`,
+    alt: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+    isCover: true
+  });
+  
+  // Add only images in the specified range
+  for (let i = startIndex; i <= endIndex; i++) {
+    const imageName = i < 10 ? `image-0${i}.jpg` : `image-${i}.jpg`;
+    const imageUrl = `/images/projects/${category}/${slug}/${imageName}`;
+    
+    images.push({
+      id: `image-${i}`,
+      src: imageUrl,
+      alt: `${slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} - Image ${i}`,
+      isCover: false
+    });
+  }
+  
+  return images;
 };
 
 export const getStaticProps: GetStaticProps = async ({ params, locale = 'en' }) => {
   const API_BASE_URL = getApiBaseUrl();
   const slug = params?.slug as string;
   
+  // Define placeholder project data that matches what we have in PlaceholderProjects.tsx
+  const placeholderProjects = {
+    'madinaty-villa': {
+      id: 'placeholder-1',
+      title: 'Madinaty Villa',
+      slug: 'madinaty-villa',
+      description: 'Luxurious villa design in Madinaty featuring elegant interiors, open living spaces, and premium finishes that blend comfort with sophisticated aesthetics.',
+      category: { name: 'Residential', slug: 'residential' },
+      client: 'Private Client',
+      location: 'Madinaty, Cairo',
+      area: 450,
+      completedDate: '2023',
+      tags: [
+        { id: 'tag-1', name: 'Villa', slug: 'villa' },
+        { id: 'tag-2', name: 'Luxury', slug: 'luxury' },
+        { id: 'tag-3', name: 'Modern', slug: 'modern' }
+      ],
+      // Generate images with known range
+      images: generateImageArray('madinaty-villa', 'residential', 1, 43)
+    },
+    'urban-apartment': {
+      id: 'placeholder-2',
+      title: 'Urban Apartment',
+      slug: 'urban-apartment',
+      description: 'Compact apartment design maximizing space and functionality in urban settings with smart storage solutions and multifunctional furniture.',
+      category: { name: 'Residential', slug: 'residential' },
+      client: 'Modern Living Co.',
+      location: 'Downtown Cairo',
+      area: 120,
+      completedDate: '2023',
+      tags: [
+        { id: 'tag-3', name: 'Urban', slug: 'urban' },
+        { id: 'tag-4', name: 'Compact', slug: 'compact' },
+        { id: 'tag-5', name: 'Smart Home', slug: 'smart-home' }
+      ],
+      // Use fallback images since these don't exist yet
+      images: [
+        {
+          id: 'image-1', 
+          src: '/images/project-2.jpg', 
+          alt: 'Urban Apartment', 
+          isCover: true 
+        },
+        {
+          id: 'image-2', 
+          src: '/images/project-3.jpg', 
+          alt: 'Urban Apartment Living Room'
+        },
+        {
+          id: 'image-3', 
+          src: '/images/project-4.jpg', 
+          alt: 'Urban Apartment Kitchen'
+        }
+      ]
+    },
+    'office-renovation': {
+      id: 'placeholder-3',
+      title: 'Office Renovation',
+      slug: 'office-renovation',
+      description: 'Professional workspace designed for productivity and collaboration with ergonomic solutions, optimal lighting, and flexible meeting areas.',
+      category: { name: 'Commercial', slug: 'commercial' },
+      client: 'Corporate Solutions Inc.',
+      location: 'New Cairo',
+      area: 300,
+      completedDate: '2023',
+      tags: [
+        { id: 'tag-5', name: 'Office', slug: 'office' },
+        { id: 'tag-6', name: 'Professional', slug: 'professional' },
+        { id: 'tag-7', name: 'Corporate', slug: 'corporate' }
+      ],
+      // Use fallback images since these don't exist yet
+      images: [
+        {
+          id: 'image-1', 
+          src: '/images/project-3.jpg', 
+          alt: 'Office Renovation', 
+          isCover: true 
+        },
+        {
+          id: 'image-2', 
+          src: '/images/project-4.jpg', 
+          alt: 'Office Renovation Meeting Room'
+        },
+        {
+          id: 'image-3', 
+          src: '/images/project-5.jpg', 
+          alt: 'Office Renovation Workspace'
+        }
+      ]
+    }
+  };
+  
+  // Check if this is a placeholder project
+  if (slug in placeholderProjects) {
+    return {
+      props: {
+        initialProject: placeholderProjects[slug as keyof typeof placeholderProjects],
+        ...(await serverSideTranslations(locale, ['common'])),
+      },
+      revalidate: 60
+    };
+  }
+  
+  // If not a placeholder, proceed with normal API call
   try {
     // Fetch project data from API
     const projectParams = new URLSearchParams();

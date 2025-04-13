@@ -78,6 +78,7 @@ interface UseProjectsOptions {
   tag?: string;
   search?: string;
   featured?: boolean;
+  is_published?: boolean;
   limit?: number;
 }
 
@@ -111,6 +112,11 @@ export const useProjects = (options: UseProjectsOptions = {}, prefetchedData?: P
     
     if (options.featured) {
       params.append('is_featured', 'true');
+    }
+    
+    // Add explicit support for is_published filter
+    if (options.is_published !== undefined) {
+      params.append('is_published', options.is_published ? 'true' : 'false');
     }
     
     if (options.limit) {

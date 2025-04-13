@@ -115,7 +115,8 @@
     "location": "Location",
     "area": "Area",
     "completedDate": "Completed Date",
-    "relatedProjects": "Related Projects"
+    "relatedProjects": "Related Projects",
+    "sampleProjectLabel": "View Concept"
   },
   "services": {
     "pageTitle": "Our Services",
@@ -188,6 +189,8 @@
   },
   "backToPortfolio": "Back to Portfolio",
   "projectDetails": "Project Details",
+  "projectNotFound": "Project Not Found",
+  "projectNotFoundDesc": "The project you are looking for does not exist or may have been removed.",
   "client": "Client",
   "location": "Location",
   "area": "Area",

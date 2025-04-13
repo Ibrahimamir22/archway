@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
@@ -5,7 +6,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
 import { useProjects, Project } from '../hooks/useProjects';
 import { useServices, Service } from '../hooks/useServices';
-import { useEffect, useState } from 'react';
+import PlaceholderProjects from '../components/portfolio/PlaceholderProjects';
 import axios from 'axios';
 import OptimizedImage from '../components/common/OptimizedImage';
 import { GetStaticProps } from 'next';
@@ -50,6 +51,26 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
   const { t } = useTranslation('common');
   const router = useRouter();
   const isRtl = router.locale === 'ar';
+  
+  // Get translated project title
+  const getProjectTitle = (project: Project) => {
+    return t(`projects.${project.slug}`, { defaultValue: project.title });
+  };
+  
+  // Get translated project description
+  const getProjectDescription = (project: Project) => {
+    return t(`descriptions.${project.slug}`, { defaultValue: project.description });
+  };
+  
+  // Get translated service title
+  const getServiceTitle = (service: Service) => {
+    return t(`serviceTypes.${service.slug}`, { defaultValue: service.title });
+  };
+  
+  // Get translated service description
+  const getServiceDescription = (service: Service) => {
+    return t(`serviceTypes.descriptions.${service.slug}`, { defaultValue: service.short_description || service.description });
+  };
   
   // Fetch projects data
   const { projects, loading, error } = useProjects(
@@ -219,7 +240,7 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
                     <div className="relative h-48 w-full">
                       <OptimizedImage
                         src={service.cover_image_url || service.image_url || `/images/service-placeholder.jpg`}
-                        alt={service.title}
+                        alt={getServiceTitle(service)}
                         fill
                         priority={index < 3}
                         className="object-cover transition-transform duration-500 hover:scale-105"
@@ -234,9 +255,9 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
                         {getServiceIcon(service)}
                       </svg>
                     </div>
-                    <h3 className="text-xl font-bold mb-3">{service.title}</h3>
+                    <h3 className="text-xl font-bold mb-3">{getServiceTitle(service)}</h3>
                     <p className="text-gray-600 mb-4 line-clamp-3">
-                      {service.short_description || service.description}
+                      {getServiceDescription(service)}
                     </p>
                     <Link href={`/services/${service.slug}`} className={`text-brand-blue-light font-medium hover:underline ${isRtl ? 'block text-right' : ''}`}>
                       {t('home.learnMore')} {isRtl ? '←' : '→'}
@@ -264,11 +285,10 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Project cards */}
-              {loading ? (
-                // Show skeleton loaders while loading
-                Array(3).fill(0).map((_, index) => (
+            {loading ? (
+              // Show skeleton loaders while loading
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {Array(3).fill(0).map((_, index) => (
                   <div key={`skeleton-${index}`} className="rounded-lg shadow-md bg-white animate-pulse">
                     <div className="relative h-64 bg-gray-200"></div>
                     <div className="p-6">
@@ -277,26 +297,31 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
                       <div className="h-4 w-1/3 bg-gray-200 rounded"></div>
                     </div>
                   </div>
-                ))
-              ) : error ? (
-                // Show error state
-                <div className="col-span-3 text-center py-8">
-                  <p className="text-red-500">{error}</p>
-                  <button 
-                    onClick={() => window.location.reload()} 
-                    className="mt-4 px-4 py-2 bg-brand-blue-light text-white rounded"
-                  >
-                    {t('common.tryAgain')}
-                  </button>
-                </div>
-              ) : (
-                // Show project data
-                projects.map((project, index) => (
+                ))}
+              </div>
+            ) : error ? (
+              // Show error state
+              <div className="text-center py-8">
+                <p className="text-red-500">{error}</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-4 px-4 py-2 bg-brand-blue-light text-white rounded"
+                >
+                  {t('common.tryAgain')}
+                </button>
+              </div>
+            ) : projects.length === 0 ? (
+              // Show placeholder projects when no real projects exist
+              <PlaceholderProjects count={3} />
+            ) : (
+              // Show real projects
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {projects.map((project, index) => (
                   <div key={project.id || `project-${index}`} className="group overflow-hidden rounded-lg shadow-md bg-white">
                     <div className="relative h-64 overflow-hidden">
                       <OptimizedImage 
                         src={getImageSrc(project)}
-                        alt={project.title} 
+                        alt={getProjectTitle(project)} 
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -304,16 +329,16 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
                       />
                     </div>
                     <div className={`p-6 ${isRtl ? 'text-right' : ''}`}>
-                      <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                      <p className="text-gray-600 mb-4">{project.description}</p>
+                      <h3 className="text-xl font-bold mb-2">{getProjectTitle(project)}</h3>
+                      <p className="text-gray-600 mb-4">{getProjectDescription(project)}</p>
                       <Link href={`/portfolio/${project.slug}`} className={`text-brand-blue-light font-medium hover:underline ${isRtl ? 'block text-right' : ''}`}>
                         {t('home.viewProject')} {isRtl ? '←' : '→'}
                       </Link>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
             
             <div className="text-center mt-12">
               <Link href="/portfolio" className="btn btn-primary">

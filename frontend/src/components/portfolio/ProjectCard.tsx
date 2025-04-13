@@ -56,6 +56,21 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const queryClient = useQueryClient();
   const preloadDivRef = useRef<HTMLDivElement | null>(null);
   
+  // Get translated project title
+  const getProjectTitle = () => {
+    return t(`projects.${project.slug}`, { defaultValue: project.title });
+  };
+  
+  // Get translated project description
+  const getProjectDescription = () => {
+    return t(`descriptions.${project.slug}`, { defaultValue: project.description });
+  };
+  
+  // Get translated category name
+  const getCategoryName = () => {
+    return t(`categories.${project.category.slug}`, { defaultValue: project.category.name });
+  };
+  
   const handleSaveClick = () => {
     if (isAuthenticated && onSaveToFavorites) {
       onSaveToFavorites(project.id);
@@ -238,7 +253,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <div className="relative h-48 w-full">
             <OptimizedImage
               src={getImageSrc()}
-              alt={project.title}
+              alt={getProjectTitle()}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover"
@@ -262,9 +277,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                 className="text-xl font-semibold text-gray-900 hover:text-brand-blue"
                 prefetch={true}
               >
-                {project.title}
+                {getProjectTitle()}
               </Link>
-              <p className="text-sm text-gray-500 mt-1">{project.category.name}</p>
+              <p className="text-sm text-gray-500 mt-1">{getCategoryName()}</p>
             </div>
             
             <button
@@ -291,7 +306,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
           
           <p className={`text-gray-600 mt-2 line-clamp-2 ${isRtl ? 'text-right' : ''}`}>
-            {project.description}
+            {getProjectDescription()}
           </p>
           
           <div className={`flex flex-wrap gap-2 mt-4 ${isRtl ? 'justify-end' : ''}`}>

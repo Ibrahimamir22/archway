@@ -3,51 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import OptimizedImage from '../common/OptimizedImage';
-
-/**
- * Placeholder project data for when there are no real projects from the backend
- */
-const placeholderProjects = [
-  {
-    id: 'placeholder-1',
-    title: 'Madinaty Villa',
-    slug: 'madinaty-villa',
-    description: 'Luxurious villa design in Madinaty featuring elegant interiors, open living spaces, and premium finishes that blend comfort with sophisticated aesthetics.',
-    category: { name: 'Residential', id: 'cat-2', slug: 'residential' },
-    tags: [
-      { id: 'tag-1', name: 'Villa', slug: 'villa' },
-      { id: 'tag-2', name: 'Luxury', slug: 'luxury' },
-      { id: 'tag-3', name: 'Modern', slug: 'modern' }
-    ],
-    image: '/images/projects/residential/madinaty-villa/madinaty-villa.jpg'
-  },
-  {
-    id: 'placeholder-2',
-    title: 'Urban Apartment',
-    slug: 'urban-apartment',
-    description: 'Compact apartment design maximizing space and functionality in urban settings with smart storage solutions and multifunctional furniture.',
-    category: { name: 'Residential', id: 'cat-2', slug: 'residential' },
-    tags: [
-      { id: 'tag-3', name: 'Urban', slug: 'urban' },
-      { id: 'tag-4', name: 'Compact', slug: 'compact' },
-      { id: 'tag-5', name: 'Smart Home', slug: 'smart-home' }
-    ],
-    image: '/images/project-2.jpg'
-  },
-  {
-    id: 'placeholder-3',
-    title: 'Office Renovation',
-    slug: 'office-renovation',
-    description: 'Professional workspace designed for productivity and collaboration with ergonomic solutions, optimal lighting, and flexible meeting areas.',
-    category: { name: 'Commercial', id: 'cat-3', slug: 'commercial' },
-    tags: [
-      { id: 'tag-5', name: 'Office', slug: 'office' },
-      { id: 'tag-6', name: 'Professional', slug: 'professional' },
-      { id: 'tag-7', name: 'Corporate', slug: 'corporate' }
-    ],
-    image: '/images/project-3.jpg'
-  }
-];
+import { getPlaceholderProjectsWithLimit } from '@/data/placeholders/projectPlaceholders';
 
 interface PlaceholderProjectsProps {
   count?: number;
@@ -76,8 +32,8 @@ const PlaceholderProjects: React.FC<PlaceholderProjectsProps> = ({ count = 3 }) 
     return t(`categories.${slug}`, { defaultValue: slug });
   };
 
-  // Use only the requested number of placeholders
-  const projectsToShow = placeholderProjects.slice(0, count);
+  // Use only the requested number of placeholders, from the central store
+  const projectsToShow = getPlaceholderProjectsWithLimit(count);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -89,7 +45,7 @@ const PlaceholderProjects: React.FC<PlaceholderProjectsProps> = ({ count = 3 }) 
           <Link href={`/portfolio/${project.slug}`}>
             <div className="relative h-48 w-full bg-gray-200">
               <OptimizedImage
-                src={project.image}
+                src={project.image || (project.images[0]?.src || '/images/placeholder.jpg')}
                 alt={getProjectTitle(project.slug)}
                 fill
                 className="object-cover"

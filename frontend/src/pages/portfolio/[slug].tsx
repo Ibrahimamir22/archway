@@ -11,6 +11,11 @@ import LoadingState from '@/components/common/LoadingState';
 import { useProjectDetail, fixImageUrl } from '@/hooks/useProjects';
 import axios from 'axios';
 import OptimizedImage from '@/components/common/OptimizedImage';
+import { 
+  getPlaceholderProject, 
+  getPlaceholderSlugs, 
+  PlaceholderProject 
+} from '@/data/placeholders/projectPlaceholders';
 
 interface ProjectDetail {
   id: string;
@@ -394,8 +399,8 @@ const getApiBaseUrl = () => {
 export const getStaticPaths: GetStaticPaths = async ({ locales = ['en'] }) => {
   const API_BASE_URL = getApiBaseUrl();
   
-  // Define placeholder slugs
-  const placeholderSlugs = ['madinaty-villa', 'urban-apartment', 'office-renovation'];
+  // Get placeholder slugs from the centralized file
+  const placeholderSlugs = getPlaceholderSlugs();
   
   try {
     // Fetch projects for static paths
@@ -438,142 +443,17 @@ export const getStaticPaths: GetStaticPaths = async ({ locales = ['en'] }) => {
   }
 };
 
-// Replace the file system based approach with a more Next.js friendly approach
-// This function will only run during build time on the server
-const generateImageArray = (
-  slug: string, 
-  category: string, 
-  startIndex: number = 1,
-  endIndex: number = 43,  // Set a reasonable limit based on what you know exists
-  coverImageName: string = `${slug}.jpg`
-) => {
-  const images = [];
-  
-  // Add cover image
-  images.push({
-    id: 'image-cover',
-    src: `/images/projects/${category}/${slug}/${coverImageName}`,
-    alt: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-    isCover: true
-  });
-  
-  // Add only images in the specified range
-  for (let i = startIndex; i <= endIndex; i++) {
-    const imageName = i < 10 ? `image-0${i}.jpg` : `image-${i}.jpg`;
-    const imageUrl = `/images/projects/${category}/${slug}/${imageName}`;
-    
-    images.push({
-      id: `image-${i}`,
-      src: imageUrl,
-      alt: `${slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} - Image ${i}`,
-      isCover: false
-    });
-  }
-  
-  return images;
-};
-
 export const getStaticProps: GetStaticProps = async ({ params, locale = 'en' }) => {
   const API_BASE_URL = getApiBaseUrl();
   const slug = params?.slug as string;
   
-  // Define placeholder project data that matches what we have in PlaceholderProjects.tsx
-  const placeholderProjects = {
-    'madinaty-villa': {
-      id: 'placeholder-1',
-      title: 'Madinaty Villa',
-      slug: 'madinaty-villa',
-      description: 'Luxurious villa design in Madinaty featuring elegant interiors, open living spaces, and premium finishes that blend comfort with sophisticated aesthetics.',
-      category: { name: 'Residential', slug: 'residential' },
-      client: 'Private Client',
-      location: 'Madinaty, Cairo',
-      area: 450,
-      completedDate: '2023',
-      tags: [
-        { id: 'tag-1', name: 'Villa', slug: 'villa' },
-        { id: 'tag-2', name: 'Luxury', slug: 'luxury' },
-        { id: 'tag-3', name: 'Modern', slug: 'modern' }
-      ],
-      // Generate images with known range
-      images: generateImageArray('madinaty-villa', 'residential', 1, 43)
-    },
-    'urban-apartment': {
-      id: 'placeholder-2',
-      title: 'Urban Apartment',
-      slug: 'urban-apartment',
-      description: 'Compact apartment design maximizing space and functionality in urban settings with smart storage solutions and multifunctional furniture.',
-      category: { name: 'Residential', slug: 'residential' },
-      client: 'Modern Living Co.',
-      location: 'Downtown Cairo',
-      area: 120,
-      completedDate: '2023',
-      tags: [
-        { id: 'tag-3', name: 'Urban', slug: 'urban' },
-        { id: 'tag-4', name: 'Compact', slug: 'compact' },
-        { id: 'tag-5', name: 'Smart Home', slug: 'smart-home' }
-      ],
-      // Use fallback images since these don't exist yet
-      images: [
-        {
-          id: 'image-1', 
-          src: '/images/project-2.jpg', 
-          alt: 'Urban Apartment', 
-          isCover: true 
-        },
-        {
-          id: 'image-2', 
-          src: '/images/project-3.jpg', 
-          alt: 'Urban Apartment Living Room'
-        },
-        {
-          id: 'image-3', 
-          src: '/images/project-4.jpg', 
-          alt: 'Urban Apartment Kitchen'
-        }
-      ]
-    },
-    'office-renovation': {
-      id: 'placeholder-3',
-      title: 'Office Renovation',
-      slug: 'office-renovation',
-      description: 'Professional workspace designed for productivity and collaboration with ergonomic solutions, optimal lighting, and flexible meeting areas.',
-      category: { name: 'Commercial', slug: 'commercial' },
-      client: 'Corporate Solutions Inc.',
-      location: 'New Cairo',
-      area: 300,
-      completedDate: '2023',
-      tags: [
-        { id: 'tag-5', name: 'Office', slug: 'office' },
-        { id: 'tag-6', name: 'Professional', slug: 'professional' },
-        { id: 'tag-7', name: 'Corporate', slug: 'corporate' }
-      ],
-      // Use fallback images since these don't exist yet
-      images: [
-        {
-          id: 'image-1', 
-          src: '/images/project-3.jpg', 
-          alt: 'Office Renovation', 
-          isCover: true 
-        },
-        {
-          id: 'image-2', 
-          src: '/images/project-4.jpg', 
-          alt: 'Office Renovation Meeting Room'
-        },
-        {
-          id: 'image-3', 
-          src: '/images/project-5.jpg', 
-          alt: 'Office Renovation Workspace'
-        }
-      ]
-    }
-  };
+  // Check if this is a placeholder project using the centralized getter
+  const placeholderProject = getPlaceholderProject(slug);
   
-  // Check if this is a placeholder project
-  if (slug in placeholderProjects) {
+  if (placeholderProject) {
     return {
       props: {
-        initialProject: placeholderProjects[slug as keyof typeof placeholderProjects],
+        initialProject: placeholderProject,
         ...(await serverSideTranslations(locale, ['common'])),
       },
       revalidate: 60
@@ -712,4 +592,4 @@ export const getStaticProps: GetStaticProps = async ({ params, locale = 'en' }) 
   }
 };
 
-export default ProjectDetailPage; 
+export default ProjectDetailPage;

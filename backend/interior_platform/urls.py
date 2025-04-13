@@ -27,7 +27,11 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from apps.projects.views import ProjectViewSet, CategoryViewSet, TagViewSet
 from apps.testimonials.views import TestimonialViewSet
-from apps.contact.views import ContactViewSet, ContactInfoViewSet, FooterAPIView
+# from apps.contact.views import ContactViewSet, ContactInfoViewSet, FooterAPIView
+from apps.contact_management.views import ContactViewSet, ContactInfoViewSet
+from apps.footer.views import FooterAPIView, FooterSectionViewSet
+from apps.newsletter.views import NewsletterSubscriptionViewSet
+from apps.email_system.views import EmailDeliveryViewSet
 from apps.services.views import ServiceViewSet, ServiceCategoryViewSet
 
 @api_view(['GET'])
@@ -46,6 +50,10 @@ def api_root(request, format=None):
         'services': reverse('service-list', request=request, format=format),
         'service-categories': reverse('servicecategory-list', request=request, format=format),
         'footer': reverse('footer', request=request, format=format),
+        # New endpoints
+        'newsletter': reverse('newsletter:subscription-list', request=request, format=format),
+        'footer-sections': reverse('footer:section-list', request=request, format=format),
+        'email-system': reverse('email_system:delivery-list', request=request, format=format),
         # Commented until analytics app is enabled
         # 'analytics': reverse('pageview-list', request=request, format=format),
     })
@@ -65,9 +73,17 @@ router.register(r'service-categories', ServiceCategoryViewSet, basename='service
 api_patterns = [
     path('v1/', include(router.urls)),
     path('v1/', api_root, name='api-root'),
-    path('v1/', include('apps.contact.urls')),  # Include contact app URLs with footer endpoints
+    # Original contact app for backward compatibility
+    # path('v1/', include('apps.contact.urls')),  
+    
+    # New reorganized apps
+    path('v1/newsletter/', include('apps.newsletter.urls')),
+    path('v1/footer/', include('apps.footer.urls')),
+    path('v1/contact/', include('apps.contact_management.urls')),
+    path('v1/email/', include('apps.email_system.urls')),
+    
     # Commented until analytics app is enabled
-    # path('v1/analytics/', include('apps.analytics.urls')),  # Include analytics app URLs
+    # path('v1/analytics/', include('apps.analytics.urls')),
     path('auth/', include('rest_framework.urls')),
 ]
 

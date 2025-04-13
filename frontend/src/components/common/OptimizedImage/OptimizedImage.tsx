@@ -1,49 +1,22 @@
 import Image, { ImageProps } from 'next/image';
 import { useState, useEffect } from 'react';
+import { fixImageUrl } from '../../../utils/api';
+
+// Global registry of preloaded images to avoid duplicate work
+const preloadedImages = typeof window !== 'undefined' ? new Set<string>() : new Set();
 
 export interface OptimizedImageProps extends Omit<ImageProps, 'src'> {
   src: string;
+  onLoad?: () => void;
 }
 
 /**
  * Optimized Image component that ensures consistent image loading across all pages
  * and handles URL normalization for both server and client environments
  */
-const OptimizedImage = ({ src, alt, priority, ...props }: OptimizedImageProps) => {
-  // Normalize URL consistently for both server and client
-  const normalizeUrl = (url: string): string => {
-    if (!url) return '/images/placeholder.jpg';
-    
-    try {
-      // Convert backend:8000 to localhost:8000 for browser
-      if (url.includes('backend:8000')) {
-        return url.replace(/backend:8000/g, 'localhost:8000');
-      }
-      
-      // Handle absolute media paths from Django
-      if (url.startsWith('/media/')) {
-        return `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'}${url}`;
-      }
-      
-      // Handle relative media paths
-      if (url.startsWith('media/')) {
-        return `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'}/${url}`;
-      }
-      
-      // If URL doesn't have protocol but isn't a relative path, add http
-      if (!url.includes('://') && !url.startsWith('/')) {
-        return `http://${url}`;
-      }
-      
-      return url;
-    } catch (error) {
-      console.error('Error normalizing image URL:', error);
-      return '/images/placeholder.jpg';
-    }
-  };
-
+const OptimizedImage = ({ src, alt, priority, onLoad, ...props }: OptimizedImageProps) => {
   // Initial normalized URL
-  const [imageSrc, setImageSrc] = useState<string>(normalizeUrl(src));
+  const [imageSrc, setImageSrc] = useState<string>(fixImageUrl(src));
   
   // Handle errors
   const [hasError, setHasError] = useState(false);
@@ -51,7 +24,7 @@ const OptimizedImage = ({ src, alt, priority, ...props }: OptimizedImageProps) =
   // Update normalized URL when source changes
   useEffect(() => {
     if (src) {
-      const normalized = normalizeUrl(src);
+      const normalized = fixImageUrl(src);
       setImageSrc(normalized);
       setHasError(false); // Reset error state when src changes
     }
@@ -77,6 +50,11 @@ const OptimizedImage = ({ src, alt, priority, ...props }: OptimizedImageProps) =
     setImageSrc(`/images/project-${fallbackIndex}.jpg`);
   };
   
+  // Handle successful load
+  const handleLoad = () => {
+    if (onLoad) onLoad();
+  };
+  
   // Preload image for better performance
   useEffect(() => {
     if (typeof window !== 'undefined' && imageSrc && !hasError && !imageSrc.startsWith('/images/placeholder')) {
@@ -90,6 +68,7 @@ const OptimizedImage = ({ src, alt, priority, ...props }: OptimizedImageProps) =
       src={imageSrc}
       alt={alt || 'Image'} 
       onError={handleError}
+      onLoad={handleLoad}
       priority={priority}
       {...props} 
     />

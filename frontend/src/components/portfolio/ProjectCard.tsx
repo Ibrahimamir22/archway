@@ -9,32 +9,11 @@ import { useQueryClient } from 'react-query';
 import axios from 'axios';
 import OptimizedImage from '../common/OptimizedImage/index';
 import { getCoverImageUrl } from '@/data/placeholders/projectPlaceholders';
+import { getApiBaseUrl } from '@/utils/urls';
 
 // Track loaded images globally across all components
 const loadedImages = typeof window !== 'undefined' ? new Set<string>() : new Set();
 const preloadedProjects = typeof window !== 'undefined' ? new Set<string>() : new Set();
-
-// Helper function to get API base URL
-const getApiBaseUrl = () => {
-  // Check if we're in a browser environment
-  const isBrowser = typeof window !== 'undefined';
-  
-  // Get the configured API URL (from environment variables)
-  const configuredUrl = process.env.NEXT_PUBLIC_API_URL;
-  
-  if (configuredUrl) {
-    // If we're in a browser and the URL contains 'backend', replace with 'localhost'
-    if (isBrowser && configuredUrl.includes('backend')) {
-      return configuredUrl.replace('backend', 'localhost');
-    }
-    return configuredUrl;
-  }
-  
-  // Default fallback - use backend for server-side, localhost for client-side
-  return isBrowser 
-    ? 'http://localhost:8000/api/v1' 
-    : 'http://backend:8000/api/v1';
-};
 
 interface ProjectCardProps {
   project: Project;

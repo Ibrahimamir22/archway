@@ -33,7 +33,7 @@ const Footer = (props: FooterProps): JSX.Element => {
   // Extract data from footerData
   const socialLinks = footerData?.social_links || [];
   const contactInfo = footerData?.contact_info || [];
-  const sections = footerData?.sections || [];
+  const sections = Array.isArray(footerData?.sections) ? footerData.sections : [];
   const copyrightText = footerData?.copyright_text;
   const bottomLinks = footerData?.bottom_links || [];
   
@@ -67,10 +67,10 @@ const Footer = (props: FooterProps): JSX.Element => {
   }
   
   // Calculate the grid columns based on available sections
-  const totalSections = (socialLinks.length > 0 ? 1 : 0) + (sections?.length || 0) + (contactInfo.length > 0 ? 1 : 0);
+  const totalSections = (socialLinks.length > 0 ? 1 : 0) + (sections.length || 0) + (contactInfo.length > 0 ? 1 : 0);
   const gridCols = totalSections <= 2 ? 'grid-cols-1 md:grid-cols-2' :
-                   totalSections === 3 ? 'grid-cols-1 md:grid-cols-3' :
-                   'grid-cols-1 md:grid-cols-4';
+                  totalSections === 3 ? 'grid-cols-1 md:grid-cols-3' :
+                  'grid-cols-1 md:grid-cols-4';
   
   return (
     <footer className="bg-gray-900 text-white pt-12 pb-6">
@@ -86,7 +86,7 @@ const Footer = (props: FooterProps): JSX.Element => {
           )}
           
           {/* Dynamic sections from database */}
-          {sections.map((section: FooterSectionType) => (
+          {Array.isArray(sections) && sections.map((section: FooterSectionType) => (
             <React.Fragment key={section.id}>
               <FooterSection 
                 section={section} 

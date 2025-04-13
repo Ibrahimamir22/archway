@@ -1,7 +1,6 @@
 import { useQuery } from 'react-query';
-import axios from 'axios';
 import { useRouter } from 'next/router';
-import { getApiBaseUrl } from '../../utils/urls';
+import api, { getApiBaseUrl } from '../../utils/api';
 
 export interface SocialLink {
   id: string;
@@ -54,9 +53,77 @@ export const useFooter = (prefetchedData?: FooterData) => {
     params.append('lang', locale || 'en');
     
     try {
-      // Fetch data from API
-      const response = await axios.get(`${API_BASE_URL}/footer/?${params.toString()}`);
-      return response.data;
+      // Use our api instance with automatic URL transformation
+      const mainResponse = await api.get(`${API_BASE_URL}/footer/?${params.toString()}`);
+      const endpoints = mainResponse.data;
+      
+      // Fetch data from each endpoint - URLs will be automatically transformed by axios interceptor
+      const [sectionsRes, socialMediaRes, settingsRes] = await Promise.all([
+        api.get(`${endpoints.sections}?${params.toString()}`),
+        api.get(`${endpoints['social-media']}?${params.toString()}`),
+        api.get(`${endpoints.settings}?${params.toString()}`),
+      ]);
+      
+      // Transform the sections data to match our expected format
+      const sections = sectionsRes.data.results.map(section => ({
+        id: section.id,
+        title: section.title,
+        links: section.links.map(link => ({
+          id: link.id,
+          text: link.title,
+          url: link.url
+        }))
+      }));
+      
+      // Transform social media data
+      const social_links = socialMediaRes.data.results.map(social => ({
+        id: social.id,
+        platform: social.platform,
+        url: social.url,
+        icon: social.icon
+      }));
+      
+      // Extract contact info from settings
+      const settingsData = settingsRes.data;
+      const contact_info = [];
+      
+      if (settingsData.email) {
+        contact_info.push({
+          id: 'email',
+          type: 'email',
+          value: settingsData.email,
+          icon: 'email'
+        });
+      }
+      
+      if (settingsData.phone) {
+        contact_info.push({
+          id: 'phone',
+          type: 'phone',
+          value: settingsData.phone,
+          icon: 'phone'
+        });
+      }
+      
+      if (settingsData.address_en || settingsData.address_ar) {
+        contact_info.push({
+          id: 'address',
+          type: 'address',
+          value: locale === 'ar' ? settingsData.address_ar : settingsData.address_en,
+          icon: 'location'
+        });
+      }
+      
+      // Construct the complete footer data
+      const footerData = {
+        social_links,
+        contact_info,
+        sections,
+        copyright_text: locale === 'ar' ? settingsData.copyright_text_ar : settingsData.copyright_text_en,
+        bottom_links: [] // Currently no bottom links in the API
+      };
+      
+      return footerData;
     } catch (error) {
       console.error('Error fetching footer data:', error);
       
@@ -138,10 +205,10 @@ export const useNewsletterSubscription = () => {
   
   const subscribeToNewsletter = async (email: string) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/newsletter/`, { email });
+      const response = await api.post(`${API_BASE_URL}/newsletter/`, { email });
       return { success: true, data: response.data };
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
+      if (api.isAxiosError(error) && error.response) {
         return { 
           success: false, 
           error: error.response.data.detail || 'Failed to subscribe. Please try again.' 

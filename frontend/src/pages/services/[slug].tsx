@@ -7,6 +7,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useServiceDetail, Service, fixImageUrl } from '@/hooks';
 import Link from 'next/link';
 import OptimizedImage from '@/components/common/OptimizedImage/index';
+import DirectServiceImage from '@/components/services/DirectServiceImage';
 import axios from 'axios';
 
 // Smart detection of environment to handle both browser and container contexts
@@ -97,6 +98,17 @@ const ServiceDetailPage: NextPage<ServiceDetailPageProps> = ({ initialService })
     );
   }
   
+  // Get direct image source for consistency
+  const getImageSrc = () => {
+    if (serviceData.image_url) {
+      return serviceData.image_url;
+    }
+    if (serviceData.image) {
+      return serviceData.image;
+    }
+    return '/images/service-placeholder.jpg';
+  };
+  
   return (
     <>
       <Head>
@@ -158,15 +170,13 @@ const ServiceDetailPage: NextPage<ServiceDetailPageProps> = ({ initialService })
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               {/* Left Column - Service Description */}
               <div className={`lg:col-span-2 ${isRtl ? 'rtl text-right' : ''}`}>
-                {serviceData.image_url && (
+                {(serviceData.image_url || serviceData.image) && (
                   <div className="relative h-96 w-full mb-8 rounded-lg overflow-hidden">
-                    <OptimizedImage
-                      src={fixImageUrl(serviceData.image_url || serviceData.image || '')}
+                    {/* Use DirectServiceImage for consistent rendering */}
+                    <DirectServiceImage
+                      src={getImageSrc()}
                       alt={serviceData.title}
-                      fill
-                      priority={true}
-                      className="object-cover"
-                      sizes="(max-width: 1024px) 100vw, 66vw"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                 )}

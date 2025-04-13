@@ -1,8 +1,7 @@
 import { useInfiniteQuery } from 'react-query';
-import axios from 'axios';
 import { useRouter } from 'next/router';
 import { Project, UseProjectsOptions, ProjectsResponse } from './types';
-import { getApiBaseUrl } from '../../utils/urls';
+import api, { getApiBaseUrl, fixImageUrl } from '../../utils/api';
 
 /**
  * Hook for fetching projects with pagination, filtering, and search
@@ -56,9 +55,32 @@ export const useProjectList = (options: UseProjectsOptions = {}, prefetchedData?
     // Add page parameter for pagination
     params.append('page', pageParam.toString());
     
-    // Fetch data from API
-    const response = await axios.get<ProjectsResponse>(`${API_BASE_URL}/projects/?${params.toString()}`);
-    return response.data;
+    try {
+      // Use our api instance with automatic URL transformation
+      const response = await api.get<ProjectsResponse>(
+        `${API_BASE_URL}/projects/?${params.toString()}`
+      );
+      
+      // Fix image URLs to ensure they work in the browser
+      const results = response.data.results.map(project => ({
+        ...project,
+        cover_image: project.cover_image ? fixImageUrl(project.cover_image) : undefined,
+        cover_image_url: project.cover_image_url ? fixImageUrl(project.cover_image_url) : undefined,
+        images: project.images ? project.images.map(img => ({
+          ...img,
+          image: img.image ? fixImageUrl(img.image) : undefined,
+          image_url: img.image_url ? fixImageUrl(img.image_url) : undefined,
+        })) : []
+      }));
+      
+      return {
+        ...response.data,
+        results
+      };
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      throw error;
+    }
   };
 
   // Use react-query for data fetching with pagination support

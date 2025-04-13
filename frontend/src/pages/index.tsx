@@ -11,6 +11,8 @@ import axios from 'axios';
 import OptimizedImage from '../components/common/OptimizedImage/index';
 import { GetStaticProps } from 'next';
 import { dehydrate, QueryClient } from 'react-query';
+import DirectServiceImage from '../components/services/DirectServiceImage';
+import DirectProjectImage from '../components/portfolio/DirectProjectImage';
 
 // Define fallback project interface
 interface FallbackProject {
@@ -249,14 +251,11 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
                 <div key={service.id || `service-${index}`} className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden ${isRtl ? 'text-right' : ''}`}>
                   {/* Service Image */}
                   <Link href={`/services/${service.slug}`}>
-                    <div className="relative h-48 w-full">
-                      <OptimizedImage
-                        src={service.cover_image_url || service.image_url || `/images/service-placeholder.jpg`}
+                    <div className="relative h-48 w-full overflow-hidden">
+                      <DirectServiceImage
+                        src={service.image_url || service.cover_image_url || `/images/service-placeholder.jpg`}
                         alt={getServiceTitle(service)}
-                        fill
-                        priority={index < 3}
-                        className="object-cover transition-transform duration-500 hover:scale-105"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                       />
                     </div>
                   </Link>
@@ -342,13 +341,10 @@ export default function Home({ initialProjects = [], initialServices = [] }: Hom
                 {projects.map((project, index) => (
                   <div key={project.id || `project-${index}`} className="group overflow-hidden rounded-lg shadow-md bg-white">
                     <div className="relative h-64 overflow-hidden">
-                      <OptimizedImage 
+                      <DirectProjectImage 
                         src={getImageSrc(project)}
                         alt={getProjectTitle(project)} 
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        priority={index < 3}
+                        className="object-cover transition-transform duration-500 group-hover:scale-110 w-full h-full"
                       />
                     </div>
                     <div className={`p-6 ${isRtl ? 'text-right' : ''}`}>

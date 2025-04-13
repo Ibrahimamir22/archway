@@ -15,19 +15,26 @@ export const normalizeUrl = (url: string, options: {
     return options.useDefaultImage ? '/images/placeholder.jpg' : '';
   }
   
-  // Clean URL for browser consumption
-  if (url.indexOf('backend:8000') !== -1) {
+  // In browser context, replace backend:8000 with localhost:8000
+  // because browsers can't access Docker container names
+  if (typeof window !== 'undefined' && url.indexOf('backend:8000') !== -1) {
     url = url.replace(/backend:8000/g, 'localhost:8000');
   }
   
   // Handle absolute media paths
   if (url.charAt(0) === '/' && url.indexOf('media/') === 0) {
-    url = `http://localhost:8000${url}`;
+    const baseUrl = typeof window !== 'undefined'
+      ? 'http://localhost:8000'
+      : (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://backend:8000');
+    url = `${baseUrl}${url}`;
   }
   
   // Handle relative media paths
   if (url.indexOf('media/') === 0) {
-    url = `http://localhost:8000/${url}`;
+    const baseUrl = typeof window !== 'undefined'
+      ? 'http://localhost:8000'
+      : (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://backend:8000');
+    url = `${baseUrl}/${url}`;
   }
   
   // Handle missing HTTP protocol if option enabled
@@ -73,15 +80,16 @@ export const getApiBaseUrl = (): string => {
   const configuredUrl = process.env.NEXT_PUBLIC_API_URL || '';
   
   if (configuredUrl) {
-    // If we're in a browser and the URL contains 'backend', replace with 'localhost'
-    if (isBrowser && configuredUrl.indexOf('backend') !== -1) {
-      return configuredUrl.replace('backend', 'localhost');
+    // In browser context, we must use localhost:8000 instead of backend:8000
+    // because browsers can't access Docker container names
+    if (isBrowser && configuredUrl.includes('backend:8000')) {
+      return configuredUrl.replace('backend:8000', 'localhost:8000');
     }
     return configuredUrl;
   }
   
-  // Default fallback - use backend for server-side, localhost for client-side
-  return isBrowser 
+  // Default fallback - browsers always need to use localhost
+  return isBrowser
     ? 'http://localhost:8000/api/v1' 
     : 'http://backend:8000/api/v1';
 }; 

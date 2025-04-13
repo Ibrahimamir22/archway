@@ -36,11 +36,21 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@types/*": ["./src/@types/*"],
-      "@components/*": ["./src/components/*"],
-      "@hooks/*": ["./src/hooks/*"],
-      "@utils/*": ["./src/utils/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@types/*": [
+        "./src/@types/*"
+      ],
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ]
     },
     "strictNullChecks": false,
     "ignoreDeprecations": "5.0",

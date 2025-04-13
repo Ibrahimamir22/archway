@@ -5,33 +5,12 @@ import { useTranslation } from 'next-i18next';
 import { Service, fixImageUrl } from '@/hooks';
 import { useQueryClient } from 'react-query';
 import axios from 'axios';
-import OptimizedImage from '../common/OptimizedImage/index';
+import { getApiBaseUrl } from '@/utils/urls';
+import DirectServiceImage from './DirectServiceImage';
 
-// Track loaded images and preloaded services globally across all components
-const loadedImages = typeof window !== 'undefined' ? new Set<string>() : new Set();
+// Global tracking for loaded service images
+const loadedServiceImages = typeof window !== 'undefined' ? new Set<string>() : new Set();
 const preloadedServices = typeof window !== 'undefined' ? new Set<string>() : new Set();
-
-// Helper function to get API base URL
-const getApiBaseUrl = () => {
-  // Check if we're in a browser environment
-  const isBrowser = typeof window !== 'undefined';
-  
-  // Get the configured API URL (from environment variables)
-  const configuredUrl = process.env.NEXT_PUBLIC_API_URL;
-  
-  if (configuredUrl) {
-    // If we're in a browser and the URL contains 'backend', replace with 'localhost'
-    if (isBrowser && configuredUrl.includes('backend')) {
-      return configuredUrl.replace('backend', 'localhost');
-    }
-    return configuredUrl;
-  }
-  
-  // Default fallback - use backend for server-side, localhost for client-side
-  return isBrowser 
-    ? 'http://localhost:8000/api/v1' 
-    : 'http://backend:8000/api/v1';
-};
 
 interface ServiceCardProps {
   service: Service;
@@ -53,88 +32,17 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
 
   const handleMouseEnter = () => {
     setIsHovering(true);
+    // Immediately trigger navigation prefetch
+    router.prefetch(`/services/${service.slug}`);
   };
 
   const handleMouseLeave = () => {
     setIsHovering(false);
   };
 
-  // Preload service details when the component mounts
-  useEffect(() => {
-    // Only run in browser environment
-    if (typeof window === 'undefined') return;
-    
-    // Check if this service has already been preloaded
-    if (preloadedServices.has(service.slug)) {
-      setIsPreloaded(true);
-      return;
-    }
-
-    // Create a hidden div for preloading images that persists between renders
-    if (!preloadDivRef.current) {
-      const div = document.createElement('div');
-      div.style.position = 'absolute';
-      div.style.width = '0';
-      div.style.height = '0';
-      div.style.overflow = 'hidden';
-      div.style.opacity = '0';
-      div.setAttribute('aria-hidden', 'true');
-      div.dataset.serviceSlug = service.slug;
-      document.body.appendChild(div);
-      preloadDivRef.current = div;
-    }
-
-    // Immediately preload image
-    if (service.cover_image_url || service.image_url || service.image) {
-      // Create and add an image element to the hidden div
-      const imgElement = document.createElement('img');
-      imgElement.src = fixImageUrl(service.cover_image_url || service.image_url || service.image || '');
-      imgElement.alt = "Preload image";
-      preloadDivRef.current?.appendChild(imgElement);
-    }
-
-    // Prefetch the service data
-    const prefetchServiceData = async () => {
-      try {
-        const cachedData = queryClient.getQueryData(['serviceDetail', service.slug, router.locale]);
-        
-        if (!cachedData) {
-          // Prefetch the Next.js page
-          router.prefetch(`/services/${service.slug}`);
-          
-          // Fetch service data directly
-          const API_BASE_URL = getApiBaseUrl();
-          const locale = router.locale || 'en';
-          const response = await axios.get(`${API_BASE_URL}/services/${service.slug}/?lang=${locale}`);
-          const data = response.data;
-          
-          // Store processed data in React Query cache to make it available on the detail page
-          queryClient.setQueryData(['serviceDetail', service.slug, locale], data);
-          
-          // Mark as preloaded
-          preloadedServices.add(service.slug);
-          setIsPreloaded(true);
-        } else {
-          // Already cached, mark as preloaded
-          preloadedServices.add(service.slug);
-          setIsPreloaded(true);
-        }
-      } catch (error) {
-        console.error("Error prefetching service data:", error);
-      }
-    };
-    
-    // Start preloading
-    prefetchServiceData();
-    
-    // Cleanup function
-    return () => {
-      // Keep the preload div for future use
-    };
-  }, [service.slug, service.image, service.image_url, service.cover_image_url, queryClient, router]);
-  
-  // Get image source for the service card
-  const getImageSrc = () => {
+  // Get image source without any transformations for consistency
+  const getImageSrc = (): string => {
+    // Use the direct URL from the API without transformations
     if (service.cover_image_url) {
       return service.cover_image_url;
     }
@@ -143,18 +51,39 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
       return service.image_url;
     }
     
-    if (service.image) {
-      return service.image;
-    }
-    
-    // Fallback based on service category
-    if (service.category && service.category.slug) {
-      return `/images/${service.category.slug}.jpg`;
-    }
-    
-    // Last resort fallback
+    // Return placeholder
     return '/images/service-placeholder.jpg';
   };
+
+  // Preload service data - simpler approach matching projects
+  useEffect(() => {
+    if (preloadedServices.has(service.slug)) {
+      return;
+    }
+
+    // Basic preloading with Image constructor
+    const img = new Image();
+    img.src = getImageSrc();
+    img.onload = () => {
+      loadedServiceImages.add(getImageSrc());
+    };
+
+    // Mark as preloaded to avoid duplicate work
+    preloadedServices.add(service.slug);
+
+    // Prefetch API data too
+    const prefetchData = async () => {
+      try {
+        const API_BASE_URL = getApiBaseUrl();
+        const response = await axios.get(`${API_BASE_URL}/services/${service.slug}/?lang=${router.locale || 'en'}`);
+        queryClient.setQueryData(['serviceDetail', service.slug, router.locale], response.data);
+      } catch (error) {
+        console.error("Error prefetching service:", error);
+      }
+    };
+    
+    prefetchData();
+  }, [service.slug, router.locale, queryClient, service.cover_image_url, service.image_url]);
   
   // Determine icon to use
   const getIcon = () => {
@@ -162,7 +91,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
       return service.icon;
     }
     
-    // Some default icons based on common service categories
+    // Default icons
     const defaultIcons: { [key: string]: string } = {
       residential: 'home',
       commercial: 'building',
@@ -190,14 +119,11 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     >
       <Link href={`/services/${service.slug}`} prefetch={false}>
         <div className="relative h-48 w-full">
-          <OptimizedImage
-            src={fixImageUrl(getImageSrc())}
+          {/* Use our special Direct Service Image component */}
+          <DirectServiceImage 
+            src={getImageSrc()} 
             alt={service.title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover"
-            onError={() => setImageError(true)}
-            priority={priority}
+            className="absolute inset-0 w-full h-full object-cover"
           />
           
           {isHovering && (

@@ -76,7 +76,11 @@ INSTALLED_APPS = [
     'apps.projects',
     'apps.testimonials',
     'apps.services',
-    'apps.contact',
+    # 'apps.contact',  # Original contact app (temporarily disabled for testing)
+    'apps.newsletter',  # New app for newsletter functionality
+    'apps.footer',  # New app for footer functionality
+    'apps.contact_management',  # New app for contact management
+    'apps.email_system',  # New app for email delivery and automation
     # 'apps.analytics',  # Commented out to fix ModuleNotFoundError
     # 'apps.blog',  # Commented out to fix ModuleNotFoundError
     # 'apps.bookings',  # Commented out to fix ModuleNotFoundError
@@ -100,7 +104,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # 'django_ratelimit.middleware.RatelimitMiddleware',  # Rate limiting
-    'apps.contact.middleware.DynamicEmailSettingsMiddleware',  # Re-enabled since apps.contact exists
+    # 'apps.contact.middleware.DynamicEmailSettingsMiddleware',  # Disabled since contact app is disabled
+    'apps.email_system.middleware.DynamicEmailSettingsMiddleware',  # New middleware for email settings
 ]
 
 # Rate limiting settings

@@ -56,6 +56,18 @@ const defaultQueryClient = new QueryClient({
   },
 });
 
+// Separate component for DefaultSeo to avoid JSX runtime issues
+const DefaultSeo = () => {
+  return (
+    <Head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+      <meta charSet="UTF-8" />
+      <title>Archway Interior Design</title>
+    </Head>
+  );
+};
+
 // Extend AppProps with custom properties
 interface MyAppProps extends AppProps {
   pageProps: {
@@ -68,19 +80,6 @@ function MyApp({ Component, pageProps }: MyAppProps) {
   const router = useRouter();
   const { locale } = router;
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
-
-  // Fix for title element array warning using the Head component
-  const DefaultSeo = useCallback(() => {
-    return (
-      <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <meta charSet="UTF-8" />
-        {/* Use a single string for title to avoid array children issues */}
-        <title>Archway Interior Design</title>
-      </Head>
-    );
-  }, []);
 
   // Modern prefetching and language optimizations
   useEffect(() => {

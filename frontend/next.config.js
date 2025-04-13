@@ -10,6 +10,13 @@ const nextConfig = {
   output: 'standalone',
   poweredByHeader: false,
   
+  // Explicitly set compiler options for JSX runtime
+  compiler: {
+    reactRemoveProperties: process.env.NODE_ENV === 'production',
+    removeConsole: process.env.NODE_ENV === 'production',
+    styledComponents: false,
+  },
+  
   // Performance improvements for development
   onDemandEntries: {
     // Keep pages in memory for longer during development
@@ -93,16 +100,18 @@ const nextConfig = {
       // API proxying with better error handling
       {
         source: '/api/:path*',
-        destination: process.env.NEXT_PUBLIC_API_URL 
-          ? process.env.NEXT_PUBLIC_API_URL + '/:path*' 
-          : 'http://backend:8000/api/:path*',
+        destination: process.env.NODE_ENV === 'development' 
+          ? 'http://localhost:8000/api/:path*'  // Always use localhost in development 
+          : (process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000/api/:path*'),
       },
       // Improved media files handling
       {
         source: '/media/:path*',
-        destination: process.env.NEXT_PUBLIC_API_URL 
-          ? process.env.NEXT_PUBLIC_API_URL.replace('/api/v1', '') + '/media/:path*' 
-          : 'http://backend:8000/media/:path*',
+        destination: process.env.NODE_ENV === 'development'
+          ? 'http://localhost:8000/media/:path*'  // Always use localhost in development
+          : (process.env.NEXT_PUBLIC_BACKEND_URL 
+              ? process.env.NEXT_PUBLIC_BACKEND_URL.replace('/api/v1', '') + '/media/:path*' 
+              : 'http://backend:8000/media/:path*'),
       },
       // These specific paths need to go to our own Next.js API routes
       {
@@ -112,6 +121,10 @@ const nextConfig = {
       {
         source: '/api/contact-info',
         destination: '/api/contact-info',
+      },
+      {
+        source: '/api/image-proxy',
+        destination: '/api/image-proxy',
       }
     ];
   },

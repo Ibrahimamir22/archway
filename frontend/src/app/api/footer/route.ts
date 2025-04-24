@@ -1,105 +1,166 @@
 /**
- * MOCK FOOTER API ENDPOINT
+ * MOCK API ENDPOINT FOR FOOTER DATA
  * 
- * This file is currently NOT being used in the application!
- * It's kept here as a reference for future use if needed.
+ * OVERVIEW:
+ * This endpoint provides a local mock implementation of the footer API.
+ * It's used in development and testing environments when the backend
+ * may not be available or when you want to work in isolation.
  * 
- * PURPOSE:
- * This mock API endpoint can provide footer data directly from the Next.js server
- * without requiring the Django backend to be implemented.
+ * WORKFLOW:
+ * 1. Reads the locale from query parameters
+ * 2. Loads translations from message files
+ * 3. Constructs a response that matches the backend API structure
+ * 4. Returns the mock data as JSON
  * 
- * WHEN TO USE:
- * 1. During development when Django backend isn't ready
- * 2. For data that rarely changes and doesn't need backend admin
- * 3. For creating a standalone frontend without backend dependencies
- * 
- * HOW TO ENABLE THIS MOCK API:
- * To switch from direct backend calls to using this mock API:
- * 
- * 1. Uncomment this file
- * 2. Modify frontend/src/lib/api/core.ts to try the local endpoint first:
- *    ```
- *    export async function fetchRawFooterData(locale: string): Promise<any | null> {
- *      // First try the local Next.js mock API
- *      try {
- *        const localUrl = `/api/footer?lang=${locale}`;
- *        const response = await axios.get(localUrl, {timeout: 5000});
- *        if (response.status === 200 && response.data) {
- *          return response.data;
- *        }
- *      } catch (error) {
- *        console.log('Local API failed, trying backend');
- *      }
- *      
- *      // Continue with backend attempts as before...
- *      // rest of existing code...
- *    }
- *    ```
- * 
- * 3. Alternatively, implement the hybrid approach with environment variables:
- *    Add NEXT_PUBLIC_USE_MOCK_API=true to .env and modify core.ts accordingly
+ * DOCKER USAGE:
+ * Works in Docker environments with no special configuration needed.
  * 
  * RELATED FILES:
- * - lib/api/core.ts - Contains fetchRawFooterData function
- * - lib/fixtures/footer/footerData.ts - Contains fallback data
- * - lib/utils/footerUtils.ts - Transforms data and provides fallbacks
- * - lib/hooks/footer/useFooter.ts - The hook that components use
+ * - src/messages/*.json - Source of translations
+ * - src/lib/api/footer.ts - Footer-specific fetcher that calls this endpoint
+ * - src/lib/api/fetcher.ts - Generic hybrid fetching mechanism
  */
 
-/*
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 
 /**
- * API handler for footer data (temporary mock implementation)
- * This serves as a placeholder until the Django backend is implemented
+ * Local mock API endpoint for footer data
+ * Used for development and testing when backend is not available
  */
-/*
 export async function GET(request: Request) {
-  // Get query parameters
-  const { searchParams } = new URL(request.url);
-  const lang = searchParams.get('lang') || 'en';
-  
-  // Mock data based on language
-  const footerData = {
-    settings: null,
-    sections: [
-      {
-        id: "company",
-        title: lang === 'en' ? "Company" : "الشركة",
-        links: [
-          { id: "about", text: lang === 'en' ? "About Us" : "من نحن", url: "/about", open_in_new_tab: false },
-          { id: "services", text: lang === 'en' ? "Services" : "خدماتنا", url: "/services", open_in_new_tab: false },
-          { id: "portfolio", text: lang === 'en' ? "Portfolio" : "معرض الأعمال", url: "/portfolio", open_in_new_tab: false }
-        ]
-      },
-      {
-        id: "resources",
-        title: lang === 'en' ? "Resources" : "مصادر",
-        links: [
-          { id: "faq", text: lang === 'en' ? "FAQ" : "الأسئلة الشائعة", url: "/faq", open_in_new_tab: false },
-          { id: "contact", text: lang === 'en' ? "Contact" : "اتصل بنا", url: "/contact", open_in_new_tab: false }
-        ]
-      }
-    ],
-    social_media: [
-      { id: "facebook", name: "Facebook", url: "https://facebook.com", icon: "facebook" },
-      { id: "instagram", name: "Instagram", url: "https://instagram.com", icon: "instagram" }
-    ],
-    bottom_links: [],
-    company_name: "Archway Interior Design",
-    description: lang === 'en' ? "We create stunning interior designs for modern homes and offices" : "نصمم تصاميم داخلية رائعة للمنازل والمكاتب الحديثة",
-    copyright_text: lang === 'en' ? "© 2023 Archway Interior Design. All rights reserved." : "© 2023 آركواي للتصميم الداخلي. جميع الحقوق محفوظة.",
-    show_newsletter: true,
-    newsletter_text: lang === 'en' ? "Stay updated with our latest news and offers." : "ابق على اطلاع بأحدث أخبارنا وعروضنا.",
-    contact_title: lang === 'en' ? "Get in touch" : "تواصل معنا",
-    contact_info: [
-      { type: "email", value: "info@archwayeg.com" },
-      { type: "phone", value: "+20150000183" },
-      { type: "address", value: lang === 'en' ? "VILLA 65, Ground floor, Near El Banafseg 5, NEW CAIRO, EGYPT, Cairo, Egypt" : "فيلا ٦٥، الدور الأرضي، بالقرب من البنفسج ٥، القاهرة الجديدة، مصر، القاهرة، مصر" }
-    ]
-  };
+  try {
+    // Get query parameters
+    const { searchParams } = new URL(request.url);
+    const lang = searchParams.get('lang') || 'en';
+    
+    // Load translations directly from message files
+    // This ensures consistent translations between UI and API
+    const messagesPath = path.join(process.cwd(), 'src', 'messages', `${lang}.json`);
+    const messagesExist = fs.existsSync(messagesPath);
+    
+    // Fallback to English if requested language doesn't exist
+    const finalLang = messagesExist ? lang : 'en';
+    const finalPath = path.join(process.cwd(), 'src', 'messages', `${finalLang}.json`);
+    
+    // Read and parse the messages file
+    const messagesContent = fs.readFileSync(finalPath, 'utf8');
+    const messages = JSON.parse(messagesContent);
+    
+    // Get translated content from messages
+    const footer = messages.footer || {};
+    
+    // Construct response using translations
+    const footerData = {
+      settings: null,
+      sections: [
+        {
+          id: "company",
+          title: footer.sections?.company?.title || (finalLang === 'en' ? "Company" : "الشركة"),
+          links: [
+            { 
+              id: "about", 
+              text: footer.sections?.company?.links?.about_us || (finalLang === 'en' ? "About Us" : "من نحن"), 
+              url: "/about", 
+              open_in_new_tab: false 
+            },
+            { 
+              id: "services", 
+              text: footer.sections?.company?.links?.services || (finalLang === 'en' ? "Services" : "خدماتنا"), 
+              url: "/services", 
+              open_in_new_tab: false 
+            },
+            { 
+              id: "portfolio", 
+              text: footer.sections?.company?.links?.portfolio || (finalLang === 'en' ? "Portfolio" : "معرض الأعمال"), 
+              url: "/portfolio", 
+              open_in_new_tab: false 
+            }
+          ]
+        },
+        {
+          id: "resources",
+          title: footer.sections?.resources?.title || (finalLang === 'en' ? "Resources" : "مصادر"),
+          links: [
+            { 
+              id: "blog", 
+              text: footer.sections?.resources?.links?.blog || (finalLang === 'en' ? "Blog" : "المدونة"), 
+              url: "/blog", 
+              open_in_new_tab: false 
+            },
+            { 
+              id: "faq", 
+              text: footer.sections?.resources?.links?.faq || (finalLang === 'en' ? "FAQ" : "الأسئلة الشائعة"), 
+              url: "/faq", 
+              open_in_new_tab: false 
+            },
+            { 
+              id: "contact", 
+              text: footer.sections?.resources?.links?.contact || (finalLang === 'en' ? "Contact" : "اتصل بنا"), 
+              url: "/contact", 
+              open_in_new_tab: false 
+            }
+          ]
+        }
+      ],
+      social_media: [
+        { id: "facebook", name: "Facebook", url: "https://facebook.com/archway.egypt/", icon: "facebook" },
+        { id: "instagram", name: "Instagram", url: "https://instagram.com/archway.egypt", icon: "instagram" },
+        { id: "linkedin", name: "LinkedIn", url: "https://linkedin.com/company/archway-innovations", icon: "linkedin" }
+      ],
+      bottom_links: [
+        { 
+          id: "privacy", 
+          text: footer.privacyPolicy || (finalLang === 'en' ? "Privacy Policy" : "سياسة الخصوصية"), 
+          url: "/privacy", 
+          open_in_new_tab: false 
+        },
+        { 
+          id: "terms", 
+          text: footer.termsOfService || (finalLang === 'en' ? "Terms of Service" : "شروط الخدمة"), 
+          url: "/terms", 
+          open_in_new_tab: false 
+        }
+      ],
+      company_name: footer.companyInfo?.name || "Archway Innovations",
+      description: footer.companyInfo?.description || (finalLang === 'en' 
+        ? "We create stunning interior designs for modern homes and offices" 
+        : "نصمم تصاميم داخلية مذهلة للمنازل والمكاتب الحديثة"),
+      copyright_text: footer.copyright || (finalLang === 'en' 
+        ? "© 2025 Archway Innovations. All rights reserved." 
+        : "© 2025 آركواي للابتكارات. جميع الحقوق محفوظة."),
+      show_newsletter: true,
+      newsletter_text: footer.newsletter?.description || (finalLang === 'en' 
+        ? "Stay updated with our latest news and offers." 
+        : "ابق على اطلاع بأحدث أخبارنا وعروضنا."),
+      newsletter_label: footer.newsletter?.title || (finalLang === 'en' 
+        ? "Subscribe to Our Newsletter" 
+        : "اشترك في نشرتنا الإخبارية"),
+      contact_title: footer.contactUs || (finalLang === 'en' ? "Contact Us" : "اتصل بنا"),
+      contact_info: [
+        { id: "email", type: "email", value: "info@archwayeg.com", icon: "email" },
+        { id: "phone", type: "phone", value: "+201150000183", icon: "phone" },
+        { id: "address", type: "address", value: finalLang === 'en' 
+          ? "VILLA 65, Ground floor, Near El Banafseg 5, NEW CAIRO, EGYPT, Cairo, Egypt" 
+          : "فيلا ٦٥، الدور الأرضي، بالقرب من البنفسج ٥، القاهرة الجديدة، مصر، القاهرة، مصر", 
+          icon: "location" 
+        }
+      ]
+    };
 
-  // Return mock data
-  return NextResponse.json(footerData);
-}
-*/ 
+    // Return mock data
+    return NextResponse.json(footerData);
+  } catch (error) {
+    console.error('Error in footer mock API:', error);
+    
+    // Return a properly formatted error response
+    return NextResponse.json(
+      { 
+        error: error instanceof Error ? error.message : 'Internal server error',
+        status: 'error'
+      }, 
+      { status: 500 }
+    );
+  }
+} 

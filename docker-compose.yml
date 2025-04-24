@@ -16,8 +16,16 @@ services:
     environment:
       - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=http://backend:8000/api/v1
+      - NEXT_PUBLIC_API_BROWSER_URL=http://localhost:8000/api/v1
       - NEXT_PUBLIC_BACKEND_URL=http://backend:8000
-      - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PUBLIC_BACKEND_BROWSER_URL=http://localhost:8000
+      - NEXT_PUBLIC_FORCE_LOCAL_URLS=true
+      # Hybrid footer data fetching configuration
+      - NEXT_PUBLIC_USE_MOCK_API=false
+      - NEXT_PUBLIC_PREFER_BACKEND=true
+      - NEXT_PUBLIC_FALLBACK_TO_MOCK=true
+      - NEXT_PUBLIC_LOG_DATA_FETCHING=true
+      - NEXT_PUBLIC_MOCK_API_PATH=/api
       - HOSTNAME=0.0.0.0
     depends_on:
       - backend

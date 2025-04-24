@@ -359,7 +359,7 @@ const Footer = (props: FooterProps): JSX.Element => {
         {error && (
           <div className="text-center mb-6">
             <span className="text-xs text-red-400 opacity-75 inline-flex items-center bg-red-900 bg-opacity-10 rounded-full px-3 py-1">
-              {error} 
+              {typeof error === 'string' ? error : 'Error loading footer data'} 
               <button 
                 onClick={refetch}
                 className="ml-2 text-blue-400 hover:text-blue-300 focus:outline-none"

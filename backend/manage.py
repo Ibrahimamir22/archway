@@ -6,7 +6,9 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'interior_platform.settings')
+    # Point to development settings by default for manage.py commands
+    # Can be overridden by setting the DJANGO_SETTINGS_MODULE environment variable
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'interior_platform.settings.development')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

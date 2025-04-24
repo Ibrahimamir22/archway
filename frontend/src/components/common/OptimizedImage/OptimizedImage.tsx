@@ -1,6 +1,6 @@
 import Image, { ImageProps } from 'next/image';
 import { useState, useEffect } from 'react';
-import { fixImageUrl } from '../../../utils/api';
+import { fixImageUrl } from '@/lib/images';
 
 // Global registry of preloaded images to avoid duplicate work
 const preloadedImages = typeof window !== 'undefined' ? new Set<string>() : new Set();

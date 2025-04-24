@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { normalizeServiceImageUrl } from '@/utils/services/index';
+import { normalizeServiceImageUrl } from '@/lib/images';
 
 interface ServiceImageProps {
   src: string;
@@ -22,16 +22,30 @@ const ServiceImage: React.FC<ServiceImageProps> = ({
   onLoad,
   onError
 }) => {
-  const [imageSrc, setImageSrc] = useState<string>(src);
+  const [imageSrc, setImageSrc] = useState<string>('/images/service-placeholder.jpg');
   const [hasError, setHasError] = useState(false);
   
   // Normalize the image URL for proper display
   useEffect(() => {
-    setImageSrc(normalizeServiceImageUrl(src));
+    if (!src) {
+      setImageSrc('/images/service-placeholder.jpg');
+      return;
+    }
+    
+    try {
+      const normalized = normalizeServiceImageUrl(src);
+      console.log('Normalized image URL:', { original: src, normalized });
+      setImageSrc(normalized);
+    } catch (error) {
+      console.error('Error normalizing image URL:', error);
+      setImageSrc('/images/service-placeholder.jpg');
+      setHasError(true);
+    }
   }, [src]);
   
   // Handle loading errors
   const handleError = () => {
+    console.warn('Image failed to load:', imageSrc);
     setHasError(true);
     setImageSrc('/images/service-placeholder.jpg');
     onError?.();
@@ -39,6 +53,7 @@ const ServiceImage: React.FC<ServiceImageProps> = ({
   
   // Handle successful loading
   const handleLoad = () => {
+    console.log('Image loaded successfully:', imageSrc);
     onLoad?.();
   };
   

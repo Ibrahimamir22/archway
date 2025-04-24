@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ const Modal: React.FC<ModalProps> = ({
   rtl = false,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const tCommon = useTranslations('common');
 
   // Close modal on escape key
   useEffect(() => {
@@ -88,7 +90,7 @@ const Modal: React.FC<ModalProps> = ({
             <button 
               onClick={onClose}
               className={`absolute top-3 ${rtl ? 'left-3' : 'right-3'} text-gray-400 hover:text-gray-600 focus:outline-none`}
-              aria-label="Close"
+              aria-label={tCommon('closeModal', { default: 'Close' })}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />

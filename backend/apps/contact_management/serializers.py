@@ -13,5 +13,6 @@ class ContactInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactInfo
         fields = ['address_en', 'address_ar', 'email', 'phone', 
+                 'working_hours_en', 'working_hours_ar',
                  'facebook_url', 'instagram_url', 'updated_at']
         read_only_fields = ['updated_at'] 

@@ -18,47 +18,49 @@ These rules apply to my grad project, "Archway" (aka Interior Design Portfolio P
 
 ## Frontend (Next.js) Conventions
 - **Styling:** Use Tailwind CSS exclusively for styling and animations. Apply Tailwind classes directly in components (e.g., `<div className="p-4 bg-brand-blue text-white animate-fade-in">`).
-- **Structure:** Follow this folder structure:
-  - `/components/` (e.g., `common/Navbar.js`, `portfolio/ProjectCard.js`, `chatbot/ChatbotWidget.js`, `3d/ModelViewer.js`, `user/FavoritesList.js`)
-  - `/hooks/` (e.g., `useProjects.js` for fetching projects, `useAuth.js` for user auth)
-  - `/lib/` (e.g., `api.js` for API calls, `threejs.js` for 3D setup)
-  - `/pages/` (e.g., `index.js` for Home, `portfolio/[slug].js` for Project Detail)
-  - `/styles/` (e.g., `global.css` with Tailwind imports, `animations.css` for custom animations)
+- **Structure:** Utilize the `src/` directory and follow the Next.js App Router structure:
+  - `src/app/` (e.g., `layout.tsx` for root layout, `page.tsx` for Home, route groups like `(portfolio)/portfolio/[slug]/page.tsx`)
+  - `src/components/` (e.g., `common/Navbar.tsx`, `portfolio/ProjectCard.tsx`, `chatbot/ChatbotWidget.tsx`, `3d/ModelViewer.tsx`, `user/FavoritesList.tsx`)
+  - `src/lib/` (e.g., `api.ts` for API calls, `threejs.ts` for 3D setup, `hooks/useProjects.ts` for custom hooks, `actions/` for Server Actions)
+  - `src/styles/` (e.g., `animations.css`, global styles imported in `src/app/layout.tsx`)
   - `/public/` (e.g., `images/` for static assets, `3d/` for placeholder 3D files)
 - **Tailwind Config:** Use the custom theme in `tailwind.config.js` (e.g., `brand-blue: #1E3A8A`, `animate-fade-in` for animations).
-- **Modularity:** Create reusable components (e.g., `Navbar`, `Button`) in `components/common/` and feature-specific components in subfolders (e.g., `portfolio/`).
+- **Modularity:** Create reusable components (e.g., `Navbar`, `Button`) in `src/components/common/` and feature-specific components in subfolders (e.g., `portfolio/`).
 - **Performance:** Use Next.js `Image` for optimized images and `dynamic` imports for heavy libraries (e.g., Three.js, Pannellum).
-- **Security:** Include CSRF tokens in forms and sanitize inputs before API calls.
+- **Security:** Include CSRF tokens in forms (if applicable with Server Actions) and sanitize inputs before API calls.
 
 ## Backend (Django) Conventions
 - **Structure:** Follow this folder structure:
-  - `/interior_platform/` (e.g., `settings.py`, `urls.py`)
+  - `/interior_platform/` (e.g., `settings/` for split settings, `urls.py`)
   - `/apps/` (e.g., `projects/`, `users/`, `chatbot/`, `bookings/`, `jobs/`, `blog/`, `analytics/`)
   - `/utils/` (e.g., `security.py` for signed URLs, `email.py` for email logic, `helpers.py` for misc utilities)
-  - Each app has `models.py`, `serializers.py`, `services.py`, `views.py`, `admin.py`.
-- **Modularity:** Keep business logic in `services.py` (e.g., `projects/services.py: filter_projects()`), models clean, and views focused on API handling.
-- **Security:** 
-  - Set `SESSION_COOKIE_SECURE=True` and `CSRF_COOKIE_SECURE=True` in `settings.py`.
+  - Each app has `models.py`, `serializers.py`, `services.py` (for business logic), `views.py`, `admin.py`.
+- **Settings:** Use split settings (`interior_platform/settings/base.py`, `development.py`, `production.py`).
+- **Service Layer:** Keep business logic primarily in `services.py` files within each app.
+- **Security:**
+  - Set `SESSION_COOKIE_SECURE=True` and `CSRF_COOKIE_SECURE=True` in production settings.
   - Encrypt sensitive fields (e.g., emails) with `django-encrypted-fields`.
   - Use DRF serializers for input validation.
 - **Database:** Use PostgreSQL and define models with clear fields (e.g., `Project` with `title`, `category`, `tags`).
 - **APIs:** Use Django REST Framework (DRF) with JWT auth (`djangorestframework-simplejwt`) for secure endpoints.
 
 ## Docker Conventions
-- Use Docker for local testing with separate services: frontend (Next.js on port 3000), backend (Django on 8000), db (PostgreSQL on 5432).
-- Store secrets in `.env` files (e.g., `DATABASE_URL`) and reference them in `docker-compose.yml`.
+- Use Docker for local testing and production deployment with separate services: frontend (Next.js on port 3000), backend (Django on 8000), db (PostgreSQL on 5432).
+- Utilize multi-stage builds in `Dockerfile`s for optimized images.
+- Use separate `docker-compose.yml` for development and `docker-compose.prod.yml` for production.
+- Store secrets in `.env` files (e.g., `DATABASE_URL`) and reference them in compose files.
 - Ensure hot reloading works for development (e.g., volume mounts for code changes).
 
 ## Documentation
 - Add comments in code for non-obvious logic (e.g., `// Configure Tailwind with custom theme`).
-- Update `README.md` with setup steps, Docker instructions, and how to extend the project (e.g., “To add a new page, create a file in `/pages/`”).
+- Update `README.md` with setup steps, Docker instructions, and how to extend the project.
 - Create placeholder files like `wireframes.md`, `erd.md`, and `api-spec.md` for planning.
 
 ## Phase 1 Focus
-- Set up the project skeleton with the above structure.
-- Initialize Next.js with Tailwind CSS and create 1-2 placeholder pages (e.g., Home, Portfolio) styled with Tailwind.
-- Initialize Django with the `projects` app, a basic `Project` model, and secure settings.
-- Configure Docker for local testing with `docker-compose.yml`.
+- Set up the project skeleton with the above structure (`src/` directory for frontend).
+- Initialize Next.js with Tailwind CSS and create 1-2 placeholder pages (e.g., `src/app/page.tsx`, `src/app/(portfolio)/portfolio/page.tsx`) styled with Tailwind.
+- Initialize Django with the `projects` app, a basic `Project` model, and secure split settings.
+- Configure Docker for local testing (`docker-compose.yml`) and production (`docker-compose.prod.yml`) using multi-stage builds.
 - Add placeholder files for wireframes, ERD, and API specs.
 
-Follow these rules for all prompts to ensure consistency. After planning, wait for my confirmation before generating code.
+Follow these rules for all prompts to ensure consistency. 

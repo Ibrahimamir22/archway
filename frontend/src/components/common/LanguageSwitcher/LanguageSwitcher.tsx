@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/router';
-import { useTranslation } from 'next-i18next';
+import { useRouter, usePathname } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { Link } from 'next-intl';
 
 export interface Language {
   code: string;
@@ -16,8 +17,8 @@ export const languages: Language[] = [
 
 const LanguageSwitcher: React.FC = () => {
   const router = useRouter();
-  const { i18n } = useTranslation();
-  const { pathname, asPath, query, locale } = router;
+  const pathname = usePathname();
+  const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [isChangingLanguage, setIsChangingLanguage] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -39,44 +40,11 @@ const LanguageSwitcher: React.FC = () => {
   // Find current language
   const currentLanguage = languages.find(lang => lang.code === locale) || languages[0];
   
-  // Preload the other language
-  useEffect(() => {
-    // Determine the other locale we should preload
-    const otherLocale = locale === 'en' ? 'ar' : 'en';
-    
-    // Preload other language file when component mounts
-    const preloadLanguage = async () => {
-      try {
-        // Prefetch current path with other locale
-        await router.prefetch(asPath, undefined, { locale: otherLocale });
-        
-        // Load language resource
-        if (i18n && i18n.loadLanguages) {
-          await i18n.loadLanguages(otherLocale);
-        }
-      } catch (error) {
-        console.warn('Error preloading language:', error);
-      }
-    };
-    
-    // Preload with a small delay to prioritize current page loading
-    const timer = setTimeout(preloadLanguage, 2000);
-    return () => clearTimeout(timer);
-  }, [locale, i18n, router, asPath]);
-
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
-    
-    // If opening the dropdown, preload the other language immediately
-    if (!isOpen) {
-      const otherLocale = locale === 'en' ? 'ar' : 'en';
-      i18n.loadLanguages(otherLocale).catch(err => {
-        console.warn('Error preloading language:', err);
-      });
-    }
   };
 
-  // Optimized language change with preloading and smoother transition
+  // Optimized language change with smoother transition
   const handleLanguageChange = useCallback((langCode: string) => {
     if (langCode === locale) {
       setIsOpen(false);
@@ -85,21 +53,26 @@ const LanguageSwitcher: React.FC = () => {
     
     setIsChangingLanguage(true);
     
-    // Change language using router for SPA navigation
-    router.push(router.pathname, asPath, { locale: langCode })
-      .catch(err => {
-        console.error('Error changing language:', err);
-        // Fallback to hard navigation
-        window.location.href = `/${langCode}${asPath}`;
-      })
-      .finally(() => {
-        // Reset state after a delay to show transition
-        setTimeout(() => {
-          setIsChangingLanguage(false);
-          setIsOpen(false);
-        }, 500);
-      });
-  }, [locale, router, asPath]);
+    // Clean up and reconstruct the pathname to ensure correct formatting
+    // Remove the current locale segment from the pathname
+    const pathWithoutLocale = pathname.replace(new RegExp(`^/${locale}`), '');
+    
+    // Ensure there's no double slashes and path starts with /
+    const cleanPath = pathWithoutLocale || '/';
+    
+    // Navigate to the same pathname with new locale
+    const newPath = `/${langCode}${cleanPath === '/' ? '' : cleanPath}`;
+    
+    console.log(`Switching language from ${locale} to ${langCode}, path: ${pathname} → ${newPath}`);
+    
+    router.push(newPath);
+    
+    // Reset state after a delay to show transition
+    setTimeout(() => {
+      setIsChangingLanguage(false);
+      setIsOpen(false);
+    }, 500);
+  }, [locale, router, pathname]);
 
   // Show loading indicator if changing language
   if (isChangingLanguage) {
@@ -123,13 +96,6 @@ const LanguageSwitcher: React.FC = () => {
         className="flex items-center hover:text-brand-blue focus:outline-none"
         onClick={toggleDropdown}
         aria-expanded={isOpen}
-        onMouseEnter={() => {
-          // Preload the other language on hover
-          const otherLocale = locale === 'en' ? 'ar' : 'en';
-          i18n.loadLanguages(otherLocale).catch(err => {
-            console.warn('Error preloading language on hover:', err);
-          });
-        }}
       >
         <span className="mx-1 font-medium">{currentLanguage.code.toUpperCase()}</span>
         <svg

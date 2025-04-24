@@ -1,95 +1,80 @@
+'use client';
+
 import React from 'react';
-import { useTranslation } from 'next-i18next';
-import { useRouter } from 'next/router';
-import ServiceLink from '../common/ServiceLink';
-import ServiceIcon from '../icons/ServiceIcon';
-import { Service } from '@/@types/services';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Service } from '@/lib/hooks/services/types';
 
 interface ServiceCardContentProps {
   service: Service;
-  onClick?: () => void;
+  locale: string;
 }
 
 /**
- * Content section of the service card with title, description, and details
+ * Service card content section with title, description, and link
  */
-const ServiceCardContent: React.FC<ServiceCardContentProps> = ({
+const ServiceCardContent: React.FC<ServiceCardContentProps> = ({ 
   service,
-  onClick
+  locale
 }) => {
-  const { t } = useTranslation('common');
-  const router = useRouter();
-  const isRtl = router.locale === 'ar';
+  const isRtl = locale === 'ar';
+  const t = useTranslations('services');
+  
+  // Get service details with fallbacks
+  const title = service.title || t('untitledService', {default: 'Untitled Service'});
+  const description = service.description || t('noDescription', {default: 'No description available'});
+  
+  // Truncate description to avoid very long card descriptions
+  const truncateDescription = (text: string, maxLength = 120) => {
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength) + '...';
+  };
+  
+  // Debug output for service slug
+  React.useEffect(() => {
+    console.log(`ServiceCardContent - Slug info:`, {
+      title: service.title,
+      slug: service.slug,
+      url: `/${locale}/services/${service.slug}`
+    });
+  }, [service, locale]);
   
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-start mb-3">
-        {/* Icon */}
-        <div className={`w-12 h-12 bg-brand-blue-light/10 rounded-full flex items-center justify-center ${isRtl ? 'order-2' : 'order-1'}`}>
-          <ServiceIcon 
-            iconName={service.icon}
-            categorySlug={service.category?.slug}
-            className="w-6 h-6 text-brand-blue-light"
-          />
-        </div>
-        
-        {/* Title and Category */}
-        <div className={`${isRtl ? 'text-right order-1 flex-1 mr-3' : 'order-2 flex-1 ml-3'}`}>
-          <ServiceLink 
-            slug={service.slug}
-            className="text-xl font-semibold text-gray-900 hover:text-brand-blue"
-            onClick={onClick}
-          >
-            {service.title}
-          </ServiceLink>
-          
-          {service.category && (
-            <p className="text-sm text-gray-500 mt-1">{service.category.name}</p>
-          )}
-        </div>
-      </div>
+    <div className={`p-6 flex flex-col h-48 ${isRtl ? 'rtl text-right' : ''}`}>
+      <h3 className={`text-xl font-semibold mb-2 ${isRtl ? 'font-cairo' : 'font-playfair'}`}>
+        {title}
+      </h3>
       
-      {/* Description */}
-      <p className={`text-gray-600 mt-2 line-clamp-3 ${isRtl ? 'text-right' : ''}`}>
-        {service.short_description || service.description}
+      <p className="text-gray-600 mb-4 line-clamp-3 flex-grow">
+        {truncateDescription(description)}
       </p>
       
-      {/* Metadata: Price and Duration */}
-      {(service.price || service.duration) && (
-        <div className={`flex flex-wrap gap-2 mt-4 ${isRtl ? 'justify-end' : ''}`}>
-          {service.price && (
-            <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
-              {service.price} {service.price_unit || ''}
-            </span>
-          )}
-          {service.duration && (
-            <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
-              {service.duration}
-            </span>
-          )}
-        </div>
-      )}
-      
-      {/* Learn More Link */}
-      <div className={`mt-4 ${isRtl ? 'text-right' : ''}`}>
-        <ServiceLink 
-          slug={service.slug}
-          className="text-brand-blue-light font-medium hover:underline inline-flex items-center"
-          onClick={onClick}
+      <div className="flex items-center mt-auto">
+        {service.category && (
+          <span className="text-sm bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+            {service.category.name}
+          </span>
+        )}
+        
+        <div className="flex-grow"></div>
+        
+        <Link 
+          href={`/${locale}/services/${service.slug}`}
+          className="text-brand-blue hover:text-brand-blue-dark font-medium inline-flex items-center"
         >
           {isRtl ? (
             <>
-              {t('services.learnMore')} <span className="ms-1">←</span>
+              {t('viewDetails')} <span className="ms-1">←</span>
             </>
           ) : (
             <>
-              {t('services.learnMore')} <span className="ms-1">→</span>
+              {t('viewDetails')} <span className="ms-1">→</span>
             </>
           )}
-        </ServiceLink>
+        </Link>
       </div>
     </div>
   );
 };
 
-export default ServiceCardContent; 
+export default ServiceCardContent;

@@ -28,6 +28,8 @@ class ContactInfo(models.Model):
     address_ar = models.TextField(verbose_name="Address (Arabic)")
     email = models.EmailField()
     phone = models.CharField(max_length=20)
+    working_hours_en = models.TextField(verbose_name="Working Hours (English)", blank=True, help_text="Business hours information in English")
+    working_hours_ar = models.TextField(verbose_name="Working Hours (Arabic)", blank=True, help_text="Business hours information in Arabic")
     facebook_url = models.URLField(blank=True, verbose_name="Facebook URL")
     instagram_url = models.URLField(blank=True, verbose_name="Instagram URL")
     created_at = models.DateTimeField(auto_now_add=True)

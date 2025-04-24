@@ -1,10 +1,14 @@
 /** @type {import('next').NextConfig} */
-const { i18n } = require('./next-i18next.config');
+// const { i18n } = require('./next-i18next.config'); // REMOVED: No longer using next-i18next
 const path = require('path');
+// const withNextIntl = require('next-intl/plugin')(); // <-- REMOVE old import
+const withNextIntl = require('next-intl/plugin')(
+  './i18n.ts' // <-- ADD explicit path to config
+); 
 
 const nextConfig = {
   // Core Next.js options
-  i18n,
+  // i18n, // REMOVED: Handled by next-intl middleware
   reactStrictMode: false, 
   swcMinify: true,
   output: 'standalone',
@@ -42,7 +46,7 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840], // Better responsive image sizes
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384], // Additional sizes for smaller images
     loader: 'custom',
-    loaderFile: './src/utils/image-loader.js',
+    loaderFile: './src/lib/images.ts',
     // Add optimization settings
     formats: ['image/webp'],
     minimumCacheTTL: 60,
@@ -138,4 +142,5 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig; 
+// module.exports = nextConfig; // <-- REMOVE old export
+module.exports = withNextIntl(nextConfig); // <-- WRAP config with next-intl plugin 

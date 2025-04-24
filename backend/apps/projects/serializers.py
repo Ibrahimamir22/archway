@@ -134,7 +134,7 @@ class LocalizedProjectListSerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
     location = serializers.SerializerMethodField()
-    category = LocalizedCategorySerializer(read_only=True)
+    category = LocalizedCategorySerializer(read_only=True, allow_null=True)
     tags = LocalizedTagSerializer(many=True, read_only=True)
     cover_image = serializers.SerializerMethodField()
     cover_image_url = serializers.SerializerMethodField()
@@ -189,7 +189,7 @@ class LocalizedProjectDetailSerializer(serializers.ModelSerializer):
     client = serializers.SerializerMethodField()
     area = serializers.SerializerMethodField()
     completed_date = serializers.SerializerMethodField()
-    category = LocalizedCategorySerializer(read_only=True)
+    category = LocalizedCategorySerializer(read_only=True, allow_null=True)
     tags = LocalizedTagSerializer(many=True, read_only=True)
     images = LocalizedProjectImageSerializer(many=True, read_only=True)
     

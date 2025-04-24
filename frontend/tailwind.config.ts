@@ -65,8 +65,7 @@ const config: Config = {
     },
   },
   plugins: [
-    // @ts-ignore
-    require('tailwindcss-rtl'),
+    // No external RTL plugin; using Tailwind's built‑in RTL support via dir="rtl" and rtl: variants.
   ],
 } as Config;
 

@@ -7,8 +7,15 @@ from django.utils.translation import gettext as _
 from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
 import logging
-from .models import ContactMessage, ContactInfo, FooterSettings, FooterSection, FooterLink, SocialMedia, NewsletterSubscription, SubscriberSegment, NewsletterTemplate, NewsletterCampaign, EmailDelivery, LinkClick, NewsletterAutomation, AutomationStep, AutomationExecution, SubscriberSegmentMembership
-from .serializers import ContactMessageSerializer, ContactInfoSerializer, FooterSettingsSerializer, FooterSectionSerializer, FooterLinkSerializer, SocialMediaSerializer, NewsletterSubscriptionSerializer, FooterSerializer, LocalizedFooterSettingsSerializer, LocalizedFooterSectionSerializer, SubscriberSegmentSerializer, NewsletterTemplateSerializer, NewsletterCampaignSerializer, EmailDeliverySerializer, NewsletterAutomationSerializer, AutomationStepSerializer, ConfirmSubscriptionSerializer, UnsubscribeSerializer
+from .models import ContactMessage, ContactInfo, \
+    NewsletterSubscription, SubscriberSegment, NewsletterTemplate, \
+    NewsletterCampaign, EmailDelivery, LinkClick, NewsletterAutomation, AutomationStep, \
+    AutomationExecution, SubscriberSegmentMembership
+from .serializers import ContactMessageSerializer, ContactInfoSerializer, \
+    NewsletterSubscriptionSerializer, \
+    SubscriberSegmentSerializer, NewsletterTemplateSerializer, NewsletterCampaignSerializer, \
+    EmailDeliverySerializer, NewsletterAutomationSerializer, AutomationStepSerializer, \
+    ConfirmSubscriptionSerializer, UnsubscribeSerializer
 from django.shortcuts import render, redirect
 from rest_framework.decorators import api_view, action
 from rest_framework.views import APIView
@@ -178,51 +185,6 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class FooterSettingsViewSet(viewsets.ReadOnlyModelViewSet):
-    """API endpoint for footer settings"""
-    queryset = FooterSettings.objects.all()
-    permission_classes = [permissions.AllowAny]
-    
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['language'] = self.request.query_params.get('lang', get_language() or 'en')
-        return context
-    
-    def get_serializer_class(self):
-        return LocalizedFooterSettingsSerializer
-    
-    def list(self, request, *args, **kwargs):
-        # Always return the first footer settings if it exists
-        try:
-            settings = FooterSettings.objects.first()
-            if settings:
-                serializer = self.get_serializer(settings)
-                return Response(serializer.data)
-            # Return empty object if no settings exist
-            return Response({})
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class FooterSectionViewSet(viewsets.ReadOnlyModelViewSet):
-    """API endpoint for footer sections"""
-    queryset = FooterSection.objects.filter(is_active=True)
-    permission_classes = [permissions.AllowAny]
-    lookup_field = 'slug'
-    
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['language'] = self.request.query_params.get('lang', get_language() or 'en')
-        return context
-    
-    def get_serializer_class(self):
-        return LocalizedFooterSectionSerializer
-
-class SocialMediaViewSet(viewsets.ReadOnlyModelViewSet):
-    """API endpoint for social media links"""
-    queryset = SocialMedia.objects.filter(is_active=True)
-    serializer_class = SocialMediaSerializer
-    permission_classes = [permissions.AllowAny]
 
 class NewsletterSubscriptionViewSet(viewsets.ModelViewSet):
     """API endpoint for newsletter subscriptions"""
@@ -845,18 +807,4 @@ class AutomationStepViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(automation_id=automation_id)
         return queryset.order_by('automation', 'order')
 
-class FooterAPIView(APIView):
-    """API endpoint that returns all footer data in a single request"""
-    permission_classes = [permissions.AllowAny]
-    
-    def get(self, request, format=None):
-        # Get language from query params or default to Django's active language
-        language = request.query_params.get('lang', get_language() or 'en')
-        
-        # Get all footer data at once using the combined serializer
-        serializer = FooterSerializer(
-            {}, # Empty object as we don't need instance data
-            context={'language': language, 'request': request}
-        )
-        
-        return Response(serializer.data) 
+# <<< Remove FooterAPIView class definition >>> 

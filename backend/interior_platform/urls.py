@@ -29,10 +29,11 @@ from apps.projects.views import ProjectViewSet, CategoryViewSet, TagViewSet
 from apps.testimonials.views import TestimonialViewSet
 # from apps.contact.views import ContactViewSet, ContactInfoViewSet, FooterAPIView
 from apps.contact_management.views import ContactViewSet, ContactInfoViewSet
-from apps.footer.views import FooterAPIView, FooterSectionViewSet
+from apps.footer.views import FooterSectionViewSet
 from apps.newsletter.views import NewsletterSubscriptionViewSet
 from apps.email_system.views import EmailDeliveryViewSet
 from apps.services.views import ServiceViewSet, ServiceCategoryViewSet
+from apps.faqs.views import FAQViewSet
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -54,6 +55,7 @@ def api_root(request, format=None):
         'newsletter': reverse('newsletter:subscription-list', request=request, format=format),
         'footer-sections': reverse('footer:section-list', request=request, format=format),
         'email-system': reverse('email_system:delivery-list', request=request, format=format),
+        'faqs': reverse('faqs:faq-list', request=request, format=format),
         # Commented until analytics app is enabled
         # 'analytics': reverse('pageview-list', request=request, format=format),
     })
@@ -68,6 +70,7 @@ router.register(r'contact', ContactViewSet, basename='contact')
 router.register(r'contact-info', ContactInfoViewSet, basename='contact-info')
 router.register(r'services', ServiceViewSet, basename='service')
 router.register(r'service-categories', ServiceCategoryViewSet, basename='servicecategory')
+router.register(r'faqs', FAQViewSet, basename='faq')
 
 # API URLs
 api_patterns = [
@@ -81,6 +84,7 @@ api_patterns = [
     path('v1/footer/', include('apps.footer.urls')),
     path('v1/contact/', include('apps.contact_management.urls')),
     path('v1/email/', include('apps.email_system.urls')),
+    path('v1/faqs/', include('apps.faqs.urls', namespace='faqs')),
     
     # Commented until analytics app is enabled
     # path('v1/analytics/', include('apps.analytics.urls')),

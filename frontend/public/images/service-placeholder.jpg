@@ -1,0 +1,11 @@
+// This is a placeholder for a binary image file.
+// In a real implementation, you would need to create a real JPG image file.
+// Since we can't create binary content here, this text serves as a placeholder instruction.
+// 
+// A real implementation would involve:
+// 1. Creating a JPG file with dimensions around 800x600
+// 2. Adding placeholder text like "Service Image" overlaid on a neutral background
+// 3. Saving it as public/images/service-placeholder.jpg
+//
+// For now, the frontend can be configured to download a placeholder from a CDN
+// or provide a default component that renders text when images are not available. 

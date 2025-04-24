@@ -64,7 +64,7 @@ class Project(models.Model):
     slug = models.SlugField(max_length=250, unique=True)
     description_en = models.TextField()
     description_ar = models.TextField(blank=True)
-    category = models.ForeignKey(ProjectCategory, on_delete=models.SET_NULL, null=True, related_name='projects')
+    category = models.ForeignKey(ProjectCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='projects')
     client_en = models.CharField(max_length=100, blank=True)
     client_ar = models.CharField(max_length=100, blank=True)
     location_en = models.CharField(max_length=200, blank=True)

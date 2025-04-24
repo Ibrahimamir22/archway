@@ -113,12 +113,13 @@ class LocalizedServiceListSerializer(serializers.ModelSerializer):
     short_description = serializers.SerializerMethodField()
     category = LocalizedServiceCategorySerializer(read_only=True)
     image_url = serializers.SerializerMethodField()
+    cover_image_url = serializers.SerializerMethodField()
     
     class Meta:
         model = Service
         fields = [
             'id', 'title', 'slug', 'short_description', 'description', 'category',
-            'icon', 'image', 'image_url', 'price', 'price_unit', 'duration',
+            'icon', 'image', 'image_url', 'cover_image', 'cover_image_url', 'price', 'price_unit', 'duration',
             'is_featured', 'is_published', 'order'
         ]
     
@@ -136,7 +137,15 @@ class LocalizedServiceListSerializer(serializers.ModelSerializer):
     
     def get_image_url(self, obj):
         request = self.context.get('request')
-        return get_absolute_media_url(request, str(obj.image)) if obj.image else None
+        if obj.cover_image:
+            return get_absolute_media_url(request, str(obj.cover_image))
+        if obj.image:
+             return get_absolute_media_url(request, str(obj.image))
+        return None
+
+    def get_cover_image_url(self, obj):
+        request = self.context.get('request')
+        return get_absolute_media_url(request, str(obj.cover_image)) if obj.cover_image else None
 
 
 class LocalizedServiceDetailSerializer(serializers.ModelSerializer):

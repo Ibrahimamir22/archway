@@ -39,17 +39,23 @@
       "@/*": [
         "./src/*"
       ],
-      "@types/*": [
-        "./src/@types/*"
-      ],
       "@components/*": [
         "./src/components/*"
       ],
+      "@types/*": [
+        "./src/types/*"
+      ],
       "@hooks/*": [
-        "./src/hooks/*"
+        "./src/lib/hooks/*"
       ],
       "@utils/*": [
         "./src/utils/*"
+      ],
+      "@lib/*": [
+        "./src/lib/*"
+      ],
+      "@fixtures/*": [
+        "./src/lib/fixtures/*"
       ]
     },
     "strictNullChecks": false,
@@ -62,15 +68,14 @@
   },
   "include": [
     "next-env.d.ts",
-    "src/@types/next-env.d.ts",
-    "src/@types/next-environment.d.ts",
+    "src/types/@types/next-env.d.ts",
+    "src/types/@types/next-environment.d.ts",
     "**/*.ts",
     "**/*.tsx",
     "src/**/*.ts",
     "src/**/*.tsx",
     ".next/types/**/*.ts",
-    "src/@types/*.d.ts",
-    "src/NoTypeScript.js"
+    "src/types/@types/*.d.ts"
   ],
   "exclude": [
     "node_modules"

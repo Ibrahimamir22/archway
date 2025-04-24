@@ -1,0 +1,14 @@
+# Development-specific requirements
+# Includes base requirements from requirements.txt
+
+-r requirements.txt
+
+# Add development tools below (e.g., testing frameworks, linters, formatters):
+# pytest
+# pytest-django
+# factory-boy
+# flake8
+# black
+# isort
+# mypy
+# django-debug-toolbar 

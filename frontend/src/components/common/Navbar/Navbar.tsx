@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
-import { useTranslation } from 'next-i18next';
-import LanguageSwitcher from '../LanguageSwitcher';
+import { useParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
+import LanguageSwitcher from '../LanguageSwitcher/index';
+import PrefetchLink from '../PrefetchLink';
 
 export interface NavbarProps {
   // Add any props if needed in the future
@@ -13,10 +14,21 @@ export interface NavbarProps {
 
 const Navbar = (props: NavbarProps): JSX.Element => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const router = useRouter();
-  const { locale } = router;
+  const locale = useLocale();
   const isRtl = locale === 'ar';
-  const { t } = useTranslation('common');
+  const t = useTranslations('header');
+  const params = useParams(); // Get params to know the context
+
+  // Add Logging
+  const pageType = params?.slug ? 'Slug Page' : 'Other Page';
+  console.log(`Navbar (${pageType}): Locale is "${locale}", RTL is ${isRtl}`);
+  try {
+    const homeText = t('home');
+    console.log(`Navbar (${pageType}): t('home') resolved to "${homeText}"`);
+  } catch (e) {
+    console.error(`Navbar (${pageType}): Error resolving t('home'):`, e);
+  }
+  // End Logging
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -27,7 +39,7 @@ const Navbar = (props: NavbarProps): JSX.Element => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
+          <PrefetchLink href={`/${locale}`} className="flex items-center">
             <div className="relative w-[180px] h-[60px] hover:scale-105 transition-transform">
               <Image 
                 src="/images/Archway.png" 
@@ -37,36 +49,61 @@ const Navbar = (props: NavbarProps): JSX.Element => {
                 priority
               />
             </div>
-          </Link>
+          </PrefetchLink>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex space-x-8 rtl:space-x-reverse">
-            <Link href="/" className="font-medium hover:text-brand-blue">
-              {t('header.home')}
-            </Link>
-            <Link href="/portfolio" className="font-medium hover:text-brand-blue">
-              {t('header.portfolio')}
-            </Link>
-            <Link href="/services" className="font-medium hover:text-brand-blue">
-              {t('header.services')}
-            </Link>
-            <Link href="/about" className="font-medium hover:text-brand-blue">
-              {t('header.about')}
-            </Link>
-            <Link href="/contact" className="font-medium hover:text-brand-blue">
-              {t('header.contact')}
-            </Link>
+            <PrefetchLink 
+              href={`/${locale}`} 
+              className="font-medium hover:text-brand-blue"
+              prefetchType="route"
+            >
+              {t('home')}
+            </PrefetchLink>
+            <PrefetchLink 
+              href={`/${locale}/portfolio`} 
+              className="font-medium hover:text-brand-blue"
+              prefetchType="route"
+              dataPrefetchPath="/api/portfolio"
+              queryKey={['portfolio', 'list']}
+            >
+              {t('portfolio')}
+            </PrefetchLink>
+            <PrefetchLink 
+              href={`/${locale}/services`} 
+              className="font-medium hover:text-brand-blue"
+              prefetchType="route"
+              dataPrefetchPath="/api/services"
+              queryKey={['services', 'list']}
+            >
+              {t('services')}
+            </PrefetchLink>
+            <PrefetchLink 
+              href={`/${locale}/about`} 
+              className="font-medium hover:text-brand-blue"
+              prefetchType="route"
+            >
+              {t('about')}
+            </PrefetchLink>
+            <PrefetchLink 
+              href={`/${locale}/contact`} 
+              className="font-medium hover:text-brand-blue"
+              prefetchType="route"
+            >
+              {t('contact')}
+            </PrefetchLink>
           </div>
 
           {/* CTA Button and Language Switcher */}
           <div className="hidden md:flex items-center space-x-4 rtl:space-x-reverse">
             <LanguageSwitcher />
-            <Link 
-              href="/contact" 
+            <PrefetchLink 
+              href={`/${locale}/contact`}
               className="bg-brand-blue text-white px-4 py-2 rounded hover:bg-brand-blue-light transition-colors"
+              prefetchType="route"
             >
-              {t('header.getQuote')}
-            </Link>
+              {t('getQuote')}
+            </PrefetchLink>
           </div>
 
           {/* Mobile Menu Button */}
@@ -104,29 +141,50 @@ const Navbar = (props: NavbarProps): JSX.Element => {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden pt-4 pb-2 space-y-4 animate-fade-in">
-            <Link href="/" className="block font-medium hover:text-brand-blue py-2">
-              {t('header.home')}
-            </Link>
-            <Link href="/portfolio" className="block font-medium hover:text-brand-blue py-2">
-              {t('header.portfolio')}
-            </Link>
-            <Link href="/services" className="block font-medium hover:text-brand-blue py-2">
-              {t('header.services')}
-            </Link>
-            <Link href="/about" className="block font-medium hover:text-brand-blue py-2">
-              {t('header.about')}
-            </Link>
-            <Link href="/contact" className="block font-medium hover:text-brand-blue py-2">
-              {t('header.contact')}
-            </Link>
+            <PrefetchLink 
+              href={`/${locale}`} 
+              className="block font-medium hover:text-brand-blue py-2"
+              prefetchType="route"
+            >
+              {t('home')}
+            </PrefetchLink>
+            <PrefetchLink 
+              href={`/${locale}/portfolio`} 
+              className="block font-medium hover:text-brand-blue py-2"
+              prefetchType="route"
+            >
+              {t('portfolio')}
+            </PrefetchLink>
+            <PrefetchLink 
+              href={`/${locale}/services`} 
+              className="block font-medium hover:text-brand-blue py-2"
+              prefetchType="route"
+            >
+              {t('services')}
+            </PrefetchLink>
+            <PrefetchLink 
+              href={`/${locale}/about`} 
+              className="block font-medium hover:text-brand-blue py-2"
+              prefetchType="route"
+            >
+              {t('about')}
+            </PrefetchLink>
+            <PrefetchLink 
+              href={`/${locale}/contact`} 
+              className="block font-medium hover:text-brand-blue py-2"
+              prefetchType="route"
+            >
+              {t('contact')}
+            </PrefetchLink>
             <div className="flex items-center justify-between py-2">
               <LanguageSwitcher />
-              <Link 
-                href="/contact" 
+              <PrefetchLink 
+                href={`/${locale}/contact`}
                 className="bg-brand-blue text-white px-4 py-2 rounded hover:bg-brand-blue-light transition-colors"
+                prefetchType="route"
               >
-                {t('header.getQuote')}
-              </Link>
+                {t('getQuote')}
+              </PrefetchLink>
             </div>
           </div>
         )}

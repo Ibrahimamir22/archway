@@ -1,8 +1,10 @@
+'use client';
+
 // This barrel file exports all Footer-related components
-import Footer, { FooterProps } from './Footer';
+import Footer from './Footer';
 import NewsletterForm from './NewsletterForm';
 import FooterSection from './FooterSection';
-import SocialIcon from './SocialIcon';
+import SocialMediaLink from './SocialMediaLink';
 import CompanyInfo from './CompanyInfo';
 import ContactInfo from './ContactInfo';
 
@@ -11,9 +13,10 @@ export {
   Footer,
   NewsletterForm,
   FooterSection,
-  SocialIcon,
+  SocialMediaLink as SocialIcon,
   CompanyInfo,
-  ContactInfo
+  ContactInfo,
+  SocialMediaLink
 };
 
 // Also export types

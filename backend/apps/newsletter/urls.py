@@ -15,5 +15,7 @@ app_name = 'newsletter'
 
 urlpatterns = [
     path('', include(router.urls)),
+    # Add explicit subscription endpoint for better frontend compatibility
+    path('subscribe/', NewsletterSubscriptionViewSet.as_view({'post': 'create'}), name='subscribe'),
     # Add other URL patterns here
 ] 

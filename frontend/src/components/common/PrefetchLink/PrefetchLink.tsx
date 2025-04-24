@@ -25,6 +25,24 @@ export interface PrefetchLinkProps extends React.ComponentPropsWithoutRef<typeof
   prefetchPriority?: 'low' | 'medium' | 'high';
   
   /**
+   * Type of prefetch (data, route, or both)
+   * This is used internally and not passed to the DOM
+   */
+  prefetchType?: 'data' | 'route' | 'both';
+  
+  /**
+   * Path to API endpoint for data prefetching
+   * This is used internally and not passed to the DOM
+   */
+  dataPrefetchPath?: string;
+  
+  /**
+   * Query key for caching prefetched data
+   * This is used internally and not passed to the DOM
+   */
+  queryKey?: string[];
+  
+  /**
    * Children elements
    */
   children: React.ReactNode;
@@ -41,6 +59,9 @@ export const PrefetchLink: React.FC<PrefetchLinkProps> = ({
   prefetch = true,
   prefetchDelay,
   prefetchPriority = 'medium',
+  prefetchType,
+  dataPrefetchPath,
+  queryKey,
   children,
   ...linkProps
 }) => {
@@ -58,6 +79,21 @@ export const PrefetchLink: React.FC<PrefetchLinkProps> = ({
       return prefetchData();
     }
     
+    // Custom prefetching logic using provided paths
+    if (dataPrefetchPath && (prefetchType === 'data' || prefetchType === 'both')) {
+      // This is just a placeholder - in a real implementation,
+      // this would use something like React Query's prefetchQuery
+      // or a custom fetch implementation
+      try {
+        const response = await fetch(dataPrefetchPath);
+        if (!response.ok) throw new Error('Failed to prefetch data');
+        await response.json();
+      } catch (err) {
+        // Silently handle prefetch errors - they shouldn't break the UI
+        console.warn('Data prefetch failed:', err);
+      }
+    }
+    
     return Promise.resolve();
   };
   
@@ -68,11 +104,19 @@ export const PrefetchLink: React.FC<PrefetchLinkProps> = ({
     priority: prefetchPriority
   });
   
+  // Filter out custom props before passing to Link
+  const sanitizedPrefetchProps = { ...prefetchProps };
+  
+  // Remove any non-standard DOM properties before passing to Link
+  if ('prefetchType' in sanitizedPrefetchProps) delete sanitizedPrefetchProps.prefetchType;
+  if ('dataPrefetchPath' in sanitizedPrefetchProps) delete sanitizedPrefetchProps.dataPrefetchPath;
+  if ('queryKey' in sanitizedPrefetchProps) delete sanitizedPrefetchProps.queryKey;
+  
   return (
     <Link 
       href={href} 
       {...linkProps}
-      {...prefetchProps}
+      {...sanitizedPrefetchProps}
     >
       {children}
     </Link>

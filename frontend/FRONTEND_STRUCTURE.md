@@ -11,12 +11,13 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   ├── app/                            # Main application directory
 │   │   │   ├── [locale]/                   # Dynamic locale segment (e.g., /en, /ar)
 │   │   │   │   ├── page.tsx                # Home page --> /[locale]/
-│   │   │   │   ├── layout.tsx              # Locale-specific root layout
+│   │   │   │   ├── layout.tsx              # Locale-specific root layout with font configurations
 │   │   │   │   ├── not-found.tsx           # Locale-specific 404 page
 │   │   │   │   ├── providers.tsx           # Client providers wrapper
 │   │   │   │   ├── (marketing)/            # Route group for marketing pages
 │   │   │   │   │   ├── about/              # --> /[locale]/about
-│   │   │   │   │   │   └── page.tsx        # About page component
+│   │   │   │   │   │   ├── page.tsx        # About page server component
+│   │   │   │   │   │   └── AboutClient.tsx # About page client component
 │   │   │   │   │   ├── terms/              # --> /[locale]/terms
 │   │   │   │   │   │   └── page.tsx        # Terms page component
 │   │   │   │   │   ├── faq/                # --> /[locale]/faq
@@ -25,7 +26,8 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   │   │       └── page.tsx        # Contact page component
 │   │   │   │   ├── (portfolio)/            # Route group for portfolio features
 │   │   │   │   │   ├── portfolio/
-│   │   │   │   │   │   ├── page.tsx        # --> /[locale]/portfolio
+│   │   │   │   │   │   ├── page.tsx        # Portfolio listing page --> /[locale]/portfolio
+│   │   │   │   │   │   ├── FilterWrapper.tsx  # Client component for portfolio filters
 │   │   │   │   │   │   └── [slug]/         # --> /[locale]/portfolio/[slug]
 │   │   │   │   │   │       ├── page.tsx    # Portfolio detail page
 │   │   │   │   │   │       └── ProjectDetailClientLogic.tsx  # Client component for details page
@@ -35,12 +37,12 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   │   │   │   ├── services-client.tsx  # Client component for services listing
 │   │   │   │   │   │   └── [slug]/         # --> /[locale]/services/[slug]
 │   │   │   │   │   │       ├── page.tsx    # Service detail page
-│   │   │   │   │   │       └── service-detail-client.tsx  # Client component for details
+│   │   │   │   │   │       └── service-detail-client.tsx  # Client component for service details
 │   │   │   │   └── (auth)/                 # Route group for authentication pages
 │   │   │   │       ├── login/              # --> /[locale]/login
-│   │   │   │       │   └── page.tsx
+│   │   │   │       │   └── page.tsx        # Login page
 │   │   │   │       └── signup/             # --> /[locale]/signup
-│   │   │   │           └── page.tsx
+│   │   │   │           └── page.tsx        # Signup page
 │   │   │   │
 │   │   │   ├── api/                        # API Route Handlers
 │   │   │   │   ├── contact/                # Contact form API handlers
@@ -49,6 +51,19 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   │   ├── contact-info/           # Contact information API
 │   │   │   │   │   ├── route.ts            # Contact info API route
 │   │   │   │   │   └── defaultData.ts      # Default contact information
+│   │   │   │   ├── mock/                   # Mock data endpoints
+│   │   │   │   │   ├── route.ts            # Main mock API route
+│   │   │   │   │   └── marketing/          # Marketing mock data
+│   │   │   │   │       ├── about/          # About page mock data
+│   │   │   │   │       │   └── route.ts    # About page API
+│   │   │   │   │       ├── company-stats/  # Company statistics mock data
+│   │   │   │   │       │   └── route.ts    # Stats API
+│   │   │   │   │       ├── core-values/    # Core values mock data
+│   │   │   │   │       │   └── route.ts    # Core values API
+│   │   │   │   │       ├── team-members/   # Team members mock data
+│   │   │   │   │       │   └── route.ts    # Team members API
+│   │   │   │   │       └── testimonials/   # Testimonials mock data
+│   │   │   │   │           └── route.ts    # Testimonials API
 │   │   │   │   ├── portfolio/              # Portfolio-related APIs
 │   │   │   │   │   ├── route.ts            # Portfolio listing API
 │   │   │   │   │   ├── defaultData.ts      # Default portfolio data
@@ -57,11 +72,15 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   │   ├── faqs/                   # FAQs API endpoints
 │   │   │   │   │   ├── route.ts            # Main FAQs API route
 │   │   │   │   │   ├── languages/          # Language-specific FAQs
+│   │   │   │   │   │   └── route.ts        # Language options API
 │   │   │   │   │   └── by-category/        # Category-specific FAQs
+│   │   │   │   │       └── route.ts        # FAQs by category API
 │   │   │   │   ├── simple-submit/          # Simple form submission handler
 │   │   │   │   │   └── route.ts            # Simple form submission API
 │   │   │   │   ├── direct-submit/          # Direct form submission handler
 │   │   │   │   │   └── route.ts            # Direct form submission API
+│   │   │   │   ├── footer/                 # Footer content API
+│   │   │   │   │   └── route.ts            # Footer data API route
 │   │   │   │   └── image-proxy/            # Image proxy API
 │   │   │   │       └── route.ts            # Image proxy API route
 │   │   │   │
@@ -83,7 +102,8 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   │   │   ├── CompanyInfo.tsx      # Company information component
 │   │   │   │   │   ├── ContactInfo.tsx      # Contact information component
 │   │   │   │   │   ├── NewsletterForm.tsx   # Newsletter subscription form
-│   │   │   │   │   ├── SocialIcon.tsx       # Social media icon component
+│   │   │   │   │   ├── SocialMediaLink.tsx  # Social media link component
+│   │   │   │   │   ├── README.md            # Footer documentation
 │   │   │   │   │   └── index.tsx            # Footer barrel file
 │   │   │   │   ├── FormInput/               # Form input components
 │   │   │   │   │   └── index.tsx            # Form input component
@@ -112,12 +132,16 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   │   │   ├── ProjectCardImage.tsx # Image section with hover effects
 │   │   │   │   │   └── ProjectCardContent.tsx # Content section with text
 │   │   │   │   ├── detail/                 # Portfolio detail components
-│   │   │   │   │   ├── ProjectHeader.tsx   # Project header component
-│   │   │   │   │   ├── ProjectDetails.tsx  # Project details component
+│   │   │   │   │   ├── ProjectHeader.tsx   # Server component for project header
+│   │   │   │   │   ├── ProjectHeader.client.tsx # Client component for project header
+│   │   │   │   │   ├── ProjectDetails.tsx  # Server component for project details
+│   │   │   │   │   ├── ProjectDetails.client.tsx # Client component for project details
 │   │   │   │   │   └── ProjectGallery.tsx  # Project gallery component
 │   │   │   │   ├── list/                   # Portfolio listing components
+│   │   │   │   │   ├── ProjectGrid.tsx     # Server component for project grid
+│   │   │   │   │   ├── ProjectGrid.client.tsx # Client component for project grid
+│   │   │   │   │   ├── ProjectGridLoader.tsx # Loading state for project grid
 │   │   │   │   │   ├── ProjectFilters.tsx  # Project filters component
-│   │   │   │   │   ├── ProjectGrid.tsx     # Project grid component
 │   │   │   │   │   └── PlaceholderProjects.tsx # Placeholder projects component
 │   │   │   │   ├── common/                 # Common portfolio components
 │   │   │   │   │   └── DirectProjectImage.tsx # Direct project image component
@@ -137,37 +161,46 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   │   │   ├── ServiceIcon.tsx     # Individual service icon component
 │   │   │   │   │   └── index.tsx           # Icons barrel file
 │   │   │   │   ├── detail/                 # Service detail components
-│   │   │   │   │   ├── ServiceDetail.tsx   # Service detail component
+│   │   │   │   │   ├── ServiceDetail.tsx   # Server component for service detail
+│   │   │   │   │   ├── ServiceDetail.client.tsx # Client component for service detail
 │   │   │   │   │   └── index.tsx           # Detail barrel file
 │   │   │   │   ├── list/                   # Service list components
-│   │   │   │   │   ├── ServiceGrid.tsx     # Service grid component
+│   │   │   │   │   ├── ServiceGrid.tsx     # Server component for service grid
+│   │   │   │   │   ├── ServiceGrid.client.tsx # Client component for service grid
+│   │   │   │   │   ├── ServiceGridLoader.tsx # Loading state for service grid
 │   │   │   │   │   ├── ServiceFilters.tsx  # Service filters component
 │   │   │   │   │   └── index.tsx           # List barrel file
 │   │   │   │   └── REFACTORING_REPORT.md   # Documentation of the services refactoring
 │   │   │   │
 │   │   │   ├── marketing/                  # Marketing components
-│   │   │   │   └── contact/                # Contact page components
-│   │   │   │       ├── ContactForm.tsx     # Contact form component
-│   │   │   │       ├── ContactInfo.tsx     # Contact information component
-│   │   │   │       ├── form/               # Modular contact form components
-│   │   │   │       │   ├── FormField.tsx   # Input field component
-│   │   │   │       │   ├── TextareaField.tsx # Textarea component
-│   │   │   │       │   ├── SubmitButton.tsx # Submit button component
-│   │   │   │       │   ├── StatusMessage.tsx # Form status message component
-│   │   │   │       │   ├── PrivacyNote.tsx # Privacy note component
-│   │   │   │       │   ├── MapDisplay.tsx  # Map display component
-│   │   │   │       │   ├── SocialLinks.tsx # Social links component
-│   │   │   │       │   ├── BusinessHours.tsx # Business hours component
-│   │   │   │       │   ├── ContactItem.tsx # Contact item component
-│   │   │   │       │   └── index.ts        # Form components barrel file
-│   │   │   │       └── index.ts            # Contact components barrel file
-│   │   │   │
+│   │   │   │   ├── contact/                # Contact page components
+│   │   │   │   │   ├── ContactForm.tsx     # Contact form component
+│   │   │   │   │   ├── ContactInfo.tsx     # Contact information component
+│   │   │   │   │   ├── ContactInfo.client.tsx # Client-side contact info component
+│   │   │   │   │   ├── form/               # Modular contact form components
+│   │   │   │   │   │   ├── FormField.tsx   # Input field component
+│   │   │   │   │   │   ├── TextareaField.tsx # Textarea component
+│   │   │   │   │   │   ├── SubmitButton.tsx # Submit button component
+│   │   │   │   │   │   ├── StatusMessage.tsx # Form status message component
+│   │   │   │   │   │   ├── PrivacyNote.tsx # Privacy note component
+│   │   │   │   │   │   ├── MapDisplay.tsx  # Map display component
+│   │   │   │   │   │   ├── SocialLinks.tsx # Social links component
+│   │   │   │   │   │   ├── BusinessHours.tsx # Server business hours component
+│   │   │   │   │   │   ├── BusinessHours.client.tsx # Client business hours component
+│   │   │   │   │   │   ├── ContactItem.tsx # Contact item component
+│   │   │   │   │   │   └── index.ts        # Form components barrel file
+│   │   │   │   │   └── index.ts            # Contact components barrel file
+│   │   │   │   │
 │   │   │   │   └── faq/                   # FAQ page components
-│   │   │   │       ├── FAQ.tsx            # Main FAQ component
-│   │   │   │       ├── FAQCategory.tsx    # Category component
+│   │   │   │       ├── FAQ.tsx            # Server FAQ component
+│   │   │   │       ├── FAQ.client.tsx     # Client FAQ component
+│   │   │   │       ├── FAQServer.tsx      # Server-specific FAQ component
+│   │   │   │       ├── FAQCategory.tsx    # Server category component
+│   │   │   │       ├── FAQCategory.client.tsx # Client category component
 │   │   │   │       ├── FAQItem.tsx        # Expandable FAQ item
 │   │   │   │       ├── FAQSearch.tsx      # Search component
 │   │   │   │       └── index.ts           # FAQ components barrel file
+│   │   │   │
 │   │   │   ├── auth/                       # Authentication components
 │   │   │   │   ├── LoginForm.tsx          # Login form component
 │   │   │   │   ├── SignupForm.tsx         # Signup form component
@@ -179,7 +212,13 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   ├── chatbot/                    # Chatbot components (empty/placeholder)
 │   │   │   ├── 3d/                         # 3D/360 view components (empty/placeholder)
 │   │   │   ├── ui/                         # Base UI primitives
-│   │   │   │   └── Pattern.tsx             # UI pattern component
+│   │   │   │   ├── Pattern.tsx             # Pattern background component
+│   │   │   │   ├── LoadingSpinner.tsx      # Loading spinner component
+│   │   │   │   ├── LoadingState.tsx        # Loading state wrapper component
+│   │   │   │   ├── ErrorMessage.tsx        # Error message component
+│   │   │   │   ├── ScrollReveal.tsx        # Animation reveal component
+│   │   │   │   ├── skeleton.tsx            # Skeleton loading component
+│   │   │   │   └── index.ts                # UI components barrel file
 │   │   │   ├── content/                    # CMS content components (empty/placeholder)
 │   │   │   └── providers/                  # Provider components
 │   │   │       └── Providers.tsx           # Main providers wrapper
@@ -188,16 +227,30 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   ├── api.ts                      # Legacy API file (for compatibility)
 │   │   │   ├── hooks.ts                    # Legacy hooks file (for compatibility)
 │   │   │   ├── images.ts                   # Legacy image utilities (for compatibility)
+│   │   │   ├── config.ts                   # Configuration settings
+│   │   │   ├── imageLoader.ts              # Image loading and optimization utilities
 │   │   │   ├── index.ts                    # Main lib barrel file
 │   │   │   ├── api/                        # API functionality
 │   │   │   │   ├── core.ts                 # Core API functions
-│   │   │   │   ├── services.ts             # Service-specific API utilities
+│   │   │   │   ├── fetcher.ts              # API fetching utilities
 │   │   │   │   ├── urls.ts                 # URL utility functions
+│   │   │   │   ├── portfolio.ts            # Portfolio API functions
+│   │   │   │   ├── services.ts             # Services API functions
+│   │   │   │   ├── contact.ts              # Contact form API functions
+│   │   │   │   ├── faq.ts                  # FAQ API functions
+│   │   │   │   ├── footer.ts               # Footer API functions
 │   │   │   │   └── index.ts                # API barrel file
 │   │   │   ├── hooks/                      # React hooks
+│   │   │   │   ├── index.ts                # Main hooks barrel file with namespace exports
 │   │   │   │   ├── auth/                   # Authentication hooks
 │   │   │   │   │   ├── useAuth.ts          # Authentication hook
 │   │   │   │   │   └── index.ts            # Auth hooks barrel file
+│   │   │   │   ├── footer/                 # Footer-related hooks
+│   │   │   │   │   ├── useFooter.ts        # Footer customization hook
+│   │   │   │   │   └── index.ts            # Footer hooks barrel file
+│   │   │   │   ├── i18n/                   # Internationalization hooks
+│   │   │   │   │   ├── useLanguagePrefetch.ts # Language prefetching hook
+│   │   │   │   │   └── index.ts            # i18n hooks barrel file
 │   │   │   │   ├── portfolio/              # Portfolio hooks
 │   │   │   │   │   ├── types.ts            # Portfolio hook types
 │   │   │   │   │   ├── useProjects.ts      # Basic projects hook
@@ -210,14 +263,26 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   │   │   └── index.ts            # Portfolio hooks barrel file
 │   │   │   │   ├── marketing/              # Marketing hooks
 │   │   │   │   │   ├── useNewsletterSubscription.ts # Newsletter subscription hook
+│   │   │   │   │   ├── index.ts            # Marketing hooks barrel file
+│   │   │   │   │   ├── about/              # About page hooks 
+│   │   │   │   │   │   ├── useAboutData.ts # Main about page data hook
+│   │   │   │   │   │   ├── useCoreValues.ts # Company core values hook
+│   │   │   │   │   │   ├── useCompanyStats.ts # Company statistics hook
+│   │   │   │   │   │   ├── useTeamMembers.ts # Team members data hook
+│   │   │   │   │   │   ├── useTestimonials.ts # Testimonials data hook
+│   │   │   │   │   │   ├── useClientLogos.ts # Client logos hook
+│   │   │   │   │   │   ├── useCompanyHistory.ts # Company history timeline hook
+│   │   │   │   │   │   └── index.ts        # About hooks barrel file
 │   │   │   │   │   ├── contact/            # Contact-related hooks
 │   │   │   │   │   │   ├── useContactForm.ts # Contact form state/validation hook
 │   │   │   │   │   │   ├── useContactInfo.ts # Contact info fetch hook
+│   │   │   │   │   │   ├── useClipboard.ts # Clipboard utility hook
 │   │   │   │   │   │   └── index.ts        # Contact hooks barrel file
-│   │   │   │   │   ├── faq/                # FAQ-related hooks
-│   │   │   │   │   │   ├── useFAQs.ts      # FAQ data fetching hook
-│   │   │   │   │   │   └── index.ts        # FAQ hooks barrel file
-│   │   │   │   │   └── index.ts            # Marketing hooks barrel file
+│   │   │   │   │   └── faq/                # FAQ-related hooks
+│   │   │   │   │       ├── useFAQs.ts      # FAQ data fetching hook
+│   │   │   │   │       ├── useFAQPrefetch.ts # FAQ prefetching hook
+│   │   │   │   │       ├── useFAQLanguages.ts # FAQ languages hook
+│   │   │   │   │       └── index.ts        # FAQ hooks barrel file
 │   │   │   │   ├── services/               # Services hooks
 │   │   │   │   │   ├── types.ts            # Service type definitions
 │   │   │   │   │   ├── useServiceDetail.ts # Hook for fetching service details
@@ -227,26 +292,31 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   │   │   ├── useServiceCategories.ts # Hook for service categories
 │   │   │   │   │   └── index.ts            # Service hooks exports
 │   │   │   │   ├── ui/                     # UI-related hooks
-│   │   │   │   │   ├── useFooter.ts        # Footer customization hook
+│   │   │   │   │   ├── useIntersectionObserver.ts # Intersection observer hook
+│   │   │   │   │   ├── usePrefetch.ts      # UI-specific prefetching hook
 │   │   │   │   │   └── index.ts            # UI hooks barrel file
-│   │   │   │   ├── utils/                  # Utility hooks
-│   │   │   │   │   ├── useApi.ts           # API utilities hook
-│   │   │   │   │   ├── errorHandling.ts    # Error handling utilities
-│   │   │   │   │   ├── usePrefetch.ts      # Resource prefetching hook
-│   │   │   │   │   └── index.ts            # Utils hooks barrel file
-│   │   │   │   └── index.ts                # Hooks barrel file
+│   │   │   │   └── utils/                  # Utility hooks
+│   │   │   │       ├── useApi.ts           # API utilities hook
+│   │   │   │       ├── errorHandling.ts    # Error handling utilities
+│   │   │   │       ├── usePrefetch.ts      # Resource prefetching hook
+│   │   │   │       └── index.ts            # Utils hooks barrel file
 │   │   │   ├── fixtures/                   # Mock data for development
+│   │   │   │   ├── index.ts                # Fixtures barrel file
 │   │   │   │   ├── portfolio/              # Portfolio fixtures
 │   │   │   │   │   └── projects.ts         # Mock project data
-│   │   │   │   └── index.ts                # Fixtures barrel file
+│   │   │   │   └── footer/                 # Footer fixtures
+│   │   │   │       ├── footerData.ts       # Mock footer data
+│   │   │   │       └── index.ts            # Footer fixtures barrel file
 │   │   │   ├── images/                     # Image utilities
 │   │   │   │   └── index.ts                # Image utility functions with preloading
-│   │   │   ├── utils/                      # General utilities
-│   │   │   │   ├── formatting.ts           # Formatting utilities
-│   │   │   │   ├── api.ts                  # API utility functions
-│   │   │   │   ├── categoryDisplay.ts      # Category display utilities
-│   │   │   │   ├── socialMediaColors.ts    # Social media color utilities
-│   │   │   │   └── index.ts                # Utils barrel file
+│   │   │   └── utils/                      # General utilities
+│   │   │       ├── api.ts                  # API utility functions
+│   │   │       ├── categoryDisplay.ts      # Category display utilities
+│   │   │       ├── footerUtils.ts          # Footer utility functions
+│   │   │       ├── formatting.ts           # Formatting utilities
+│   │   │       ├── prefetch.ts             # Prefetching utilities
+│   │   │       ├── socialMediaColors.ts    # Social media color utilities
+│   │   │       └── index.ts                # Utils barrel file
 │   │   │
 │   │   ├── styles/                         # Styling configuration
 │   │   │   └── globals.css                 # Global CSS
@@ -264,8 +334,10 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   ├── services/                   # Services types
 │   │   │   │   └── index.d.ts              # Service type definitions
 │   │   │   ├── marketing/                  # Marketing-related types
+│   │   │   │   ├── about.ts                # About page type definitions
 │   │   │   │   ├── contact.ts              # Contact form and info types
-│   │   │   │   └── faq.ts                  # FAQ types
+│   │   │   │   ├── faq.ts                  # FAQ types
+│   │   │   │   └── index.ts                # Marketing types barrel file
 │   │   │   ├── api/                        # API types (empty/placeholder)
 │   │   │   ├── pages/                      # Page-specific types (empty/placeholder)
 │   │   │   ├── vendor/                     # Third-party library types (empty/placeholder)

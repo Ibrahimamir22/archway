@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { PrefetchLink } from '@/components/common/PrefetchLink';
 import { usePrefetch } from '@/lib/hooks/ui';
+import { TranslationFunction } from '@/types/i18n';
 import { 
   createTeamMembersPrefetcher,
   createTestimonialsPrefetcher,
@@ -13,7 +14,7 @@ interface AboutNavLinksProps {
   /**
    * Translation function
    */
-  t: (key: string) => string;
+  t: TranslationFunction;
   
   /**
    * Current locale

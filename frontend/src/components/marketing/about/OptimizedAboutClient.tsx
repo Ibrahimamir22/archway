@@ -1,6 +1,7 @@
 'use client';
 
 import React, { memo, useMemo, useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useAboutData } from '@/lib/hooks/marketing/about';
 import { ErrorMessage, LoadingState } from '@/components/ui';
 import { 
@@ -54,7 +55,10 @@ const FallbackNotification = memo(function FallbackNotification({
 export default function OptimizedAboutClient({ locale }: { locale: string }) {
   const isRtl = locale === 'ar';
   const [activeSection, setActiveSection] = useState('');
-
+  
+  // Use Next.js Internationalization
+  const t = useTranslations('about');
+  
   // Use our centralized data hook with hybrid fetching
   const {
     // Combined API data
@@ -104,22 +108,6 @@ export default function OptimizedAboutClient({ locale }: { locale: string }) {
       sectionObserver.disconnect();
     };
   }, []);
-  
-  // Localized content (this would come from translations in a real implementation)
-  const messages = useMemo(() => {
-    // Try to use combined data from API if available
-    if (combinedData) {
-      return combinedData;
-    }
-    
-    // Otherwise use empty object (components will use their default fallbacks)
-    return {};
-  }, [combinedData]);
-  
-  // Helper function to get translation (for compatibility with existing components)
-  const t = (key: string): string => {
-    return key; // We'll rely on the components' internal localization
-  };
   
   // Handle loading state
   if (isLoading) {

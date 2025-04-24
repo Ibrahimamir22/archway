@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import { useCoreValues } from '@/lib/hooks/marketing/about';
 import { LoadingState, ErrorMessage, ScrollReveal } from '@/components/ui';
 
@@ -16,7 +16,14 @@ interface CoreValuesProps {
 }
 
 const CoreValues: React.FC<CoreValuesProps> = ({ t, isRtl, locale }) => {
-  // Function to get icons based on id
+  // Track component mount state to prevent updates after unmount
+  const isMounted = useRef(true);
+  // Only show loading indicator on first load
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  // Cache for values to prevent re-renders
+  const [cachedValues, setCachedValues] = useState<CoreValue[]>([]);
+
+  // Function to get icons based on id - memoized to prevent recreation
   const getIcon = useCallback((id: number) => {
     switch (id) {
       case 1:
@@ -48,7 +55,40 @@ const CoreValues: React.FC<CoreValuesProps> = ({ t, isRtl, locale }) => {
     }
   }, []);
 
+  // Fetch values from API
   const { coreValues, loading, error, refetch } = useCoreValues(locale, t, getIcon);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  // Update cached values when we get new data and mark initial load as complete
+  useEffect(() => {
+    if (!isMounted.current) return;
+    
+    if (coreValues.length > 0) {
+      setCachedValues(coreValues);
+      
+      if (isInitialLoad) {
+        setIsInitialLoad(false);
+      }
+    }
+  }, [coreValues, isInitialLoad]);
+
+  // Memoize values to render to prevent recalculation
+  const valuesToRender = useMemo(() => {
+    return cachedValues.length > 0 ? cachedValues : coreValues;
+  }, [cachedValues, coreValues]);
+  
+  // Memoize UI state variables
+  const { showLoading, showError, showEmpty } = useMemo(() => ({
+    showLoading: loading && isInitialLoad && valuesToRender.length === 0,
+    showError: error && valuesToRender.length === 0,
+    showEmpty: !loading && valuesToRender.length === 0 && !error
+  }), [loading, error, isInitialLoad, valuesToRender.length]);
 
   return (
     <section className="mb-20">
@@ -58,11 +98,11 @@ const CoreValues: React.FC<CoreValuesProps> = ({ t, isRtl, locale }) => {
         </h2>
       </ScrollReveal>
       
-      {loading && (
+      {showLoading && (
         <LoadingState type="values" text={t('loadingValues')} />
       )}
       
-      {error && (
+      {showError && (
         <div className="py-8">
           <ErrorMessage 
             message={error || t('errorLoadingValues')} 
@@ -72,18 +112,16 @@ const CoreValues: React.FC<CoreValuesProps> = ({ t, isRtl, locale }) => {
         </div>
       )}
       
-      {!loading && !error && coreValues.length > 0 && (
+      {valuesToRender.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {coreValues.map((value, index) => (
+          {valuesToRender.map((value, index) => (
             <ScrollReveal 
               key={value.id} 
               animation="zoom-in"
               delay={0.1 + (index * 0.1)}
               offset="-50px"
             >
-              <div 
-                className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow h-full"
-              >
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow h-full">
                 <div className={`flex flex-col ${isRtl ? 'items-end text-right' : ''}`}>
                   <div className="w-12 h-12 bg-brand-blue/10 dark:bg-brand-blue/20 rounded-full flex items-center justify-center mb-4">
                     <div className="text-brand-blue dark:text-brand-accent">
@@ -99,7 +137,7 @@ const CoreValues: React.FC<CoreValuesProps> = ({ t, isRtl, locale }) => {
         </div>
       )}
       
-      {!loading && !error && coreValues.length === 0 && (
+      {showEmpty && (
         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
           {t('noCoreValuesFound')}
         </div>

@@ -1,16 +1,17 @@
 import React from 'react';
 import { ScrollReveal } from '@/components/ui';
+import { TranslationFunction } from '@/types/i18n';
 
 interface MissionVisionProps {
-  t: (key: string) => string;
+  t: TranslationFunction;
   isRtl: boolean;
 }
 
-const MissionVision: React.FC<MissionVisionProps> = ({ t, isRtl }) => {
+export const MissionVision: React.FC<MissionVisionProps> = ({ t, isRtl }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
-      <ScrollReveal animation="slide-right" delay={0.1} offset="-100px">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow h-full">
+      <ScrollReveal animation="slide-up" delay={0.1}>
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
           <div className="mb-4">
             <div className="w-12 h-12 bg-brand-blue/10 dark:bg-brand-blue/20 rounded-full flex items-center justify-center mb-4">
               <svg className="w-6 h-6 text-brand-blue dark:text-brand-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,8 +24,8 @@ const MissionVision: React.FC<MissionVisionProps> = ({ t, isRtl }) => {
         </div>
       </ScrollReveal>
       
-      <ScrollReveal animation="slide-left" delay={0.2} offset="-100px">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow h-full">
+      <ScrollReveal animation="slide-up" delay={0.2}>
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
           <div className="mb-4">
             <div className="w-12 h-12 bg-brand-accent/10 dark:bg-brand-accent/20 rounded-full flex items-center justify-center mb-4">
               <svg className="w-6 h-6 text-brand-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -39,6 +40,4 @@ const MissionVision: React.FC<MissionVisionProps> = ({ t, isRtl }) => {
       </ScrollReveal>
     </div>
   );
-};
-
-export default MissionVision; 
+}; 

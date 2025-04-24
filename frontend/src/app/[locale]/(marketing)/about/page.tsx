@@ -10,14 +10,14 @@ export async function generateMetadata({
   params: { locale: string } 
 }): Promise<Metadata> {
   // Get translations for metadata
-  const t = await getTranslations({ locale: params.locale, namespace: 'About' });
+  const t = await getTranslations({ locale: params.locale, namespace: 'about' });
   
   return {
-    title: t('meta.title'),
-    description: t('meta.description'),
+    title: t('pageTitle'),
+    description: t('pageDescription'),
     openGraph: {
-      title: t('meta.og.title'),
-      description: t('meta.og.description'),
+      title: t('pageTitle'),
+      description: t('pageDescription'),
       images: ['/images/about-og-image.jpg'],
     },
   };
@@ -30,7 +30,7 @@ export default async function AboutPage({
   params: { locale: string } 
 }) {
   // Get translations for the page
-  const t = await getTranslations({ locale: params.locale, namespace: 'About' });
+  const t = await getTranslations({ locale: params.locale, namespace: 'about' });
   const isRtl = params.locale === 'ar';
   
   return (

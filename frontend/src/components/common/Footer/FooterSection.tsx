@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import type { FooterSection as FooterSectionType } from '@/lib/hooks/footer/useFooter';
-import PrefetchLink from '../PrefetchLink';
+import { PrefetchLink } from '../PrefetchLink';
 
 interface FooterLink {
   id: string | number;

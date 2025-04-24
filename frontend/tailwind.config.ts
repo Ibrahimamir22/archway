@@ -35,8 +35,8 @@ const config: Config = {
         inter: ['var(--font-inter)', 'sans-serif'],
       },
       animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-up': 'slideUp 0.5s ease-in-out',
+        'fade-in': 'fadeIn 0.6s ease-out forwards',
+        'slide-up': 'slideUp 0.6s ease-out forwards',
         'scale': 'scale 0.3s ease-in-out',
       },
       keyframes: {

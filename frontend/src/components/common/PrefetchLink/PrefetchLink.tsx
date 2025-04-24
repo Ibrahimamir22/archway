@@ -1,79 +1,80 @@
+import React from 'react';
 import Link from 'next/link';
-import { ComponentProps, ReactNode, memo } from 'react';
-import { usePrefetch } from '@/lib/hooks/utils';
+import { useRouter } from 'next/navigation';
+import { usePrefetch } from '@/lib/hooks/ui';
 
-export interface PrefetchLinkProps extends Omit<ComponentProps<typeof Link>, 'prefetch'> {
-  children: ReactNode;
-  prefetchType?: 'route' | 'data' | 'image';
-  queryKey?: string[];
+export interface PrefetchLinkProps extends React.ComponentPropsWithoutRef<typeof Link> {
+  /**
+   * Additional data prefetch function (beyond Next.js' built-in route prefetching)
+   */
+  prefetchData?: () => Promise<any>;
+  
+  /**
+   * Whether to prefetch the route and data
+   */
+  prefetch?: boolean;
+  
+  /**
+   * Delay in milliseconds before prefetching starts (default: 150ms)
+   */
   prefetchDelay?: number;
-  dataPrefetchPath?: string;
-  prefetchEnabled?: boolean;
-  className?: string;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
+  
+  /**
+   * Priority for prefetching (affects timing)
+   */
+  prefetchPriority?: 'low' | 'medium' | 'high';
+  
+  /**
+   * Children elements
+   */
+  children: React.ReactNode;
 }
 
 /**
- * Enhanced Link component that prefetches routes or data on hover
- * Improves perceived performance by preloading resources before the user clicks
+ * Enhanced Link component that prefetches both routes and data
+ * 
+ * Uses Next.js built-in prefetching plus custom data prefetching
  */
-function PrefetchLink({
-  children,
+export const PrefetchLink: React.FC<PrefetchLinkProps> = ({
   href,
-  prefetchType = 'route',
-  queryKey,
-  prefetchDelay = 0, // Default to 0 for immediate prefetching
-  dataPrefetchPath,
-  prefetchEnabled = true,
-  className,
-  onMouseEnter: userOnMouseEnter,
-  onMouseLeave: userOnMouseLeave,
-  ...props
-}: PrefetchLinkProps) {
-  // Determine the path to prefetch
-  const prefetchPath = 
-    prefetchType === 'data' && dataPrefetchPath 
-      ? dataPrefetchPath 
-      : String(href);
+  prefetchData,
+  prefetch = true,
+  prefetchDelay,
+  prefetchPriority = 'medium',
+  children,
+  ...linkProps
+}) => {
+  const router = useRouter();
   
-  // Use the prefetch hook
-  const { 
-    handleMouseEnter, 
-    handleMouseLeave,
-    isHovering
-  } = usePrefetch(prefetchPath, {
-    type: prefetchType,
-    queryKey,
+  // Function that both prefetches the route and any data
+  const handlePrefetch = async () => {
+    // Prefetch the route using Next.js router
+    if (typeof href === 'string') {
+      router.prefetch(href);
+    }
+    
+    // If a data prefetch function is provided, call it
+    if (prefetchData) {
+      return prefetchData();
+    }
+    
+    return Promise.resolve();
+  };
+  
+  // Use the prefetch hook with our prefetch function
+  const { prefetchProps } = usePrefetch(handlePrefetch, {
+    enabled: prefetch,
     delay: prefetchDelay,
-    enabled: prefetchEnabled
+    priority: prefetchPriority
   });
-
-  // Combine our hover handlers with any provided by the user
-  const onMouseEnter = () => {
-    handleMouseEnter();
-    if (userOnMouseEnter) userOnMouseEnter();
-  };
-
-  const onMouseLeave = () => {
-    handleMouseLeave();
-    if (userOnMouseLeave) userOnMouseLeave();
-  };
-
+  
   return (
-    <Link
-      href={href}
-      className={`${className || ''} ${isHovering ? 'is-hovering' : ''}`}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      // Enable Next.js's default prefetch for better performance
-      prefetch={true}
-      {...props}
+    <Link 
+      href={href} 
+      {...linkProps}
+      {...prefetchProps}
     >
       {children}
     </Link>
   );
-}
-
-// Use memo to prevent unnecessary rerenders
-export default memo(PrefetchLink); 
+}; 

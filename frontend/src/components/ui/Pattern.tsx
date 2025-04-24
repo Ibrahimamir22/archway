@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const Pattern: React.FC = () => {
+const Pattern: React.FC = () => {
   return (
     <svg
       className="absolute inset-0 w-full h-full"
@@ -37,4 +37,7 @@ export const Pattern: React.FC = () => {
       <rect width="100%" height="100%" fill="url(#dots-pattern)" />
     </svg>
   );
-}; 
+};
+
+export { Pattern };
+export default Pattern; 

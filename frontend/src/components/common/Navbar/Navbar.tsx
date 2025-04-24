@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import LanguageSwitcher from '../LanguageSwitcher/index';
-import PrefetchLink from '../PrefetchLink';
+import { PrefetchLink } from '../PrefetchLink';
 
 // Define the actual logo dimensions to prevent warnings
 const LOGO_WIDTH = 180;

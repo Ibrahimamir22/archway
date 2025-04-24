@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { Service } from '@/lib/hooks/services/types';
 import ServiceCardImage from './ServiceCardImage';
 import ServiceCardContent from './ServiceCardContent';
-import PrefetchLink from '@/components/common/PrefetchLink';
+import { PrefetchLink } from '@/components/common/PrefetchLink';
 import { preloadImage } from '@/lib/imageLoader';
 
 // Global tracking for preloaded services

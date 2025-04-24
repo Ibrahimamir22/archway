@@ -170,16 +170,8 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['next-intl'],
-    // Improve resource loading management
     adjustFontFallbacks: true,
-    adjustFontFailures: true,
-    // Disable static preloads for fonts - add only where needed
     disableOptimizedLoading: true,
-    // Control script loading
-    scriptLoader: {
-      // Don't preload certain script types
-      dangerouslyDisableScriptPreloading: true
-    }
   }
 };
 

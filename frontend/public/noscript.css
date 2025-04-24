@@ -1,0 +1,28 @@
+/* Styles for when JavaScript is disabled */
+
+/* Hide any elements that require JS to function properly */
+.js-only {
+  display: none !important;
+}
+
+/* Show noscript-only elements */
+.noscript-only {
+  display: block !important;
+}
+
+/* Ensure images don't break layout if JS preloading fails */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Hide preload warnings styling */
+link[rel="preload"], link[rel="prefetch"] {
+  display: none !important;
+}
+
+/* Ensure critical content is visible */
+.container, main, header, footer {
+  display: block !important;
+  visibility: visible !important;
+} 

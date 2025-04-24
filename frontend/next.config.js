@@ -45,9 +45,7 @@ const nextConfig = {
     unoptimized: process.env.NODE_ENV === 'development', // Only disable optimization in development
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840], // Better responsive image sizes
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384], // Additional sizes for smaller images
-    loader: 'custom',
-    loaderFile: './src/lib/images.ts',
-    // Add optimization settings
+    // Remove custom loader to use Next.js built-in loader
     formats: ['image/webp'],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
@@ -95,6 +93,32 @@ const nextConfig = {
       }
     }
     
+    // Add a plugin to disable automatic font preloading since it causes warnings
+    if (!isServer) {
+      config.plugins.push({
+        apply: (compiler) => {
+          compiler.hooks.compilation.tap('DisableFontPreload', (compilation) => {
+            // Only proceed if the hook exists
+            if (compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing) {
+              compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing.tap(
+                'DisableFontPreload',
+                (data) => {
+                  if (data.html) {
+                    // Remove preload links for fonts
+                    data.html = data.html.replace(
+                      /<link[^>]*rel="preload"[^>]*as="font"[^>]*>/g,
+                      ''
+                    );
+                  }
+                  return data;
+                }
+              );
+            }
+          });
+        },
+      });
+    }
+    
     return config;
   },
   
@@ -140,7 +164,23 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  
+  // Disable automatic static optimization for specific pages
+  // to prevent overly aggressive preloading of resources
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: ['next-intl'],
+    // Improve resource loading management
+    adjustFontFallbacks: true,
+    adjustFontFailures: true,
+    // Disable static preloads for fonts - add only where needed
+    disableOptimizedLoading: true,
+    // Control script loading
+    scriptLoader: {
+      // Don't preload certain script types
+      dangerouslyDisableScriptPreloading: true
+    }
+  }
 };
 
-// module.exports = nextConfig; // <-- REMOVE old export
-module.exports = withNextIntl(nextConfig); // <-- WRAP config with next-intl plugin 
+module.exports = withNextIntl(nextConfig); 

@@ -1,5 +1,5 @@
 import Image, { ImageProps } from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { fixImageUrl } from '@/lib/images';
 
 // Global registry of preloaded images to avoid duplicate work
@@ -32,7 +32,11 @@ const OptimizedImage = ({ src, alt, priority, onLoad, ...props }: OptimizedImage
   
   // Handle image load errors
   const handleError = () => {
-    console.warn(`Image failed to load: ${imageSrc}`);
+    if (hasError) return; // Prevent infinite error loops
+    
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`Image failed to load: ${imageSrc}`);
+    }
     setHasError(true);
     
     // Try to extract a unique number from the URL to use for fallback image selection
@@ -55,13 +59,44 @@ const OptimizedImage = ({ src, alt, priority, onLoad, ...props }: OptimizedImage
     if (onLoad) onLoad();
   };
   
-  // Preload image for better performance
-  useEffect(() => {
-    if (typeof window !== 'undefined' && imageSrc && !hasError && !imageSrc.startsWith('/images/placeholder')) {
-      const img = new window.Image();
-      img.src = imageSrc;
-    }
-  }, [imageSrc, hasError]);
+  // Fixed width/height check to ensure both are present
+  const { width, height, fill, sizes } = props;
+  
+  // Ensure we have proper dimensions to prevent warnings
+  let enhancedProps: any = { ...props };
+  
+  // If fill is specified, we don't need width and height
+  if (fill) {
+    // No change needed, fill is already set
+  } 
+  // If both width and height are specified, use them
+  else if (width !== undefined && height !== undefined) {
+    // No change needed, both dimensions are set
+  }
+  // If neither are specified, use default dimensions
+  else if (width === undefined && height === undefined) {
+    enhancedProps.width = 300;
+    enhancedProps.height = 200;
+  }
+  // If only one dimension is specified, calculate the other using a default ratio
+  else if (width !== undefined && height === undefined) {
+    // Calculate height from width using 3:2 aspect ratio
+    const calculatedHeight = typeof width === 'number' ? 
+      Math.round(Number(width) * (2/3)) : 200;
+    enhancedProps.height = calculatedHeight;
+  }
+  else if (height !== undefined && width === undefined) {
+    // Calculate width from height using 3:2 aspect ratio
+    const calculatedWidth = typeof height === 'number' ? 
+      Math.round(Number(height) * (3/2)) : 300;
+    enhancedProps.width = calculatedWidth;
+  }
+  
+  // If no sizes prop is provided but we have a responsive width, add a default sizes
+  if (!sizes && 
+      (typeof width === 'string' || typeof enhancedProps.width === 'string')) {
+    enhancedProps.sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw";
+  }
   
   return (
     <Image 
@@ -70,9 +105,10 @@ const OptimizedImage = ({ src, alt, priority, onLoad, ...props }: OptimizedImage
       onError={handleError}
       onLoad={handleLoad}
       priority={priority}
-      {...props} 
+      {...enhancedProps} 
     />
   );
 };
 
-export default OptimizedImage; 
+// Use memo to prevent unnecessary rerenders
+export default memo(OptimizedImage); 

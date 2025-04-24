@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ComponentProps, ReactNode } from 'react';
+import { ComponentProps, ReactNode, memo } from 'react';
 import { usePrefetch } from '@/lib/hooks/utils';
 
 export interface PrefetchLinkProps extends Omit<ComponentProps<typeof Link>, 'prefetch'> {
@@ -18,12 +18,12 @@ export interface PrefetchLinkProps extends Omit<ComponentProps<typeof Link>, 'pr
  * Enhanced Link component that prefetches routes or data on hover
  * Improves perceived performance by preloading resources before the user clicks
  */
-export function PrefetchLink({
+function PrefetchLink({
   children,
   href,
   prefetchType = 'route',
   queryKey,
-  prefetchDelay = 50,
+  prefetchDelay = 0, // Default to 0 for immediate prefetching
   dataPrefetchPath,
   prefetchEnabled = true,
   className,
@@ -75,4 +75,5 @@ export function PrefetchLink({
   );
 }
 
-export default PrefetchLink; 
+// Use memo to prevent unnecessary rerenders
+export default memo(PrefetchLink); 

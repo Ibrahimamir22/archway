@@ -1,12 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import LanguageSwitcher from '../LanguageSwitcher/index';
 import PrefetchLink from '../PrefetchLink';
+
+// Define the actual logo dimensions to prevent warnings
+const LOGO_WIDTH = 180;
+const LOGO_HEIGHT = 60;
+const LOGO_ASPECT_RATIO = LOGO_WIDTH / LOGO_HEIGHT;
 
 export interface NavbarProps {
   // Add any props if needed in the future
@@ -18,17 +23,30 @@ const Navbar = (props: NavbarProps): JSX.Element => {
   const isRtl = locale === 'ar';
   const t = useTranslations('header');
   const params = useParams(); // Get params to know the context
-
-  // Add Logging
-  const pageType = params?.slug ? 'Slug Page' : 'Other Page';
-  console.log(`Navbar (${pageType}): Locale is "${locale}", RTL is ${isRtl}`);
-  try {
-    const homeText = t('home');
-    console.log(`Navbar (${pageType}): t('home') resolved to "${homeText}"`);
-  } catch (e) {
-    console.error(`Navbar (${pageType}): Error resolving t('home'):`, e);
-  }
-  // End Logging
+  
+  // Prefetch navigation paths on component mount
+  useEffect(() => {
+    // Only run in the browser
+    if (typeof window !== 'undefined') {
+      // Prefetch main navigation paths
+      const prefetchPaths = [
+        `/${locale}`,
+        `/${locale}/portfolio`,
+        `/${locale}/services`,
+        `/${locale}/about`,
+        `/${locale}/contact`
+      ];
+      
+      // Use built-in Next.js prefetch
+      import('next/router').then(router => {
+        prefetchPaths.forEach(path => {
+          router.default.prefetch(path);
+        });
+      }).catch(err => {
+        // Silent fail for prefetching
+      });
+    }
+  }, [locale]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -44,9 +62,16 @@ const Navbar = (props: NavbarProps): JSX.Element => {
               <Image 
                 src="/images/Archway.png" 
                 alt="Archway Logo" 
-                fill
+                width={LOGO_WIDTH}
+                height={LOGO_HEIGHT}
                 className="object-contain"
                 priority
+                // Add specific dimensions to prevent layout shifts
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  aspectRatio: LOGO_ASPECT_RATIO
+                }}
               />
             </div>
           </PrefetchLink>

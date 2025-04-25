@@ -1,5 +1,5 @@
 import React from 'react';
-import { TeamGrid } from './TeamGrid';
+import TeamGrid from './TeamGrid';
 import { useTeamMembers } from '@/lib/hooks/marketing/about';
 import { LoadingState, ErrorMessage, ScrollReveal } from '@/components/ui';
 
@@ -9,7 +9,7 @@ interface TeamSectionProps {
   locale: string;
 }
 
-export const TeamSection: React.FC<TeamSectionProps> = ({ t, isRtl, locale }) => {
+const TeamSection: React.FC<TeamSectionProps> = ({ t, isRtl, locale }) => {
   const { data: teamMembers, isLoading, error, refetch } = useTeamMembers({
     locale,
     featuredOnly: true,
@@ -41,7 +41,11 @@ export const TeamSection: React.FC<TeamSectionProps> = ({ t, isRtl, locale }) =>
       
       {!isLoading && !error && teamMembers && teamMembers.length > 0 && (
         <ScrollReveal animation="slide-up" offset="-50px" delay={0.3}>
-          <TeamGrid members={teamMembers} isRtl={isRtl} />
+          <TeamGrid 
+            teamMembers={teamMembers} 
+            isLoading={false}
+            columns={3}
+          />
         </ScrollReveal>
       )}
       
@@ -52,4 +56,6 @@ export const TeamSection: React.FC<TeamSectionProps> = ({ t, isRtl, locale }) =>
       )}
     </section>
   );
-}; 
+};
+
+export default TeamSection; 

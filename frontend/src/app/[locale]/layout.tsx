@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
 import { notFound } from "next/navigation";
 import { locales } from "@/../i18n"; // Adjust path if needed
 import { Inter, Playfair_Display, Cairo, Tajawal } from 'next/font/google'; // Import fonts
@@ -52,34 +53,17 @@ export const metadata: Metadata = {
   description: 'Premium interior design services',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
   params: { locale },
 }: RootLayoutProps) {
   // Validate locale
   if (!locales.includes(locale)) {
-    console.error(`Invalid locale detected in layout: ${locale}`);
     notFound(); // Show 404 if locale is invalid
   }
 
-  // Explicitly load messages for the current locale from the URL param
-  let messages;
-  try {
-    // Dynamically import the messages for the validated locale
-    messages = require(`@/../src/messages/${locale}.json`);
-    console.log(`Layout: Successfully loaded messages for explicit locale: ${locale}`);
-  } catch (error) {
-    console.error(`Layout: Failed to load messages for explicit locale: ${locale}`, error);
-    // Fallback or error handling - maybe try default locale?
-    try {
-      messages = require(`@/../src/messages/${locales[0]}.json`); // Try default locale
-      console.warn(`Layout: Falling back to default locale messages: ${locales[0]}`);
-    } catch (fallbackError) {
-      console.error(`Layout: Failed to load default messages either.`, fallbackError);
-      // If even default fails, provide empty messages or throw
-      messages = {}; 
-    }
-  }
+  // Properly fetch messages using next-intl's server function
+  const messages = await getMessages({ locale });
 
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
 
@@ -90,7 +74,7 @@ export default function RootLayout({
   return (
     <div className={`${bodyFontClass} min-h-screen flex flex-col ${fontVariables}`} dir={dir}>
       <Providers>
-        {/* Pass the explicitly loaded messages */}
+        {/* Use the messages fetched by getMessages */}
         <NextIntlClientProvider locale={locale} messages={messages} timeZone="Africa/Cairo">
           <Navbar />
           <main className="flex-grow">

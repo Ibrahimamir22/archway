@@ -29,6 +29,21 @@ interface TestimonialsProps {
    * Number of columns to display (1-3)
    */
   columns?: 1 | 2 | 3;
+
+  /**
+   * Translation function
+   */
+  t?: (key: string) => string;
+
+  /**
+   * Whether the text direction is RTL
+   */
+  isRtl?: boolean;
+
+  /**
+   * Current locale
+   */
+  locale?: string;
 }
 
 const Testimonials: React.FC<TestimonialsProps> = ({
@@ -36,7 +51,10 @@ const Testimonials: React.FC<TestimonialsProps> = ({
   featuredOnly = false,
   maxCount,
   industry,
-  columns = 3
+  columns = 3,
+  t,
+  isRtl = false,
+  locale = 'en'
 }) => {
   const { 
     data: testimonials, 
@@ -46,17 +64,26 @@ const Testimonials: React.FC<TestimonialsProps> = ({
   } = useTestimonials({
     featuredOnly,
     limit: maxCount,
-    industry
+    industry,
+    locale
   });
   
   const displayedTestimonials = testimonials || [];
 
+  // Use translation function if provided, otherwise use English defaults
+  const titleText = t ? t('testimonials') : 'What Our Clients Say';
+  const descriptionText = t ? t('testimonialsDescription') : 'Hear from our satisfied clients about their experience working with our team.';
+  const loadingText = t ? t('loadingTestimonials') : 'Loading testimonials...';
+  const noTestimonialsText = t ? t('noTestimonialsFound') : 'No testimonials found.';
+  const errorText = t ? t('errorLoadingTestimonials') : 'Failed to load testimonials. Please try again later.';
+  const retryText = t ? t('retry') : 'Retry';
+
   if (error) {
     return (
-      <div className={`py-8 ${className}`}>
+      <div className={`py-8 ${className}`} dir={isRtl ? 'rtl' : 'ltr'}>
         <ErrorMessage 
-          message={error || "Failed to load testimonials. Please try again later."}
-          retryText="Retry"
+          message={error || errorText}
+          retryText={retryText}
           onRetry={refetch}
         />
       </div>
@@ -64,17 +91,17 @@ const Testimonials: React.FC<TestimonialsProps> = ({
   }
 
   return (
-    <div className={`py-12 ${className}`}>
+    <div className={`py-12 ${className}`} dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">What Our Clients Say</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">{titleText}</h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Hear from our satisfied clients about their experience working with our team.
+            {descriptionText}
           </p>
         </div>
 
         {isLoading && (
-          <LoadingState type="testimonial" text="Loading testimonials..." />
+          <LoadingState type="testimonial" text={loadingText} />
         )}
         
         {!isLoading && displayedTestimonials.length > 0 && (
@@ -88,7 +115,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({
         
         {!isLoading && displayedTestimonials.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            No testimonials found.
+            {noTestimonialsText}
           </div>
         )}
       </div>

@@ -185,6 +185,9 @@ export default function OptimizedAboutClient({ locale }: { locale: string }) {
           className="bg-gray-50" 
           featuredOnly={true} 
           maxCount={3}
+          t={t}
+          isRtl={isRtl}
+          locale={locale}
         />
         
         {/* FAQ Section Teaser */}

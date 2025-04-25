@@ -10,12 +10,9 @@ export { default as StatsSection } from './Stats/StatsSection';
 export { default as ClientLogosSection } from './ClientLogos/ClientLogosSection';
 export { default as AboutNavLinks } from './NavLinks/AboutNavLinks';
 
-// Export the named exports from TeamSection folder separately
-export * from './TeamSection';
-
 // Other subcomponents
 export * from './Testimonials';
 export * from './Stats';
 export * from './ClientLogos';
 export * from './NavLinks';
-export * from './CompanyHistory'; 
+export * from './CompanyHistory';

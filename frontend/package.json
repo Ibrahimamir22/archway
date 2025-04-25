@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check-translations": "node scripts/check-translations.js",
+    "fix-translations": "node scripts/check-translations.js --fix",
+    "scan-translations": "node scripts/check-translations.js --scan",
+    "scan-fix-translations": "node scripts/check-translations.js --scan --fix"
   },
   "dependencies": {
     "axios": "^1.6.0",

@@ -127,7 +127,7 @@
     "teamMember3Name": "نور الدين",
     "teamMember3Role": "متخصص تصور ثلاثي الأبعاد",
     "teamMember3Bio": "يحول مفاهيم التصميم إلى تصورات ثلاثية الأبعاد مذهلة تساعد العملاء على تصور مساحاتهم المستقبلية.",
-    "testimonials": "ماذا يقول عملاؤنا",
+    "testimonials": "آراء العملاء",
     "testimonial1Client": "أمير محمود",
     "testimonial1Project": "فيلا، القاهرة",
     "testimonial1Quote": "العمل مع إبتكارات أركواي كان استثنائيًا. اهتمامهم بالتفاصيل وفهمهم لاحتياجاتنا كان مميزًا.",
@@ -167,13 +167,25 @@
       "beginnings": "البدايات",
       "growth": "النمو",
       "expansion": "التوسع",
-      "current": "الفترة الحالية"
+      "current": "الفترة الحالية",
+      "beginning": "البداية",
+      "innovation": "الابتكار",
+      "today": "الحاضر"
     },
     "stats": "الإحصائيات",
     "loadingStats": "جاري تحميل الإحصائيات...",
     "errorLoadingStats": "حدث خطأ أثناء تحميل الإحصائيات. يرجى المحاولة مرة أخرى.",
     "noStatsFound": "لم يتم العثور على إحصائيات.",
+    "stat": {
+      "client_satisfaction": "رضا العملاء",
+      "completed_projects": "المشاريع المكتملة",
+      "happy_clients": "عملاء سعداء",
+      "happy_clients_desc": "عملاء راضون تمامًا عن خدماتنا",
+      "team_members": "أعضاء الفريق",
+      "years_experience": "سنوات الخبرة"
+    },
     "clients": "عملاؤنا",
+    "ourClients": "عملاؤنا",
     "trustedPartners": "شركاؤنا الموثوقون",
     "clientsDescription": "نحن فخورون بالعمل مع هؤلاء العملاء المميزين",
     "partnersDescription": "شركات وعلامات تجارية رائدة تثق بنا لتحويل مساحاتها",
@@ -191,8 +203,8 @@
       "healthcare": "رعاية صحية"
     },
     "history": "تاريخنا",
-    "testimonials": "آراء العملاء",
-    "testimonialsDescription": "ما يقوله عملاؤنا عن تجربتهم مع آركواي للابتكارات"
+    "testimonialsDescription": "ما يقوله عملاؤنا عن تجربتهم مع آركواي للابتكارات",
+    "retry": "إعادة المحاولة"
   },
   "contact": {
     "title": "اتصل بنا",
@@ -229,7 +241,9 @@
     "businessHours": "ساعات العمل",
     "workingDays": "الأحد - الخميس",
     "workingHours": "9:00 صباحًا - 5:00 مساءً",
-    "privacyNote": "معلوماتك آمنة ولن يتم مشاركتها أبدًا مع أطراف ثالثة."
+    "privacyNote": "معلوماتك آمنة ولن يتم مشاركتها أبدًا مع أطراف ثالثة.",
+    "loadingContactInfo": "جاري تحميل معلومات الاتصال...",
+    "messageTooLong": "الرسالة طويلة جدًا. يرجى الاحتفاظ بها تحت 1000 حرف."
   },
   "portfolio": {
     "title": "أعمالنا",
@@ -353,7 +367,51 @@
     "about": {
       "title": "عن آركواي للابتكارات",
       "metaDescription": "تعرف على آركواي للابتكارات، رسالتنا، رؤيتنا، والفريق وراء خدمات التصميم الداخلي لدينا."
-    }
+    },
+    "common": "[Placeholder for common]",
+    "language": "اللغة",
+    "locale": "اللغة المحلية",
+    "search": "بحث",
+    "page": "صفحة",
+    "department": "القسم",
+    "limit": "الحد",
+    "featured": "مميز",
+    "footer": "التذييل",
+    "ourClients": "عملاؤنا",
+    "trustedPartners": "شركاؤنا الموثوقون",
+    "clientsDescription": "نحن فخورون بالعمل مع هؤلاء العملاء المميزين",
+    "partnersDescription": "شركات وعلامات تجارية رائدة تثق بنا لتحويل مساحاتها",
+    "loadingLogos": "جاري تحميل الشعارات...",
+    "errorLoadingLogos": "خطأ في تحميل الشعارات",
+    "noLogosFound": "لم يتم العثور على شعارات",
+    "ourJourney": "رحلتنا",
+    "journeyDescription": "تعرف على قصة آركواي للابتكارات ورحلتنا منذ البداية",
+    "loadingHistory": "جاري تحميل تاريخ الشركة...",
+    "errorLoadingHistory": "خطأ في تحميل تاريخ الشركة",
+    "noHistoryFound": "لم يتم العثور على بيانات تاريخية",
+    "loadingValues": "جاري تحميل القيم الأساسية...",
+    "errorLoadingValues": "خطأ في تحميل القيم الأساسية",
+    "noCoreValuesFound": "لم يتم العثور على قيم أساسية",
+    "stats": "إحصائيات",
+    "clients": "العملاء",
+    "history": "التاريخ",
+    "companyStats": "إحصائيات الشركة",
+    "statsDescription": "إنجازاتنا بالأرقام",
+    "loadingStats": "جاري تحميل الإحصائيات...",
+    "errorLoadingStats": "خطأ في تحميل الإحصائيات",
+    "noStatsFound": "لم يتم العثور على إحصائيات",
+    "loadingTeam": "جاري تحميل أعضاء الفريق...",
+    "errorLoadingTeam": "خطأ في تحميل معلومات الفريق",
+    "noTeamMembersFound": "لم يتم العثور على أعضاء الفريق",
+    "testimonialsDescription": "ما يقوله عملاؤنا عن تجربتهم معنا",
+    "loadingTestimonials": "جاري تحميل الشهادات...",
+    "noTestimonialsFound": "لم يتم العثور على شهادات",
+    "errorLoadingTestimonials": "خطأ في تحميل الشهادات",
+    "validation": "التحقق",
+    "errorLoadingContactInfo": "خطأ في تحميل معلومات الاتصال",
+    "faq": "الأسئلة الشائعة",
+    "errorLoadingFAQs": "خطأ في تحميل الأسئلة الشائعة",
+    "auth": "المصادقة"
   },
   "backToPortfolio": "العودة إلى المشاريع",
   "projectDetails": "تفاصيل المشروع",
@@ -405,7 +463,7 @@
     "compact": "مدمج",
     "smart-home": "منزل ذكي",
     "office": "مكتب",
-    "professional": "احترافي", 
+    "professional": "احترافي",
     "corporate": "شركات",
     "hi": "مدينتي"
   },
@@ -456,5 +514,50 @@
         "description": "اكتشف قصتنا وقيمنا ورؤيتنا وفريقنا الموهوب الذي يقف وراء مشاريعنا الاستثنائية."
       }
     }
+  },
+  "sidebar": {
+    "contactInfo": "معلومات الاتصال",
+    "contactText": "هل لديك أسئلة؟ لا تتردد في التواصل معنا.",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف"
+  },
+  "companyInfo": {
+    "name": "[Placeholder for companyInfo.name]",
+    "description": "[Placeholder for companyInfo.description]"
+  },
+  "sections": {
+    "company": {
+      "title": "[Placeholder for sections.company.title]",
+      "links": {
+        "about_us": "[Placeholder for sections.company.links.about_us]",
+        "services": "[Placeholder for sections.company.links.services]",
+        "portfolio": "[Placeholder for sections.company.links.portfolio]"
+      }
+    },
+    "resources": {
+      "title": "[Placeholder for sections.resources.title]",
+      "links": {
+        "blog": "[Placeholder for sections.resources.links.blog]",
+        "faq": "[Placeholder for sections.resources.links.faq]",
+        "contact": "[Placeholder for sections.resources.links.contact]"
+      }
+    }
+  },
+  "newsletter": {
+    "description": "[Placeholder for newsletter.description]",
+    "title": "[Placeholder for newsletter.title]"
+  },
+  "stat": {
+    "client_satisfaction": "رضا العملاء",
+    "client_satisfaction_desc": "عملاء راضون تمامًا عن خدماتنا",
+    "happy_clients": "عملاء سعداء",
+    "happy_clients_desc": "عملاء يوصون بخدماتنا",
+    "years_experience": "سنوات الخبرة",
+    "years_experience_desc": "سنوات من الخبرة في المجال",
+    "completed_projects": "المشاريع المكتملة",
+    "completed_projects_desc": "مشاريع تصميم تم إنجازها بنجاح"
+  },
+  "": {
+    "": "[Placeholder for .]"
   }
-} 
+}

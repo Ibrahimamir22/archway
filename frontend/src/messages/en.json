@@ -20,19 +20,7 @@
     "followUs": "Follow Us",
     "allRightsReserved": "All rights reserved.",
     "contactUs": "Contact Us",
-    "newsletter": {
-      "title": "Subscribe to Our Newsletter",
-      "description": "Stay updated with our latest news and offers.",
-      "placeholder": "Enter your email",
-      "subscribe": "Subscribe",
-      "subscribing": "Subscribing...",
-      "emailRequired": "Email is required",
-      "emptyEmail": "Email cannot be empty",
-      "invalidEmail": "Please enter a valid email",
-      "successMessage": "Thank you for subscribing!",
-      "errorMessage": "Failed to subscribe. Please try again.",
-      "thankYou": "Thank you for subscribing!"
-    },
+    "newsletter": "Newsletter",
     "viewOnMap": "View on Google Maps",
     "sendEmail": "Send email to",
     "callUs": "Call us at",
@@ -138,6 +126,14 @@
     "testimonial3Project": "Retail Design, Alexandria",
     "testimonial3Quote": "Our retail space needed to reflect our brand identity, and Archway Innovations delivered beyond our expectations.",
     "values": "Our Core Values",
+    "value1Title": "Excellence",
+    "value1Text": "We constantly strive for excellence in every project, with meticulous attention to detail and delivery of the highest quality standards.",
+    "value2Title": "Creativity",
+    "value2Text": "We believe in the power of innovative ideas and creative solutions to transform spaces into unique and inspiring environments.",
+    "value3Title": "Sustainability",
+    "value3Text": "We are committed to implementing sustainable practices and using eco-friendly materials in our designs for a healthier future.",
+    "value4Title": "Collaboration",
+    "value4Text": "We work closely with our clients, listening to their needs and preferences to create spaces that reflect their vision.",
     "frequentlyAsked": "Have Questions?",
     "cannotFind": "Explore our frequently asked questions to learn more about our services and process.",
     "viewFaq": "View FAQ"
@@ -294,14 +290,57 @@
     "backToHome": "Go Back Home",
     "errorCode": "404",
     "noCategory": "Uncategorized",
-    "header": {
-      "contact": "Contact"
-    },
+    "header": "Header",
     "closeModal": "Close",
     "about": {
       "title": "About Archway Innovations",
       "metaDescription": "Learn about Archway Innovations, our mission, vision, and the team behind our interior design services."
-    }
+    },
+    "language": "Language",
+    "locale": "Locale",
+    "lang": "Language",
+    "path": "Path",
+    "department": "Department",
+    "limit": "Limit",
+    "featured": "Featured",
+    "footer": "Footer",
+    "ourClients": "Our Clients",
+    "trustedPartners": "Trusted Partners",
+    "clientsDescription": "We're proud to work with these distinguished clients",
+    "partnersDescription": "Leading companies and brands that trust us to transform their spaces",
+    "loadingLogos": "Loading logos...",
+    "errorLoadingLogos": "Error loading logos",
+    "noLogosFound": "No logos found",
+    "ourJourney": "Our Journey",
+    "journeyDescription": "Learn about Archway Innovations' story and our journey from the beginning",
+    "loadingHistory": "Loading company history...",
+    "errorLoadingHistory": "Error loading company history",
+    "noHistoryFound": "No history data found",
+    "loadingValues": "Loading core values...",
+    "errorLoadingValues": "Error loading core values",
+    "noCoreValuesFound": "No core values found",
+    "stats": "Statistics",
+    "clients": "Clients",
+    "history": "History",
+    "companyStats": "Company Statistics",
+    "statsDescription": "Our achievements in numbers",
+    "loadingStats": "Loading statistics...",
+    "errorLoadingStats": "Error loading statistics",
+    "noStatsFound": "No statistics found",
+    "loadingTeam": "Loading team members...",
+    "errorLoadingTeam": "Error loading team information",
+    "noTeamMembersFound": "No team members found",
+    "testimonialsDescription": "What our clients say about their experience with us",
+    "loadingTestimonials": "Loading testimonials...",
+    "noTestimonialsFound": "No testimonials found",
+    "errorLoadingTestimonials": "Error loading testimonials",
+    "validation": "Validation",
+    "errorLoadingContactInfo": "Error loading contact information",
+    "faq": "FAQ",
+    "errorLoadingFAQs": "Error loading FAQs",
+    "auth": "Authentication",
+    "page": "Page",
+    "search": "Search"
   },
   "backToPortfolio": "Back to Portfolio",
   "projectDetails": "Project Details",
@@ -387,5 +426,54 @@
     "contactUs": "Contact Us",
     "allCategories": "All Categories",
     "loading": "Loading FAQs..."
+  },
+  "sidebar": {
+    "contactInfo": "Contact Information",
+    "contactText": "Have questions? Feel free to reach out to us.",
+    "email": "Email",
+    "phone": "Phone"
+  },
+  "companyInfo": {
+    "name": "Archway Innovations",
+    "description": "Creating stunning interior designs for modern homes and offices"
+  },
+  "sections": {
+    "company": {
+      "title": "Company",
+      "links": {
+        "about_us": "About Us",
+        "services": "Services",
+        "portfolio": "Portfolio"
+      }
+    },
+    "resources": {
+      "title": "Resources",
+      "links": {
+        "blog": "Blog",
+        "faq": "FAQ",
+        "contact": "Contact"
+      }
+    }
+  },
+  "newsletter": {
+    "description": "Stay up to date with our latest news and offers",
+    "title": "Subscribe to our Newsletter",
+    "emptyEmail": "Email field cannot be empty",
+    "invalidEmail": "Please enter a valid email address",
+    "thankYou": "Thank you for subscribing!",
+    "errorMessage": "Failed to subscribe. Please try again."
+  },
+  "stat": {
+    "client_satisfaction": "Client Satisfaction",
+    "client_satisfaction_desc": "Clients completely satisfied with our services",
+    "happy_clients": "Happy Clients",
+    "happy_clients_desc": "Clients who recommend our services",
+    "years_experience": "Years Experience",
+    "years_experience_desc": "Years of industry experience",
+    "completed_projects": "Completed Projects",
+    "completed_projects_desc": "Successfully completed design projects"
+  },
+  "": {
+    "": "[Placeholder for .]"
   }
-} 
+}

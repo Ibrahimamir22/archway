@@ -20,15 +20,21 @@ export interface TeamMember {
 
 export interface Testimonial {
   id: string;
-  author: string;
+  client_name?: string;
+  author?: string;
   role?: string;
   company?: string;
-  content: string;
+  quote?: string;
+  content?: string;
+  project?: string;
   rating?: number;
   image?: string;
+  image_url?: string;
   industry?: string;
-  featured: boolean;
+  is_featured?: boolean;
+  featured?: boolean;
   date?: string;
+  created_at?: string;
 }
 
 export interface MarketingSection {

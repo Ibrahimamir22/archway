@@ -26,7 +26,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from apps.projects.views import ProjectViewSet, CategoryViewSet, TagViewSet
-from apps.testimonials.views import TestimonialViewSet
+# from apps.testimonials.views import TestimonialViewSet  # Removed - using testimonials from about app
 # from apps.contact.views import ContactViewSet, ContactInfoViewSet, FooterAPIView
 from apps.contact_management.views import ContactViewSet, ContactInfoViewSet
 from apps.footer.views import FooterSectionViewSet
@@ -45,7 +45,7 @@ def api_root(request, format=None):
         'projects': reverse('project-list', request=request, format=format),
         'categories': reverse('projectcategory-list', request=request, format=format),
         'tags': reverse('tag-list', request=request, format=format),
-        'testimonials': reverse('testimonial-list', request=request, format=format),
+        # 'testimonials': reverse('testimonial-list', request=request, format=format),  # Removed - using about app testimonials
         'contact': reverse('contact-list', request=request, format=format),
         'contact-info': reverse('contact-info-list', request=request, format=format),
         'services': reverse('service-list', request=request, format=format),
@@ -56,6 +56,7 @@ def api_root(request, format=None):
         'footer-sections': reverse('footer:section-list', request=request, format=format),
         'email-system': reverse('email_system:delivery-list', request=request, format=format),
         'faqs': reverse('faqs:faq-list', request=request, format=format),
+        'about': reverse('about:about-list', request=request, format=format),
         # Commented until analytics app is enabled
         # 'analytics': reverse('pageview-list', request=request, format=format),
     })
@@ -65,7 +66,7 @@ router = routers.DefaultRouter()
 router.register(r'projects', ProjectViewSet, basename='project')
 router.register(r'categories', CategoryViewSet, basename='projectcategory')
 router.register(r'tags', TagViewSet, basename='tag')
-router.register(r'testimonials', TestimonialViewSet, basename='testimonial')
+# router.register(r'testimonials', TestimonialViewSet, basename='testimonial')  # Removed - using about app testimonials
 router.register(r'contact', ContactViewSet, basename='contact')
 router.register(r'contact-info', ContactInfoViewSet, basename='contact-info')
 router.register(r'services', ServiceViewSet, basename='service')

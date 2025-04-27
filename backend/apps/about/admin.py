@@ -86,10 +86,10 @@ class CoreValueAdmin(admin.ModelAdmin):
 class TestimonialAdmin(admin.ModelAdmin):
     fieldsets = (
         (_('English Content'), {
-            'fields': ('client_name', 'quote', 'project')
+            'fields': ('client_name', 'quote', 'project', 'role', 'company', 'industry', 'image', 'rating')
         }),
         (_('Arabic Content'), {
-            'fields': ('client_name_ar', 'quote_ar', 'project_ar')
+            'fields': ('client_name_ar', 'quote_ar', 'project_ar', 'role_ar', 'company_ar', 'industry_ar')
         }),
         (_('Display Options'), {
             'fields': ('is_featured',)
@@ -99,9 +99,9 @@ class TestimonialAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
         })
     )
-    list_display = ('client_name', 'project', 'is_featured', 'created_at')
-    list_filter = ('is_featured',)
-    search_fields = ('client_name', 'quote', 'project')
+    list_display = ('client_name', 'role', 'company', 'project', 'rating', 'is_featured', 'created_at')
+    list_filter = ('is_featured', 'industry', 'rating')
+    search_fields = ('client_name', 'quote', 'project', 'company', 'role')
     list_editable = ('is_featured',)
     readonly_fields = ('created_at', 'updated_at')
 

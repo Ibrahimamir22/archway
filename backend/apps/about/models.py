@@ -97,12 +97,20 @@ class Testimonial(models.Model):
     client_name = models.CharField(_("Client Name"), max_length=100)
     quote = models.TextField(_("Quote"))
     project = models.CharField(_("Project"), max_length=100, blank=True)
+    role = models.CharField(_("Role/Position"), max_length=100, blank=True)
+    company = models.CharField(_("Company"), max_length=100, blank=True)
+    image = models.ImageField(_("Client Image"), upload_to='testimonials/', blank=True, null=True)
+    rating = models.PositiveSmallIntegerField(_("Rating"), blank=True, null=True, help_text=_("Rating from 1-5"))
+    industry = models.CharField(_("Industry"), max_length=100, blank=True)
     is_featured = models.BooleanField(_("Featured"), default=False)
     
     # Localization fields
     client_name_ar = models.CharField(_("Client Name (Arabic)"), max_length=100)
     quote_ar = models.TextField(_("Quote (Arabic)"))
     project_ar = models.CharField(_("Project (Arabic)"), max_length=100, blank=True)
+    role_ar = models.CharField(_("Role/Position (Arabic)"), max_length=100, blank=True)
+    company_ar = models.CharField(_("Company (Arabic)"), max_length=100, blank=True)
+    industry_ar = models.CharField(_("Industry (Arabic)"), max_length=100, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -114,6 +122,13 @@ class Testimonial(models.Model):
     
     def __str__(self):
         return f"{self.client_name}"
+    
+    @property
+    def image_url(self):
+        """Return the image URL for frontend use"""
+        if self.image and hasattr(self.image, 'url'):
+            return self.image.url
+        return None
 
 
 class CompanyHistory(models.Model):

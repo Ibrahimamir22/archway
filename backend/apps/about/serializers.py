@@ -46,12 +46,25 @@ class CoreValueSerializer(serializers.ModelSerializer):
 
 
 class TestimonialSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+    
     class Meta:
         model = Testimonial
         fields = [
             'id', 'client_name', 'quote', 'project', 'is_featured',
-            'client_name_ar', 'quote_ar', 'project_ar'
+            'role', 'company', 'image', 'image_url', 'rating', 'industry',  
+            'client_name_ar', 'quote_ar', 'project_ar', 'role_ar', 
+            'company_ar', 'industry_ar', 'created_at'
         ]
+    
+    def get_image_url(self, obj):
+        if obj.image:
+            try:
+                return self.context['request'].build_absolute_uri(obj.image.url)
+            except (KeyError, AttributeError):
+                if hasattr(obj.image, 'url'):
+                    return obj.image.url
+        return None
 
 
 class CompanyHistorySerializer(serializers.ModelSerializer):

@@ -82,7 +82,7 @@ INSTALLED_APPS = [
 
     # Project apps
     'apps.projects',
-    'apps.testimonials',
+    # 'apps.testimonials',  # Removed - using testimonials from about app instead
     'apps.services',
     'apps.footer',  # New app for footer functionality
     'apps.newsletter',  # New app for newsletter functionality

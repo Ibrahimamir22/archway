@@ -84,12 +84,16 @@ INSTALLED_APPS = [
     'apps.projects',
     'apps.testimonials',
     'apps.services',
-    'apps.faqs',  # FAQ app
-    # 'apps.contact',  # Original contact app (temporarily disabled for testing)
-    'apps.newsletter',  # New app for newsletter functionality
     'apps.footer',  # New app for footer functionality
+    'apps.newsletter',  # New app for newsletter functionality
     'apps.contact_management',  # New app for contact management
     'apps.email_system',  # New app for email delivery and automation
+    'apps.faqs',  # FAQ app
+    'apps.about',  # About page content app
+    
+    # Commented out apps
+    # 'apps.contact',  # Original contact app (temporarily disabled for testing)
+    # 'apps.users',  # Commented out to fix ModuleNotFoundError
     # 'apps.analytics',  # Commented out to fix ModuleNotFoundError
     # 'apps.blog',  # Commented out to fix ModuleNotFoundError
     # 'apps.bookings',  # Commented out to fix ModuleNotFoundError

@@ -13,7 +13,7 @@ This document outlines the current project structure for the Archway Django back
 │   │   ├── apps.py
 │   │   ├── migrations/
 │   │   └── models.py               # Basic model structure
-│   ├── blog/                       # App: Blog articles and content (Placeholder - Future Implementation)
+│   ├── blog/                       # App: Blog articles and content (Placeholder - In Progress)
 │   │   ├── __init__.py
 │   │   ├── apps.py                 # App config (7 lines)
 │   │   ├── migrations/
@@ -28,7 +28,7 @@ This document outlines the current project structure for the Archway Django back
 │   │   ├── apps.py                 # App config (7 lines)
 │   │   ├── migrations/
 │   │   └── models.py               # Basic model structure (9 lines)
-│   ├── contact/                    # App: Contact form and inquiries (Active)
+│   ├── contact/                    # App: Contact form and inquiries (Inactive)
 │   │   ├── __init__.py
 │   │   ├── admin.py
 │   │   ├── apps.py
@@ -52,6 +52,15 @@ This document outlines the current project structure for the Archway Django back
 │   │   ├── models.py
 │   │   ├── tests.py
 │   │   └── views.py
+│   ├── faqs/                       # App: Frequently Asked Questions (Active)
+│   │   ├── __init__.py             # (1 line)
+│   │   ├── admin.py                # Django admin (64 lines)
+│   │   ├── apps.py                 # App config (8 lines)
+│   │   ├── migrations/             # Database migrations
+│   │   ├── models.py               # FAQ models (111 lines)
+│   │   ├── serializers.py          # DRF serializers (88 lines)
+│   │   ├── urls.py                 # URL patterns (13 lines)
+│   │   └── views.py                # API views (209 lines)
 │   ├── footer/                     # App: Footer content management (Active)
 │   │   ├── __init__.py
 │   │   ├── admin.py
@@ -60,7 +69,7 @@ This document outlines the current project structure for the Archway Django back
 │   │   ├── models.py
 │   │   ├── tests.py
 │   │   └── views.py
-│   ├── jobs/                       # App: Job postings and career info (Placeholder - Future Implementation)
+│   ├── jobs/                       # App: Job postings and career info (Placeholder - In Progress)
 │   │   ├── __init__.py
 │   │   ├── apps.py
 │   │   ├── migrations/
@@ -99,12 +108,12 @@ This document outlines the current project structure for the Archway Django back
 │   │   ├── tests.py                # Tests (4 lines, placeholder)
 │   │   ├── urls.py                 # URL patterns (11 lines)
 │   │   └── views.py                # API views (110 lines)
-│   ├── testimonials/               # App: Client testimonials (Placeholder - Future Implementation)
+│   ├── testimonials/               # App: Client testimonials (Placeholder - In Progress)
 │   │   ├── __init__.py
 │   │   ├── apps.py
 │   │   ├── migrations/
 │   │   └── models.py
-│   └── users/                      # App: User management (Active)
+│   └── users/                      # App: User management (Inactive)
 │       ├── __init__.py
 │       ├── admin.py
 │       ├── apps.py
@@ -176,17 +185,18 @@ The implemented apps follow a standard Django organization:
 |-----|--------|---------|----------------|
 | projects | **ACTIVE** | Portfolio project management | Project models, serializers, admin |
 | services | **ACTIVE** | Services offered by the company | Service models, serializers, admin |
-| users | **ACTIVE** | User management | User models and authentication |
-| contact | **ACTIVE** | Contact form handling | Contact models and form processing |
+| users | **INACTIVE** | User management | User models and authentication |
+| contact | **INACTIVE** | Contact form handling | Contact models and form processing |
 | contact_management | **ACTIVE** | Lead management | Contact storage and categorization |
 | email_system | **ACTIVE** | Email functionality | Email templates and sending |
+| faqs | **ACTIVE** | FAQ management | FAQ models, categories, serializers, admin |
 | footer | **ACTIVE** | Footer content | Footer text and link management |
 | newsletter | **ACTIVE** | Newsletter subscriptions | Subscription management |
-| blog | **PLACEHOLDER** | Blog content management | Basic model structure only |
-| bookings | **PLACEHOLDER** | Appointment booking | Basic model structure only |
+| blog | **INPROGRESS** | Blog content management | Basic model structure only |
+| bookings | **INPROGRESS** | Appointment booking | Basic model structure only |
 | chatbot | **PLACEHOLDER** | Chatbot functionality | Basic model structure only |
-| jobs | **PLACEHOLDER** | Career/job postings | Basic model structure only |
-| testimonials | **PLACEHOLDER** | Client testimonials | Basic model structure only |
+| jobs | **INPROGRESS** | Career/job postings | Basic model structure only |
+| testimonials | **INPROGRESS** | Client testimonials | Basic model structure only |
 | analytics | **PLACEHOLDER** | Usage analytics | Basic model structure only |
 
 ## Items To Be Implemented

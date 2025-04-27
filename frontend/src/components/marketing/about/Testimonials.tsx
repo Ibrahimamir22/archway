@@ -3,6 +3,7 @@ import { ScrollReveal } from '@/components/ui';
 import { useTestimonials } from '@/lib/hooks/marketing/about';
 import { ErrorMessage, LoadingState } from '@/components/ui';
 import TestimonialGrid from './Testimonials/TestimonialGrid';
+import { Testimonial } from '@/types/marketing';
 
 interface TestimonialsProps {
   /**
@@ -44,6 +45,16 @@ interface TestimonialsProps {
    * Current locale
    */
   locale?: string;
+
+  /**
+   * Optional testimonials data to use directly (bypasses API fetch)
+   */
+  testimonials?: Testimonial[];
+
+  /**
+   * Optional section title
+   */
+  sectionTitle?: string;
 }
 
 const Testimonials: React.FC<TestimonialsProps> = ({
@@ -54,10 +65,13 @@ const Testimonials: React.FC<TestimonialsProps> = ({
   columns = 3,
   t,
   isRtl = false,
-  locale = 'en'
+  locale = 'en',
+  testimonials: providedTestimonials,
+  sectionTitle
 }) => {
+  // Only fetch testimonials if they weren't provided as props
   const { 
-    data: testimonials, 
+    data: fetchedTestimonials, 
     isLoading, 
     error,
     refetch 
@@ -65,20 +79,26 @@ const Testimonials: React.FC<TestimonialsProps> = ({
     featuredOnly,
     limit: maxCount,
     industry,
-    locale
+    locale,
+    autoFetch: !providedTestimonials // Only auto-fetch if testimonials weren't provided
   });
   
-  const displayedTestimonials = testimonials || [];
-
+  // Use provided testimonials or fallback to fetched ones
+  const displayedTestimonials = providedTestimonials || fetchedTestimonials || [];
+  
+  // If we're using provided testimonials, we're not loading
+  const showLoading = !providedTestimonials && isLoading;
+  
   // Use translation function if provided, otherwise use English defaults
-  const titleText = t ? t('testimonials') : 'What Our Clients Say';
+  const titleText = sectionTitle || (t ? t('testimonials') : 'What Our Clients Say');
   const descriptionText = t ? t('testimonialsDescription') : 'Hear from our satisfied clients about their experience working with our team.';
   const loadingText = t ? t('loadingTestimonials') : 'Loading testimonials...';
   const noTestimonialsText = t ? t('noTestimonialsFound') : 'No testimonials found.';
   const errorText = t ? t('errorLoadingTestimonials') : 'Failed to load testimonials. Please try again later.';
   const retryText = t ? t('retry') : 'Retry';
 
-  if (error) {
+  // Only show error if we're using the hook and there's an error
+  if (!providedTestimonials && error) {
     return (
       <div className={`py-8 ${className}`} dir={isRtl ? 'rtl' : 'ltr'}>
         <ErrorMessage 
@@ -100,11 +120,11 @@ const Testimonials: React.FC<TestimonialsProps> = ({
           </p>
         </div>
 
-        {isLoading && (
+        {showLoading && (
           <LoadingState type="testimonial" text={loadingText} />
         )}
         
-        {!isLoading && displayedTestimonials.length > 0 && (
+        {!showLoading && displayedTestimonials.length > 0 && (
           <ScrollReveal>
             <TestimonialGrid 
               testimonials={displayedTestimonials}
@@ -113,7 +133,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({
           </ScrollReveal>
         )}
         
-        {!isLoading && displayedTestimonials.length === 0 && (
+        {!showLoading && displayedTestimonials.length === 0 && (
           <div className="text-center py-8 text-gray-500">
             {noTestimonialsText}
           </div>

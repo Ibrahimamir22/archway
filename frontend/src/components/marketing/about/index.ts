@@ -1,7 +1,7 @@
 // Main components
 export { default as AboutHero } from './AboutHero';
 export { MissionVision } from './MissionVision';
-export { default as TeamSection } from './TeamSection';
+export { default as TeamSection } from './TeamSection/TeamSection';
 export { default as Testimonials } from './Testimonials';
 export { default as CoreValues } from './CoreValues';
 export { default as FAQTeaser } from './FAQTeaser';
@@ -16,3 +16,4 @@ export * from './Stats';
 export * from './ClientLogos';
 export * from './NavLinks';
 export * from './CompanyHistory';
+export * from './TeamSection';

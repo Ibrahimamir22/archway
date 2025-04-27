@@ -13,17 +13,6 @@ interface CompanyHistoryProps {
 const CompanyHistory: React.FC<CompanyHistoryProps> = ({ t, isRtl, locale }) => {
   const { historyData, loading, error, refetch } = useCompanyHistory(locale);
   
-  // Group events by era
-  const getEventsByEra = () => {
-    const eventsByEra: Record<string, typeof historyData.events> = {};
-    
-    historyData.eras.forEach(era => {
-      eventsByEra[era] = historyData.events.filter(event => event.era === era);
-    });
-    
-    return eventsByEra;
-  };
-
   return (
     <section className="mb-20">
       <ScrollReveal animation="fade-in" delay={0.1}>

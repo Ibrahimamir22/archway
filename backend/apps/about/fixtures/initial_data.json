@@ -1,0 +1,241 @@
+[
+  {
+    "model": "about.aboutpage",
+    "pk": 1,
+    "fields": {
+      "title": "About Archway Innovations",
+      "subtitle": "Transforming Spaces, Enhancing Lives",
+      "mission_title": "Our Mission",
+      "mission_description": "To create innovative interior designs that balance aesthetics, functionality, and sustainability while exceeding client expectations.",
+      "vision_title": "Our Vision",
+      "vision_description": "To be the leading interior design firm, recognized for our exceptional designs and sustainable practices that enhance quality of life.",
+      "team_section_title": "Meet Our Team",
+      "values_section_title": "Our Core Values",
+      "testimonials_section_title": "What Our Clients Say",
+      "history_section_title": "Our Journey",
+      "meta_description": "Learn about Archway Innovations, our mission, vision, and the team behind our interior design expertise.",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z",
+      "title_ar": "عن آركواي للابتكارات",
+      "subtitle_ar": "تحويل المساحات، تعزيز الحياة",
+      "mission_title_ar": "مهمتنا",
+      "mission_description_ar": "إنشاء تصاميم داخلية مبتكرة توازن بين الجماليات والوظائف والاستدامة مع تجاوز توقعات العملاء.",
+      "vision_title_ar": "رؤيتنا",
+      "vision_description_ar": "أن نكون شركة التصميم الداخلي الرائدة، المعروفة بتصاميمنا الاستثنائية وممارساتنا المستدامة التي تعزز جودة الحياة.",
+      "team_section_title_ar": "تعرف على فريقنا",
+      "values_section_title_ar": "قيمنا الأساسية",
+      "testimonials_section_title_ar": "ماذا يقول عملاؤنا",
+      "history_section_title_ar": "رحلتنا",
+      "meta_description_ar": "تعرف على آركواي للابتكارات، مهمتنا، رؤيتنا، والفريق وراء خبرتنا في التصميم الداخلي."
+    }
+  },
+  {
+    "model": "about.corevalue",
+    "pk": 1,
+    "fields": {
+      "title": "Excellence",
+      "description": "We strive for excellence in every project, paying meticulous attention to detail.",
+      "icon": "star",
+      "order": 1,
+      "title_ar": "التميز",
+      "description_ar": "نسعى للتميز في كل مشروع، مع الاهتمام الدقيق بالتفاصيل.",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.corevalue",
+    "pk": 2,
+    "fields": {
+      "title": "Innovation",
+      "description": "We embrace innovative ideas and cutting-edge design techniques.",
+      "icon": "lightbulb",
+      "order": 2,
+      "title_ar": "الابتكار",
+      "description_ar": "نتبنى الأفكار المبتكرة وتقنيات التصميم المتطورة.",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.corevalue",
+    "pk": 3,
+    "fields": {
+      "title": "Sustainability",
+      "description": "We're committed to sustainable design practices and environmentally friendly solutions.",
+      "icon": "leaf",
+      "order": 3,
+      "title_ar": "الاستدامة",
+      "description_ar": "نحن ملتزمون بممارسات التصميم المستدامة والحلول الصديقة للبيئة.",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.corevalue",
+    "pk": 4,
+    "fields": {
+      "title": "Client-Centered",
+      "description": "We listen closely to our clients to deliver spaces that truly reflect their needs and aspirations.",
+      "icon": "users",
+      "order": 4,
+      "title_ar": "التركيز على العميل",
+      "description_ar": "نستمع بعناية لعملائنا لتقديم مساحات تعكس احتياجاتهم وتطلعاتهم بصدق.",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.companystatistic",
+    "pk": 1,
+    "fields": {
+      "title": "Projects Completed",
+      "value": 150,
+      "unit": "+",
+      "order": 1,
+      "title_ar": "المشاريع المنجزة",
+      "unit_ar": "+",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.companystatistic",
+    "pk": 2,
+    "fields": {
+      "title": "Happy Clients",
+      "value": 120,
+      "unit": "+",
+      "order": 2,
+      "title_ar": "العملاء السعداء",
+      "unit_ar": "+",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.companystatistic",
+    "pk": 3,
+    "fields": {
+      "title": "Design Awards",
+      "value": 15,
+      "unit": "",
+      "order": 3,
+      "title_ar": "جوائز التصميم",
+      "unit_ar": "",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.companystatistic",
+    "pk": 4,
+    "fields": {
+      "title": "Years of Experience",
+      "value": 10,
+      "unit": "+",
+      "order": 4,
+      "title_ar": "سنوات الخبرة",
+      "unit_ar": "+",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.companyhistory",
+    "pk": 1,
+    "fields": {
+      "year": 2013,
+      "title": "Founding of Archway",
+      "description": "Archway Innovations was founded by a small team of passionate designers with a vision to transform interior spaces.",
+      "title_ar": "تأسيس آركواي",
+      "description_ar": "تأسست آركواي للابتكارات على يد فريق صغير من المصممين المتحمسين برؤية لتحويل المساحات الداخلية.",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.companyhistory",
+    "pk": 2,
+    "fields": {
+      "year": 2016,
+      "title": "First Major Award",
+      "description": "Archway wins its first major design award for the Riverside Residence project, establishing our reputation in the industry.",
+      "title_ar": "أول جائزة رئيسية",
+      "description_ar": "فازت آركواي بأول جائزة تصميم رئيسية لمشروع ريفرسايد ريزيدنس، مما أسس سمعتنا في الصناعة.",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.companyhistory",
+    "pk": 3,
+    "fields": {
+      "year": 2019,
+      "title": "Expansion of Services",
+      "description": "Expanded our services to include 3D visualization and virtual reality experiences, allowing clients to truly immerse themselves in their future spaces.",
+      "title_ar": "توسيع الخدمات",
+      "description_ar": "قمنا بتوسيع خدماتنا لتشمل التصور ثلاثي الأبعاد وتجارب الواقع الافتراضي، مما يتيح للعملاء الانغماس حقًا في مساحاتهم المستقبلية.",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.companyhistory",
+    "pk": 4,
+    "fields": {
+      "year": 2022,
+      "title": "Commitment to Sustainability",
+      "description": "Launched our sustainability initiative, pledging that all our designs will incorporate environmentally friendly practices and materials.",
+      "title_ar": "الالتزام بالاستدامة",
+      "description_ar": "أطلقنا مبادرة الاستدامة، متعهدين بأن تتضمن جميع تصاميمنا ممارسات ومواد صديقة للبيئة.",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.testimonial",
+    "pk": 1,
+    "fields": {
+      "client_name": "Ahmad Hassan",
+      "quote": "Working with Archway was a fantastic experience. They truly transformed our home into a space that reflects our personality and lifestyle.",
+      "project": "Residential Interior",
+      "is_featured": true,
+      "client_name_ar": "أحمد حسن",
+      "quote_ar": "كان العمل مع آركواي تجربة رائعة. لقد حولوا منزلنا حقًا إلى مساحة تعكس شخصيتنا وأسلوب حياتنا.",
+      "project_ar": "تصميم داخلي سكني",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.testimonial",
+    "pk": 2,
+    "fields": {
+      "client_name": "Layla Mohammed",
+      "quote": "The team at Archway has an incredible eye for detail. They listened to our needs and delivered a design that exceeded our expectations.",
+      "project": "Office Redesign",
+      "is_featured": true,
+      "client_name_ar": "ليلى محمد",
+      "quote_ar": "لدى فريق آركواي عين لا تُصدق للتفاصيل. لقد استمعوا إلى احتياجاتنا وقدموا تصميمًا فاق توقعاتنا.",
+      "project_ar": "إعادة تصميم المكتب",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "about.testimonial",
+    "pk": 3,
+    "fields": {
+      "client_name": "Omar Abdullah",
+      "quote": "Archway's innovative approach to our restaurant design has been a key factor in our success. Our customers frequently comment on the beautiful ambiance.",
+      "project": "Restaurant Design",
+      "is_featured": true,
+      "client_name_ar": "عمر عبدالله",
+      "quote_ar": "كان نهج آركواي المبتكر في تصميم مطعمنا عاملاً رئيسياً في نجاحنا. يعلق عملاؤنا باستمرار على الأجواء الجميلة.",
+      "project_ar": "تصميم مطعم",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  }
+] 

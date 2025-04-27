@@ -26,8 +26,15 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
   delay = 0,
   className = '' 
 }) => {
-  // If image path doesn't exist, use a placeholder
-  const imageSrc = testimonial.image || 'https://via.placeholder.com/100?text=Client';
+  // Support both image field formats
+  const imageSrc = testimonial.image || testimonial.image_url || 'https://via.placeholder.com/100?text=Client';
+  
+  // Support both formats of data (backend model vs mock)
+  const author = testimonial.client_name || testimonial.author || '';
+  const quote = testimonial.quote || testimonial.content || '';
+  const project = testimonial.project || testimonial.company || '';
+  // For role, we only have it in the mock data
+  const role = testimonial.role || '';
   
   return (
     <ScrollReveal animation="fade-in" delay={delay}>
@@ -46,7 +53,7 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
         )}
         
         <p className="text-gray-700 dark:text-gray-300 mb-4 flex-grow italic">
-          &ldquo;{testimonial.content}&rdquo;
+          &ldquo;{quote}&rdquo;
         </p>
         
         <div className="flex items-center mt-4">
@@ -54,7 +61,7 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
             <div className="h-12 w-12 rounded-full overflow-hidden mr-4">
               <Image
                 src={imageSrc}
-                alt={testimonial.author}
+                alt={author}
                 width={48}
                 height={48}
                 className="object-cover w-full h-full"
@@ -63,13 +70,13 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
           )}
           <div>
             <h4 className="font-semibold text-gray-900 dark:text-white">
-              {testimonial.author}
+              {author}
             </h4>
-            {(testimonial.role || testimonial.company) && (
+            {(role || project) && (
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {testimonial.role}
-                {testimonial.role && testimonial.company && <span>, </span>}
-                {testimonial.company}
+                {role}
+                {role && project && <span>, </span>}
+                {project}
               </p>
             )}
           </div>

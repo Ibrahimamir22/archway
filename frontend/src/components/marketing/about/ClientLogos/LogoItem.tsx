@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollReveal } from '@/components/ui';
 
 interface LogoItemProps {
@@ -41,10 +41,21 @@ const LogoItem: React.FC<LogoItemProps> = ({
   fadeEffect = true,
   className = ''
 }) => {
+  // State to track image errors
+  const [imgError, setImgError] = useState(false);
+
   // If the path to the image doesn't exist yet, use a placeholder
-  const logoSrc = image.startsWith('/images/placeholders') 
-    ? 'https://via.placeholder.com/200x80?text=Logo'
-    : image;
+  let logoSrc = image;
+  
+  // If no image or error loading image, use placeholder
+  if (!logoSrc || imgError) {
+    logoSrc = 'https://via.placeholder.com/200x80?text=Logo';
+  }
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('LogoItem rendered with:', { name, image, logoSrc });
+  }, [name, image, logoSrc]);
   
   // The logo content
   const logoContent = (
@@ -60,6 +71,7 @@ const LogoItem: React.FC<LogoItemProps> = ({
         src={logoSrc} 
         alt={`${name} logo`} 
         className="max-h-12 max-w-full object-contain" 
+        onError={() => setImgError(true)}
       />
     </div>
   );

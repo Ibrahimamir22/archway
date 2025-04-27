@@ -85,6 +85,7 @@ api_patterns = [
     path('v1/contact/', include('apps.contact_management.urls')),
     path('v1/email/', include('apps.email_system.urls')),
     path('v1/faqs/', include('apps.faqs.urls', namespace='faqs')),
+    path('v1/about/', include('apps.about.urls', namespace='about')),
     
     # Commented until analytics app is enabled
     # path('v1/analytics/', include('apps.analytics.urls')),

@@ -16,6 +16,28 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',
     'http://frontend:3000', 
 ]
+
+# # Allow all CORS headers and methods for development
+# CORS_ALLOW_ALL_ORIGINS = True  # For development only - more permissive
+# CORS_ALLOW_METHODS = [
+#     'DELETE',
+#     'GET',
+#     'OPTIONS',
+#     'PATCH',
+#     'POST',
+#     'PUT',
+# ]
+# CORS_ALLOW_HEADERS = [
+#     'accept',
+#     'accept-encoding',
+#     'authorization',
+#     'content-type',
+#     'dnt',
+#     'origin',
+#     'user-agent',
+#     'x-csrftoken',
+#     'x-requested-with',
+# ]
 CORS_ALLOW_CREDENTIALS = True # Often needed for frontend interaction during dev
 
 # Use console email backend for development to see emails in the terminal

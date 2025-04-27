@@ -2,40 +2,53 @@
 
 import React from 'react';
 import StatCard from './StatCard';
-import { useCompanyStats } from '@/lib/hooks/marketing/about';
+import { CompanyStatistic } from '@/types/marketing';
 import { LoadingState, ErrorMessage, ScrollReveal } from '@/components/ui';
 
 interface StatsSectionProps {
   t: (key: string) => string;
   isRtl: boolean;
   locale: string;
+  stats?: CompanyStatistic[];
 }
 
-const StatsSection: React.FC<StatsSectionProps> = ({ t, isRtl, locale }) => {
-  const { companyStats, isLoading, error, retry } = useCompanyStats(locale);
-  
-  // Function to get the right icon based on the icon property
-  const getIconComponent = (iconName: string) => {
-    switch (iconName) {
-      case 'fas fa-smile':
-        return <span className="text-2xl">😊</span>;
-      case 'fas fa-users':
-        return <span className="text-2xl">👥</span>;
-      case 'fas fa-calendar':
-        return <span className="text-2xl">📅</span>;
-      case 'fas fa-building':
-        return <span className="text-2xl">🏢</span>;
-      default:
-        return <span className="text-2xl">📊</span>;
+const StatsSection: React.FC<StatsSectionProps> = ({ t, isRtl, locale, stats = [] }) => {
+  // Function to get the right icon based on the stat title
+  const getIconComponent = (stat: CompanyStatistic) => {
+    // Generate icon based on title keywords
+    const title = (stat.title || '').toLowerCase();
+    
+    if (title.includes('client') || title.includes('عميل')) {
+      return <span className="text-2xl">😊</span>;
+    } else if (title.includes('team') || title.includes('فريق')) {
+      return <span className="text-2xl">👥</span>;
+    } else if (title.includes('year') || title.includes('سنة')) {
+      return <span className="text-2xl">📅</span>;
+    } else if (title.includes('project') || title.includes('مشروع')) {
+      return <span className="text-2xl">🏢</span>;
+    } else {
+      return <span className="text-2xl">📊</span>;
     }
   };
 
-  // Prepare stats data from API or use fallback
+  // Prepare stats data from props or use fallback
   const statsData = React.useMemo(() => {
-    if (companyStats && Array.isArray(companyStats.stats)) {
-      return companyStats.stats;
+    // If there are stats passed, use them
+    if (stats && stats.length > 0) {
+      console.log("Using stats from props:", stats);
+      return stats.map(stat => ({
+        id: String(stat.id),
+        title: stat.title,
+        value: stat.value,
+        suffix: stat.unit || '',
+        prefix: '',
+        icon: 'fas fa-chart-line', // Default icon
+        description: '',
+        order: stat.order || 0
+      }));
     }
     
+    console.log("Using fallback stats data");
     // Fallback data if API fails
     return [
       {
@@ -75,16 +88,18 @@ const StatsSection: React.FC<StatsSectionProps> = ({ t, isRtl, locale }) => {
         order: 4
       }
     ];
-  }, [companyStats, t]);
+  }, [stats, t]);
+
+  const isLoading = !statsData;
 
   return (
     <section className="mb-20 py-12 bg-gray-50 dark:bg-gray-900 rounded-2xl">
       <ScrollReveal animation="fade-in" delay={0.1}>
         <h2 className="text-3xl font-heading font-semibold mb-8 text-center text-brand-blue dark:text-white">
-          {companyStats?.meta?.title || t('companyStats')}
+          {t('companyStats')}
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-center mb-12">
-          {companyStats?.meta?.description || t('statsDescription')}
+          {t('statsDescription')}
         </p>
       </ScrollReveal>
       
@@ -94,17 +109,7 @@ const StatsSection: React.FC<StatsSectionProps> = ({ t, isRtl, locale }) => {
         </div>
       )}
       
-      {error && !isLoading && (
-        <div className="py-8 max-w-xl mx-auto">
-          <ErrorMessage 
-            message={error.message || t('errorLoadingStats')} 
-            retryText={t('retry')}
-            onRetry={retry}
-          />
-        </div>
-      )}
-      
-      {!isLoading && !error && statsData.length > 0 && (
+      {!isLoading && statsData.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-8 px-4">
           {statsData
             .sort((a, b) => a.order - b.order)
@@ -115,8 +120,8 @@ const StatsSection: React.FC<StatsSectionProps> = ({ t, isRtl, locale }) => {
                 label={stat.title}
                 prefix={stat.prefix || ''}
                 suffix={stat.suffix || ''}
-                decimals={stat.value % 1 === 0 ? 0 : 1}
-                icon={getIconComponent(stat.icon)}
+                decimals={typeof stat.value === 'number' && stat.value % 1 === 0 ? 0 : 1}
+                icon={getIconComponent(stat as any)}
                 delay={0.1 + (index * 0.1)}
                 isRtl={isRtl}
                 description={stat.description}
@@ -125,7 +130,7 @@ const StatsSection: React.FC<StatsSectionProps> = ({ t, isRtl, locale }) => {
         </div>
       )}
       
-      {!isLoading && !error && statsData.length === 0 && (
+      {!isLoading && statsData.length === 0 && (
         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
           {t('noStatsFound')}
         </div>

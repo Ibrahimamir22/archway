@@ -19,8 +19,8 @@ export async function POST(request: Request) {
     // Log the request
     console.log('Contact form submission:', data);
 
-    // Forward the request to the backend API
-    const apiUrl = `${getApiBaseUrl()}/api/contact`;
+    // Forward the request to the backend API with the correct endpoint
+    const apiUrl = `${getApiBaseUrl()}/contact/messages/`;
     
     const response = await fetch(apiUrl, {
       method: 'POST',

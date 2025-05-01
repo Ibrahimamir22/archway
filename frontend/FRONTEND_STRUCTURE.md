@@ -58,6 +58,8 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   │   │       │   └── route.ts    # About page API
 │   │   │   │   │       ├── company-stats/  # Company statistics mock data
 │   │   │   │   │       │   └── route.ts    # Stats API
+│   │   │   │   │       ├── company-history/ # Company history mock data
+│   │   │   │   │       │   └── route.ts    # History API
 │   │   │   │   │       ├── core-values/    # Core values mock data
 │   │   │   │   │       │   └── route.ts    # Core values API
 │   │   │   │   │       ├── team-members/   # Team members mock data
@@ -75,10 +77,6 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   │   │   │   └── route.ts        # Language options API
 │   │   │   │   │   └── by-category/        # Category-specific FAQs
 │   │   │   │   │       └── route.ts        # FAQs by category API
-│   │   │   │   ├── simple-submit/          # Simple form submission handler
-│   │   │   │   │   └── route.ts            # Simple form submission API
-│   │   │   │   ├── direct-submit/          # Direct form submission handler
-│   │   │   │   │   └── route.ts            # Direct form submission API
 │   │   │   │   ├── footer/                 # Footer content API
 │   │   │   │   │   └── route.ts            # Footer data API route
 │   │   │   │   └── image-proxy/            # Image proxy API
@@ -173,6 +171,48 @@ This document outlines the current project structure for the Archway frontend, u
 │   │   │   │   └── REFACTORING_REPORT.md   # Documentation of the services refactoring
 │   │   │   │
 │   │   │   ├── marketing/                  # Marketing components
+│   │   │   │   ├── common/                 # Common marketing components
+│   │   │   │   │   ├── index.ts            # Common components barrel file
+│   │   │   │   │   └── SectionHeader.tsx   # Reusable section header component
+│   │   │   │   │
+│   │   │   │   ├── about/                  # About page components
+│   │   │   │   │   ├── index.ts            # About components barrel file
+│   │   │   │   │   ├── AboutHero.tsx       # Hero section component
+│   │   │   │   │   ├── CoreValues.tsx      # Core values section component
+│   │   │   │   │   ├── FAQTeaser.tsx       # FAQ preview section component
+│   │   │   │   │   ├── MissionVision.tsx   # Mission and vision section
+│   │   │   │   │   ├── OptimizedAboutClient.tsx # Optimized client-side about component
+│   │   │   │   │   ├── TeamSection.ts      # Team section component
+│   │   │   │   │   ├── Testimonials.tsx    # Testimonials section component
+│   │   │   │   │   ├── ClientLogos/        # Client logos components
+│   │   │   │   │   │   ├── index.ts        # Client logos barrel file
+│   │   │   │   │   │   ├── ClientLogoCard.tsx # Individual logo card component
+│   │   │   │   │   │   ├── ClientLogosSection.tsx # Logos section wrapper
+│   │   │   │   │   │   └── LogoItem.tsx    # Individual logo item component
+│   │   │   │   │   ├── TeamSection/        # Team section components
+│   │   │   │   │   │   ├── index.ts        # Team section barrel file
+│   │   │   │   │   │   ├── TeamMemberCard.tsx # Individual team member card
+│   │   │   │   │   │   ├── TeamSection.tsx # Team section wrapper component
+│   │   │   │   │   │   └── TeamGrid.tsx    # Grid layout for team members
+│   │   │   │   │   ├── Stats/              # Statistics components
+│   │   │   │   │   │   ├── index.ts        # Stats barrel file
+│   │   │   │   │   │   ├── StatsSection.tsx # Stats section wrapper
+│   │   │   │   │   │   ├── StatCard.tsx    # Individual stat card component
+│   │   │   │   │   │   └── AnimatedCounter.tsx # Animated number counter
+│   │   │   │   │   ├── CompanyHistory/     # Company history components
+│   │   │   │   │   │   ├── index.ts        # Company history barrel file
+│   │   │   │   │   │   ├── CompanyHistory.tsx # History section wrapper
+│   │   │   │   │   │   ├── TimelineDivider.tsx # Timeline visual divider
+│   │   │   │   │   │   └── TimelineItem.tsx # Individual timeline item
+│   │   │   │   │   ├── NavLinks/           # Navigation links components
+│   │   │   │   │   │   ├── index.tsx       # Navigation links barrel file
+│   │   │   │   │   │   └── AboutNavLinks.tsx # About page navigation links
+│   │   │   │   │   └── Testimonials/       # Testimonials components
+│   │   │   │   │       ├── index.ts        # Testimonials barrel file
+│   │   │   │   │       ├── TestimonialCard.tsx # Individual testimonial card
+│   │   │   │   │       ├── TestimonialGrid.tsx # Grid layout for testimonials
+│   │   │   │   │       └── TestimonialsSection.tsx # Testimonials section wrapper
+│   │   │   │   │
 │   │   │   │   ├── contact/                # Contact page components
 │   │   │   │   │   ├── ContactForm.tsx     # Contact form component
 │   │   │   │   │   ├── ContactInfo.tsx     # Contact information component

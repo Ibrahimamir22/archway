@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollReveal } from '@/components/ui';
 import { useTestimonials } from '@/lib/hooks/marketing/about';
 import { ErrorMessage, LoadingState } from '@/components/ui';
 import TestimonialGrid from './Testimonials/TestimonialGrid';
+import TestimonialCarousel from './Testimonials/TestimonialCarousel';
 import { Testimonial } from '@/types/marketing';
+import { Pattern } from '@/components/ui/Pattern';
 
 interface TestimonialsProps {
   /**
@@ -55,6 +57,11 @@ interface TestimonialsProps {
    * Optional section title
    */
   sectionTitle?: string;
+  
+  /**
+   * Whether to use the carousel on mobile
+   */
+  useCarouselOnMobile?: boolean;
 }
 
 const Testimonials: React.FC<TestimonialsProps> = ({
@@ -67,8 +74,28 @@ const Testimonials: React.FC<TestimonialsProps> = ({
   isRtl = false,
   locale = 'en',
   testimonials: providedTestimonials,
-  sectionTitle
+  sectionTitle,
+  useCarouselOnMobile = true
 }) => {
+  // Track if we're on mobile screen
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Check screen size on mount and window resize
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Initial check
+    checkScreenSize();
+    
+    // Listen for resize events
+    window.addEventListener('resize', checkScreenSize);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+  
   // Only fetch testimonials if they weren't provided as props
   const { 
     data: fetchedTestimonials, 
@@ -111,31 +138,68 @@ const Testimonials: React.FC<TestimonialsProps> = ({
   }
 
   return (
-    <div className={`py-12 ${className}`} dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">{titleText}</h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+    <div className={`py-20 ${className} relative overflow-hidden bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-950 rounded-3xl`} dir={isRtl ? 'rtl' : 'ltr'}>
+      {/* Decorative background pattern */}
+      <div className="absolute inset-0 opacity-5 dark:opacity-10 -z-10">
+        <Pattern />
+      </div>
+      
+      {/* Decorative elements */}
+      <div className="absolute top-40 -left-20 w-64 h-64 bg-brand-accent/10 dark:bg-brand-accent/20 rounded-full blur-3xl -z-10"></div>
+      <div className="absolute bottom-20 -right-20 w-80 h-80 bg-brand-blue/10 dark:bg-brand-blue/20 rounded-full blur-3xl -z-10"></div>
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-heading font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-brand-blue to-brand-blue-light dark:from-brand-light dark:to-white">
+            {titleText}
+          </h2>
+          <div className="w-24 h-1 bg-brand-accent mx-auto rounded-full mb-6"></div>
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             {descriptionText}
           </p>
         </div>
 
         {showLoading && (
-          <LoadingState type="testimonial" text={loadingText} />
+          <div className="py-16">
+            <LoadingState type="testimonial" text={loadingText} />
+          </div>
         )}
         
         {!showLoading && displayedTestimonials.length > 0 && (
-          <ScrollReveal>
-            <TestimonialGrid 
-              testimonials={displayedTestimonials}
-              columns={columns}
-            />
+          <ScrollReveal animation="slide-up" delay={0.2}>
+            {isMobile && useCarouselOnMobile ? (
+              // Show carousel on mobile
+              <TestimonialCarousel 
+                testimonials={displayedTestimonials}
+                locale={locale}
+                className="mb-8"
+              />
+            ) : (
+              // Show grid on desktop
+              <TestimonialGrid 
+                testimonials={displayedTestimonials}
+                columns={columns}
+                className="gap-8"
+              />
+            )}
+            
+            {/* More testimonials button (if needed) */}
+            {featuredOnly && displayedTestimonials.length >= 3 && (
+              <div className="text-center mt-12">
+                <a href={`/${locale}/testimonials`} className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-brand-blue hover:bg-brand-blue-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue transition-colors duration-200">
+                  {t ? t('viewMoreTestimonials') : 'View More Testimonials'}
+                </a>
+              </div>
+            )}
           </ScrollReveal>
         )}
         
         {!showLoading && displayedTestimonials.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            {noTestimonialsText}
+          <div className="text-center py-12 bg-white/50 dark:bg-gray-800/30 rounded-xl backdrop-blur-sm">
+            <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
+              {noTestimonialsText}
+            </p>
           </div>
         )}
       </div>

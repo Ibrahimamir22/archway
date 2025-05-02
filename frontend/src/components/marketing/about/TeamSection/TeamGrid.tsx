@@ -23,11 +23,11 @@ const TeamGrid: React.FC<TeamGridProps> = ({
   }[columns];
 
   return (
-    <div className={`grid ${gridCols} gap-8 mt-12 ${className}`}>
+    <div className={`grid ${gridCols} gap-8 mt-12 ${className} h-full grid-flow-row-dense`}>
       {isLoading ? (
         // Loading skeletons
         Array(columns).fill(0).map((_, index) => (
-          <div key={`skeleton-${index}`} className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div key={`skeleton-${index}`} className="bg-white rounded-lg shadow-md overflow-hidden h-full">
             <div className="aspect-w-3 aspect-h-2 w-full">
               <Skeleton className="w-full h-[250px]" />
             </div>
@@ -43,12 +43,15 @@ const TeamGrid: React.FC<TeamGridProps> = ({
           </div>
         ))
       ) : (
-        teamMembers.map((member) => (
-          <TeamMemberCard 
-            key={member.id} 
-            member={member} 
-          />
-        ))
+        <React.Fragment>
+          {teamMembers.map((member) => (
+            <div key={member.id} className="h-full">
+              <TeamMemberCard 
+                member={member} 
+              />
+            </div>
+          ))}
+        </React.Fragment>
       )}
     </div>
   );

@@ -340,7 +340,23 @@
     "errorLoadingFAQs": "Error loading FAQs",
     "auth": "Authentication",
     "page": "Page",
-    "search": "Search"
+    "search": "Search",
+    "usingFallbackData": "[Placeholder for usingFallbackData]",
+    "common": "[Placeholder for common]",
+    "content-type": "[Placeholder for content-type]",
+    "/": "[Placeholder for /]",
+    "emptyEmail": "[Placeholder for emptyEmail]",
+    "thankYou": "[Placeholder for thankYou]",
+    "errorMessage": "[Placeholder for errorMessage]",
+    "placeholder": "[Placeholder for placeholder]",
+    "subscribing": "[Placeholder for subscribing]",
+    "subscribe": "[Placeholder for subscribe]",
+    "fa-": "[Placeholder for fa-]",
+    "next/router": "[Placeholder for next/router]",
+    "teamDescription": "[Placeholder for teamDescription]",
+    "viewMoreTestimonials": "[Placeholder for viewMoreTestimonials]",
+    "link": "[Placeholder for link]",
+    "-": "[Placeholder for -]"
   },
   "backToPortfolio": "Back to Portfolio",
   "projectDetails": "Project Details",
@@ -475,5 +491,21 @@
   },
   "": {
     "": "[Placeholder for .]"
+  },
+  "value1": {
+    "title": "[Placeholder for value1.title]",
+    "description": "[Placeholder for value1.description]"
+  },
+  "value2": {
+    "title": "[Placeholder for value2.title]",
+    "description": "[Placeholder for value2.description]"
+  },
+  "value3": {
+    "title": "[Placeholder for value3.title]",
+    "description": "[Placeholder for value3.description]"
+  },
+  "value4": {
+    "title": "[Placeholder for value4.title]",
+    "description": "[Placeholder for value4.description]"
   }
 }

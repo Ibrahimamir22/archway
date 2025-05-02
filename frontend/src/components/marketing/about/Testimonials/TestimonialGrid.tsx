@@ -17,12 +17,18 @@ interface TestimonialGridProps {
    * Additional CSS classes
    */
   className?: string;
+  
+  /**
+   * Whether to enforce equal height cards
+   */
+  equalHeight?: boolean;
 }
 
 export const TestimonialGrid: React.FC<TestimonialGridProps> = ({
   testimonials,
   columns = 3,
   className = '',
+  equalHeight = true,
 }) => {
   const gridCols = {
     1: 'grid-cols-1',
@@ -31,13 +37,15 @@ export const TestimonialGrid: React.FC<TestimonialGridProps> = ({
   }[columns];
 
   return (
-    <div className={`grid ${gridCols} gap-6 ${className}`}>
+    <div className={`grid ${gridCols} gap-6 ${className} h-full grid-flow-row-dense`}>
       {testimonials.map((testimonial, index) => (
-        <TestimonialCard 
-          key={testimonial.id} 
-          testimonial={testimonial}
-          delay={0.1 * (index % columns)}
-        />
+        <div key={testimonial.id} className="h-full">
+          <TestimonialCard 
+            testimonial={testimonial}
+            delay={0.1 * (index % columns)}
+            fixedHeight={equalHeight}
+          />
+        </div>
       ))}
     </div>
   );

@@ -15,7 +15,7 @@ services:
       - NEXT_PUBLIC_BACKEND_URL=
       - NEXT_TELEMETRY_DISABLED=1
       # Hybrid footer data fetching configuration - production settings
-      - NEXT_PUBLIC_USE_MOCK_API=false
+      - NEXT_PUBLIC_USE_MOCK_API=true
       - NEXT_PUBLIC_PREFER_BACKEND=true
       - NEXT_PUBLIC_FALLBACK_TO_MOCK=true
       - NEXT_PUBLIC_LOG_DATA_FETCHING=false

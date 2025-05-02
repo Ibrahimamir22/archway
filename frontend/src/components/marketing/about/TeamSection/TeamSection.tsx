@@ -61,7 +61,7 @@ const TeamSection: React.FC<TeamSectionProps> = ({
             </h2>
             <div className="w-24 h-1 bg-brand-accent mx-auto rounded-full mb-6"></div>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              {t('teamDescription') || 'Meet our talented team of professionals who make the magic happen.'}
+              {t('teamDescription')}
             </p>
           </div>
         </ScrollReveal>

@@ -53,47 +53,56 @@ const CoreValues: React.FC<CoreValuesProps> = ({ t, isRtl, locale, values = [] }
   // Convert API values to component format 
   const coreValuesToDisplay = useMemo(() => {
     if (!values || values.length === 0) {
-      // Fallback values if not provided
+      console.log(`[CoreValues] No values provided for locale: ${locale}, using fallbacks`);
+      // Fallback values if not provided - using the correct translation keys
       return [
         {
           id: 1,
-          title: t('value1.title'),
-          text: t('value1.description'),
+          title: t('value1Title'),
+          text: t('value1Text'),
           icon: "lightbulb",
           order: 1
         },
         {
           id: 2,
-          title: t('value2.title'),
-          text: t('value2.description'),
+          title: t('value2Title'),
+          text: t('value2Text'),
           icon: "check",
           order: 2
         },
         {
           id: 3,
-          title: t('value3.title'),
-          text: t('value3.description'),
+          title: t('value3Title'),
+          text: t('value3Text'),
           icon: "globe",
           order: 3
         },
         {
           id: 4,
-          title: t('value4.title'),
-          text: t('value4.description'),
+          title: t('value4Title'),
+          text: t('value4Text'),
           icon: "users",
           order: 4
         }
       ];
     }
     
-    return values.map(value => ({
-      id: value.id,
-      title: value.title,
-      text: value.description, // Note: API uses 'description', component expects 'text'
-      icon: value.icon,
-      order: value.order || 0
-    }));
-  }, [values, t]);
+    // Log when API data is used
+    console.log(`[CoreValues] Using API data for ${locale}: ${values.length} values received`, values);
+    
+    return values.map(value => {
+      // Handle both string and numeric IDs
+      const id = typeof value.id === 'string' ? parseInt(value.id.replace(/\D/g, '')) || 0 : value.id;
+      
+      return {
+        id,
+        title: value.title,
+        text: value.description, // Note: API uses 'description', component expects 'text'
+        icon: value.icon,
+        order: value.order || 0
+      };
+    });
+  }, [values, t, locale]);
 
   const isLoading = false; // Since we're passing values directly now
 

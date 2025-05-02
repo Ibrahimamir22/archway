@@ -204,7 +204,10 @@
     },
     "history": "تاريخنا",
     "testimonialsDescription": "ما يقوله عملاؤنا عن تجربتهم مع آركواي للابتكارات",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "companyStats": "إحصائيات الشركة",
+    "statsDescription": "إنجازاتنا بالأرقام",
+    "teamDescription": "تعرف على فريقنا المبدع وراء كل مشروع ناجح"
   },
   "contact": {
     "title": "اتصل بنا",
@@ -395,8 +398,6 @@
     "stats": "إحصائيات",
     "clients": "العملاء",
     "history": "التاريخ",
-    "companyStats": "إحصائيات الشركة",
-    "statsDescription": "إنجازاتنا بالأرقام",
     "loadingStats": "جاري تحميل الإحصائيات...",
     "errorLoadingStats": "خطأ في تحميل الإحصائيات",
     "noStatsFound": "لم يتم العثور على إحصائيات",
@@ -425,7 +426,6 @@
     "subscribe": "[Placeholder for subscribe]",
     "fa-": "[Placeholder for fa-]",
     "next/router": "[Placeholder for next/router]",
-    "teamDescription": "[Placeholder for teamDescription]",
     "viewMoreTestimonials": "[Placeholder for viewMoreTestimonials]",
     "link": "[Placeholder for link]",
     "-": "[Placeholder for -]"
@@ -577,9 +577,6 @@
     "years_experience_desc": "سنوات من الخبرة في المجال",
     "completed_projects": "المشاريع المكتملة",
     "completed_projects_desc": "مشاريع تصميم تم إنجازها بنجاح"
-  },
-  "": {
-    "": "[Placeholder for .]"
   },
   "value1": {
     "title": "[Placeholder for value1.title]",

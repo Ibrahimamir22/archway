@@ -23,28 +23,32 @@ const aboutData = {
     coreValuesTitle: 'Our Core Values',
     coreValues: [
       {
-        id: 'value1',
+        id: 1,
         title: 'Excellence',
         description: 'We strive for excellence in every project, ensuring the highest quality in design and execution.',
-        icon: 'fas fa-star'
+        icon: 'fas fa-star',
+        order: 1
       },
       {
-        id: 'value2',
+        id: 2,
         title: 'Innovation',
         description: 'We embrace innovative approaches to create unique and forward-thinking designs.',
-        icon: 'fas fa-lightbulb'
+        icon: 'fas fa-lightbulb',
+        order: 2
       },
       {
-        id: 'value3',
+        id: 3,
         title: 'Integrity',
         description: 'We maintain the highest standards of integrity in all our client and partner relationships.',
-        icon: 'fas fa-handshake'
+        icon: 'fas fa-handshake',
+        order: 3
       },
       {
-        id: 'value4',
+        id: 4,
         title: 'Sustainability',
         description: 'We are committed to environmentally conscious design practices that minimize ecological impact.',
-        icon: 'fas fa-leaf'
+        icon: 'fas fa-leaf',
+        order: 4
       }
     ],
     teamMembers: {
@@ -147,28 +151,32 @@ const aboutData = {
     coreValuesTitle: 'قيمنا الأساسية',
     coreValues: [
       {
-        id: 'value1',
+        id: 1,
         title: 'التميز',
         description: 'نسعى جاهدين لتحقيق التميز في كل مشروع، مما يضمن أعلى جودة في التصميم والتنفيذ.',
-        icon: 'fas fa-star'
+        icon: 'fas fa-star',
+        order: 1
       },
       {
-        id: 'value2',
+        id: 2,
         title: 'الابتكار',
         description: 'نحن نتبنى نهجًا مبتكرًا لإنشاء تصميمات فريدة ومتطورة.',
-        icon: 'fas fa-lightbulb'
+        icon: 'fas fa-lightbulb',
+        order: 2
       },
       {
-        id: 'value3',
+        id: 3,
         title: 'النزاهة',
         description: 'نحافظ على أعلى معايير النزاهة في جميع علاقاتنا مع العملاء والشركاء.',
-        icon: 'fas fa-handshake'
+        icon: 'fas fa-handshake',
+        order: 3
       },
       {
-        id: 'value4',
+        id: 4,
         title: 'الاستدامة',
         description: 'نحن ملتزمون بممارسات التصميم المراعية للبيئة التي تقلل الأثر البيئي.',
-        icon: 'fas fa-leaf'
+        icon: 'fas fa-leaf',
+        order: 4
       }
     ],
     teamMembers: {
@@ -252,48 +260,86 @@ const aboutData = {
   }
 };
 
-// Add a delay to simulate real-world API latency
+// Simulate network delay for more realistic testing
 const simulateNetworkDelay = () => new Promise(resolve => setTimeout(resolve, 300));
 
 export async function GET(request: Request) {
-  // Get the URL and extract locale parameter
+  // Get locale from URL query parameters
   const { searchParams } = new URL(request.url);
-  const locale = searchParams.get('locale') || 'en';
+  const locale = searchParams.get('locale') || searchParams.get('lang') || 'en';
   
-  // Simulate network delay
+  console.log(`[Mock API] Requested locale: ${locale}`);
+  
+  // Ensure we have a valid locale
+  const validLocale = ['en', 'ar'].includes(locale) ? locale : 'en';
+  
+  // Simulate API delay
   await simulateNetworkDelay();
   
-  // Randomly simulate failure (10% of the time) to demonstrate fallback chain
-  if (Math.random() < 0.1) {
-    return NextResponse.json(
-      { success: false, error: { code: 'RANDOM_FAILURE', message: 'Random mock API failure for testing fallback' } },
-      { status: 500 }
-    );
-  }
+  // Format the data to match the backend API format
+  const formattedData = {
+    main_content: {
+      title: aboutData[validLocale]?.hero?.title || aboutData.en.hero.title,
+      subtitle: aboutData[validLocale]?.hero?.subtitle || aboutData.en.hero.subtitle,
+      mission_title: aboutData[validLocale]?.missionVision?.mission?.title || aboutData.en.missionVision.mission.title,
+      mission_description: aboutData[validLocale]?.missionVision?.mission?.content || aboutData.en.missionVision.mission.content,
+      vision_title: aboutData[validLocale]?.missionVision?.vision?.title || aboutData.en.missionVision.vision.title,
+      vision_description: aboutData[validLocale]?.missionVision?.vision?.content || aboutData.en.missionVision.vision.content,
+      team_section_title: validLocale === 'ar' ? "فريق العمل" : "Meet Our Team",
+      values_section_title: aboutData[validLocale]?.coreValuesTitle || aboutData.en.coreValuesTitle,
+      testimonials_section_title: validLocale === 'ar' ? "آراء عملائنا" : "What Our Clients Say",
+      history_section_title: validLocale === 'ar' ? "تاريخنا" : "Our History"
+    },
+    core_values: aboutData[validLocale]?.coreValues || aboutData.en.coreValues,
+    team_members: [],
+    testimonials: [],
+    company_history: [],
+    statistics: [
+      {
+        id: 1,
+        title: validLocale === 'ar' ? "المشاريع المكتملة" : "Projects Completed",
+        value: 250,
+        unit: "+",
+        order: 1
+      },
+      {
+        id: 2,
+        title: validLocale === 'ar' ? "العملاء السعداء" : "Happy Clients",
+        value: 95,
+        unit: "%",
+        order: 2
+      },
+      {
+        id: 3,
+        title: validLocale === 'ar' ? "أعضاء الفريق" : "Team Members",
+        value: 15,
+        unit: "",
+        order: 3
+      },
+      {
+        id: 4,
+        title: validLocale === 'ar' ? "سنوات الخبرة" : "Years of Experience",
+        value: 8,
+        unit: "+",
+        order: 4
+      }
+    ],
+    client_logos: [],
+    metadata: {
+      team_count: 0,
+      values_count: (aboutData[validLocale]?.coreValues || aboutData.en.coreValues).length,
+      testimonials_count: 0,
+      history_count: 0,
+      statistics_count: 4,
+      logos_count: 0,
+      language: validLocale
+    }
+  };
   
-  // Check if we have data for the requested locale
-  if (['en', 'ar'].includes(locale)) {
-    // Return the mock data for the selected locale
-    return NextResponse.json({
-      success: true,
-      data: aboutData[locale as 'en' | 'ar'],
-    }, { 
-      status: 200,
-      headers: {
-        // Add cache control headers
-        'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600',
-      }
-    });
-  } else {
-    // Fall back to English if the locale is not supported
-    return NextResponse.json({
-      success: true,
-      data: aboutData.en,
-    }, { 
-      status: 200,
-      headers: {
-        'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600',
-      }
-    });
-  }
+  console.log(`[Mock API] Returning data for locale: ${validLocale} with ${formattedData.core_values.length} core values`);
+  
+  return NextResponse.json({
+    success: true,
+    data: formattedData
+  });
 } 

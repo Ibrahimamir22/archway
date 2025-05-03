@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { SubmitStatus } from '@/types/marketing/contact';
 
 interface StatusMessageProps {
@@ -11,7 +12,20 @@ interface StatusMessageProps {
  * Displays form submission status messages with animations
  */
 const StatusMessage = ({ status }: StatusMessageProps) => {
+  const t = useTranslations('contact');
+  
   if (!status.type) return null;
+  
+  // Get the appropriate translated message based on status type
+  const messageKey = status.type === 'success' ? 'success' : 'error';
+  const displayMessage = t(messageKey);
+  
+  // For debugging
+  console.log('Status message:', {
+    rawMessage: status.message,
+    translatedMessage: displayMessage,
+    type: status.type
+  });
 
   return (
     <motion.div 
@@ -26,7 +40,7 @@ const StatusMessage = ({ status }: StatusMessageProps) => {
       role="alert"
       aria-live="polite"
     >
-      {status.message}
+      {displayMessage}
     </motion.div>
   );
 }; 

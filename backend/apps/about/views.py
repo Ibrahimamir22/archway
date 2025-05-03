@@ -86,7 +86,23 @@ class CombinedAboutView(APIView):
     - Company history events
     """
     def get(self, request):
-        language = request.query_params.get('lang', 'en')
+        # Prioritize language from headers, then query params
+        language = request.headers.get('Accept-Language')
+        
+        # If not in headers, try X-Language header
+        if not language:
+            language = request.headers.get('X-Language')
+            
+        # If not in headers, try query params
+        if not language:
+            language = request.query_params.get('lang') or request.query_params.get('locale')
+        
+        # Default to English if no language is specified
+        if not language or language not in ['en', 'ar']:
+            language = 'en'
+            
+        print(f"CombinedAboutView: Using language '{language}', from headers={request.headers.get('Accept-Language')}")
+        
         combined_data = get_about_page_content(language, request)
         return Response(combined_data)
 

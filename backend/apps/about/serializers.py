@@ -168,3 +168,234 @@ class LocalizedAboutPageSerializer(serializers.ModelSerializer):
     
     def get_meta_description(self, obj):
         return self._get_localized_field(obj, 'meta_description')
+
+
+# New localized serializers
+class LocalizedTeamMemberSerializer(serializers.ModelSerializer):
+    """
+    Returns only fields for the requested language
+    """
+    image_url = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
+    bio = serializers.SerializerMethodField()
+    department = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = TeamMember
+        fields = [
+            'id', 'name', 'role', 'bio', 'image', 'image_url', 'email', 'linkedin',
+            'department', 'is_featured'
+        ]
+    
+    def _get_language(self):
+        return self.context.get('language', 'en')
+    
+    def _get_localized_field(self, obj, field_name):
+        language = self._get_language()
+        if language == 'ar':
+            ar_value = getattr(obj, f"{field_name}_ar")
+            if ar_value:  # Only use Arabic if it's available
+                return ar_value
+        return getattr(obj, field_name)
+    
+    def get_image_url(self, obj):
+        if obj.image:
+            return self.context['request'].build_absolute_uri(obj.image.url)
+        return None
+    
+    def get_name(self, obj):
+        return self._get_localized_field(obj, 'name')
+    
+    def get_role(self, obj):
+        return self._get_localized_field(obj, 'role')
+    
+    def get_bio(self, obj):
+        return self._get_localized_field(obj, 'bio')
+    
+    def get_department(self, obj):
+        return self._get_localized_field(obj, 'department')
+
+
+class LocalizedCoreValueSerializer(serializers.ModelSerializer):
+    """
+    Returns only fields for the requested language
+    """
+    title = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CoreValue
+        fields = [
+            'id', 'title', 'description', 'icon', 'order'
+        ]
+    
+    def _get_language(self):
+        return self.context.get('language', 'en')
+    
+    def _get_localized_field(self, obj, field_name):
+        language = self._get_language()
+        if language == 'ar':
+            ar_value = getattr(obj, f"{field_name}_ar")
+            if ar_value:  # Only use Arabic if it's available
+                return ar_value
+        return getattr(obj, field_name)
+    
+    def get_title(self, obj):
+        return self._get_localized_field(obj, 'title')
+    
+    def get_description(self, obj):
+        return self._get_localized_field(obj, 'description')
+
+
+class LocalizedTestimonialSerializer(serializers.ModelSerializer):
+    """
+    Returns only fields for the requested language
+    """
+    image_url = serializers.SerializerMethodField()
+    client_name = serializers.SerializerMethodField()
+    quote = serializers.SerializerMethodField()
+    project = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
+    company = serializers.SerializerMethodField()
+    industry = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Testimonial
+        fields = [
+            'id', 'client_name', 'quote', 'project', 'is_featured',
+            'role', 'company', 'image', 'image_url', 'rating', 'industry', 'created_at'
+        ]
+    
+    def _get_language(self):
+        return self.context.get('language', 'en')
+    
+    def _get_localized_field(self, obj, field_name):
+        language = self._get_language()
+        if language == 'ar':
+            ar_value = getattr(obj, f"{field_name}_ar", None)
+            if ar_value:  # Only use Arabic if it's available
+                return ar_value
+        return getattr(obj, field_name)
+    
+    def get_image_url(self, obj):
+        if obj.image:
+            try:
+                return self.context['request'].build_absolute_uri(obj.image.url)
+            except (KeyError, AttributeError):
+                if hasattr(obj.image, 'url'):
+                    return obj.image.url
+        return None
+    
+    def get_client_name(self, obj):
+        return self._get_localized_field(obj, 'client_name')
+    
+    def get_quote(self, obj):
+        return self._get_localized_field(obj, 'quote')
+    
+    def get_project(self, obj):
+        return self._get_localized_field(obj, 'project')
+    
+    def get_role(self, obj):
+        return self._get_localized_field(obj, 'role')
+    
+    def get_company(self, obj):
+        return self._get_localized_field(obj, 'company')
+    
+    def get_industry(self, obj):
+        return self._get_localized_field(obj, 'industry')
+
+
+class LocalizedCompanyHistorySerializer(serializers.ModelSerializer):
+    """
+    Returns only fields for the requested language
+    """
+    title = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CompanyHistory
+        fields = [
+            'id', 'year', 'title', 'description'
+        ]
+    
+    def _get_language(self):
+        return self.context.get('language', 'en')
+    
+    def _get_localized_field(self, obj, field_name):
+        language = self._get_language()
+        if language == 'ar':
+            ar_value = getattr(obj, f"{field_name}_ar")
+            if ar_value:  # Only use Arabic if it's available
+                return ar_value
+        return getattr(obj, field_name)
+    
+    def get_title(self, obj):
+        return self._get_localized_field(obj, 'title')
+    
+    def get_description(self, obj):
+        return self._get_localized_field(obj, 'description')
+
+
+class LocalizedCompanyStatisticSerializer(serializers.ModelSerializer):
+    """
+    Returns only fields for the requested language
+    """
+    title = serializers.SerializerMethodField()
+    unit = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CompanyStatistic
+        fields = [
+            'id', 'title', 'value', 'unit', 'order'
+        ]
+    
+    def _get_language(self):
+        return self.context.get('language', 'en')
+    
+    def _get_localized_field(self, obj, field_name):
+        language = self._get_language()
+        if language == 'ar':
+            ar_value = getattr(obj, f"{field_name}_ar")
+            if ar_value:  # Only use Arabic if it's available
+                return ar_value
+        return getattr(obj, field_name)
+    
+    def get_title(self, obj):
+        return self._get_localized_field(obj, 'title')
+    
+    def get_unit(self, obj):
+        return self._get_localized_field(obj, 'unit')
+
+
+class LocalizedClientLogoSerializer(serializers.ModelSerializer):
+    """
+    Returns only fields for the requested language
+    """
+    logo_url = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ClientLogo
+        fields = [
+            'id', 'name', 'logo', 'logo_url', 'url', 'order'
+        ]
+    
+    def _get_language(self):
+        return self.context.get('language', 'en')
+    
+    def _get_localized_field(self, obj, field_name):
+        language = self._get_language()
+        if language == 'ar':
+            ar_value = getattr(obj, f"{field_name}_ar")
+            if ar_value:  # Only use Arabic if it's available
+                return ar_value
+        return getattr(obj, field_name)
+    
+    def get_logo_url(self, obj):
+        if obj.logo:
+            return self.context['request'].build_absolute_uri(obj.logo.url)
+        return None
+    
+    def get_name(self, obj):
+        return self._get_localized_field(obj, 'name')

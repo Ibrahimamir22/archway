@@ -57,7 +57,8 @@ export default function ContactForm() {
       required: v('required'),
       invalidEmail: v('invalidEmail'),
       messageTooLong: t('messageTooLong') || 'Message is too long'
-    }
+    },
+    locale: locale
   });
 
   return (

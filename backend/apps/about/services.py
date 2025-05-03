@@ -6,7 +6,10 @@ from .models import (
 from .serializers import (
     AboutPageSerializer, TeamMemberSerializer, CoreValueSerializer,
     TestimonialSerializer, CompanyHistorySerializer, CompanyStatisticSerializer,
-    ClientLogoSerializer, LocalizedAboutPageSerializer
+    ClientLogoSerializer, LocalizedAboutPageSerializer,
+    LocalizedTeamMemberSerializer, LocalizedCoreValueSerializer,
+    LocalizedTestimonialSerializer, LocalizedCompanyHistorySerializer,
+    LocalizedCompanyStatisticSerializer, LocalizedClientLogoSerializer
 )
 
 def get_about_page_content(language, request=None):
@@ -81,19 +84,26 @@ def get_about_page_content(language, request=None):
     # Serialize data
     context = {'request': request, 'language': language}
     
+    # Use localized serializers based on the language
     if language in ['en', 'ar']:
         about_serializer = LocalizedAboutPageSerializer(about_page, context=context)
+        team_serializer = LocalizedTeamMemberSerializer(team_members, many=True, context=context)
+        values_serializer = LocalizedCoreValueSerializer(core_values, many=True, context=context)
+        testimonials_serializer = LocalizedTestimonialSerializer(testimonials, many=True, context=context)
+        history_serializer = LocalizedCompanyHistorySerializer(company_history, many=True, context=context)
+        statistics_serializer = LocalizedCompanyStatisticSerializer(statistics, many=True, context=context)
+        logos_serializer = LocalizedClientLogoSerializer(client_logos, many=True, context=context)
     else:
+        # Default serializers for unsupported languages
         about_serializer = AboutPageSerializer(about_page, context=context)
+        team_serializer = TeamMemberSerializer(team_members, many=True, context=context)
+        values_serializer = CoreValueSerializer(core_values, many=True, context=context)
+        testimonials_serializer = TestimonialSerializer(testimonials, many=True, context=context)
+        history_serializer = CompanyHistorySerializer(company_history, many=True, context=context)
+        statistics_serializer = CompanyStatisticSerializer(statistics, many=True, context=context)
+        logos_serializer = ClientLogoSerializer(client_logos, many=True, context=context)
     
-    team_serializer = TeamMemberSerializer(team_members, many=True, context=context)
     print(f"Team serializer data length: {len(team_serializer.data)}")
-    
-    values_serializer = CoreValueSerializer(core_values, many=True, context=context)
-    testimonials_serializer = TestimonialSerializer(testimonials, many=True, context=context)
-    history_serializer = CompanyHistorySerializer(company_history, many=True, context=context)
-    statistics_serializer = CompanyStatisticSerializer(statistics, many=True, context=context)
-    logos_serializer = ClientLogoSerializer(client_logos, many=True, context=context)
     
     # Combine data
     result = {

@@ -1,5 +1,6 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { normalizeServiceImageUrl } from '@/lib/images';
 
 interface ServiceImageProps {
   src: string;
@@ -25,7 +26,7 @@ const ServiceImage: React.FC<ServiceImageProps> = ({
   const [imageSrc, setImageSrc] = useState<string>('/images/service-placeholder.jpg');
   const [hasError, setHasError] = useState(false);
   
-  // Normalize the image URL for proper display
+  // Process the image URL for proper display
   useEffect(() => {
     if (!src) {
       setImageSrc('/images/service-placeholder.jpg');
@@ -33,15 +34,52 @@ const ServiceImage: React.FC<ServiceImageProps> = ({
     }
     
     try {
-      const normalized = normalizeServiceImageUrl(src);
-      console.log('Normalized image URL:', { original: src, normalized });
-      setImageSrc(normalized);
+      const originalUrl = src;
+      console.log(`Service image original URL: ${originalUrl}`);
+      
+      // For Django media files, always use our image proxy
+      if (
+        originalUrl.includes('/media/') || 
+        originalUrl.includes('backend:8000') || 
+        originalUrl.includes('localhost:8000')
+      ) {
+        // Extract the media path
+        let mediaPath = "";
+        
+        if (originalUrl.includes('/media/')) {
+          // Extract everything after '/media/'
+          const parts = originalUrl.split('/media/');
+          if (parts.length > 1) {
+            mediaPath = '/media/' + parts[1];
+          } else {
+            mediaPath = '/media/' + originalUrl;
+          }
+        } else {
+          // If no /media/ in URL, use the full path
+          mediaPath = originalUrl;
+        }
+        
+        // Use the image proxy API
+        const proxyUrl = `/api/image-proxy?path=${encodeURIComponent(mediaPath)}`;
+        console.log(`Using image proxy: ${proxyUrl}`);
+        setImageSrc(proxyUrl);
+      } else if (originalUrl.startsWith('http')) {
+        // Direct external URLs can be used as-is
+        setImageSrc(originalUrl);
+      } else {
+        // Local asset path (starting with '/' or not)
+        const localPath = originalUrl.startsWith('/') ? originalUrl : `/${originalUrl}`;
+        setImageSrc(localPath);
+      }
+      
+      setHasError(false);
     } catch (error) {
-      console.error('Error normalizing image URL:', error);
+      console.error('Error processing image URL:', error);
       setImageSrc('/images/service-placeholder.jpg');
       setHasError(true);
+      onError?.();
     }
-  }, [src]);
+  }, [src, onError]);
   
   // Handle loading errors
   const handleError = () => {

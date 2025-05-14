@@ -1,6 +1,8 @@
+'use server';
+
 import { getServices } from '@/lib/api/services';
 import ServiceGridLoader from './ServiceGridLoader';
-import ServiceGridClient from './ServiceGrid.client';
+import ServiceGridClient from './ServiceGridClient';
 import { Service } from '@/lib/hooks/services/types';
 
 interface ServiceGridProps {

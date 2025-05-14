@@ -3,12 +3,13 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Service } from '@/lib/hooks/services/types';
+import OptimizedImage from '@/components/common/OptimizedImage';
 import { getServiceImageSrc } from '@/lib/images';
 
 interface ServiceCardImageProps {
-  service: Service | null | undefined; // Allow null/undefined service prop
+  service: Service | null | undefined;
   priority?: boolean;
-  isHovering?: boolean; // Add isHovering prop
+  isHovering?: boolean;
 }
 
 /**
@@ -21,57 +22,72 @@ const ServiceCardImage: React.FC<ServiceCardImageProps> = ({
   priority = false,
   isHovering = false
 }) => {
-  const [imgSrc, setImgSrc] = React.useState<string | null>(null);
   const [hasError, setHasError] = React.useState(false);
   const tServices = useTranslations('services');
 
   // Determine the appropriate image source
-  React.useEffect(() => {
-    try {
-      // Get the image source from the service
-      const src = getServiceImageSrc(service);
+  const getImageSrc = () => {
+    if (!service) return '/images/placeholder-service.jpg';
+
+    // Get raw image URL from service object
+    let originalUrl = "";
+    
+    if (service.image_url) {
+      originalUrl = service.image_url;
+    } else if (service.image) {
+      originalUrl = service.image;
+    } else if (service.cover_image_url) {
+      originalUrl = service.cover_image_url;
+    } else if (service.cover_image) {
+      originalUrl = service.cover_image;
+    } else {
+      // No image found, use placeholder
+      return '/images/placeholder-service.jpg';
+    }
+
+    // For Django media files, always use our image proxy
+    if (
+      originalUrl.includes('/media/') || 
+      originalUrl.includes('backend:8000') || 
+      originalUrl.includes('localhost:8000')
+    ) {
+      // Extract the media path
+      let mediaPath = "";
       
-      // Process the image URL for frontend display
-      let processedUrl = src;
-      
-      // If URL contains backend:8000, transform for browser context
-      if (processedUrl.includes('backend:8000')) {
-        // 1. Replace with localhost:8000 for direct access
-        processedUrl = processedUrl.replace('backend:8000', 'localhost:8000');
-        
-        // 2. For media files, use the image proxy
-        if (processedUrl.includes('/media/')) {
-          // Extract the path portion
-          const path = new URL(processedUrl).pathname;
-          processedUrl = `/api/image-proxy?path=${encodeURIComponent(path)}`;
+      if (originalUrl.includes('/media/')) {
+        // Extract everything after '/media/'
+        const parts = originalUrl.split('/media/');
+        if (parts.length > 1) {
+          mediaPath = '/media/' + parts[1];
+        } else {
+          mediaPath = '/media/' + originalUrl;
         }
-      } 
-      // If it's a media path from backend
-      else if (processedUrl.startsWith('/media/') || processedUrl.startsWith('media/')) {
-        // Ensure path starts with a slash
-        const path = processedUrl.startsWith('/') ? processedUrl : `/${processedUrl}`;
-        processedUrl = `/api/image-proxy?path=${encodeURIComponent(path)}`;
+      } else {
+        // If no /media/ in URL, use the full path
+        mediaPath = originalUrl;
       }
       
-      console.log(`ServiceCardImage (${service?.title || 'undefined'}): Original: ${src}, Processed: ${processedUrl}`);
-      setImgSrc(processedUrl);
-      setHasError(false);
-    } catch (error) {
-      console.error(`ServiceCardImage: Error processing image:`, error);
-      setHasError(true);
+      // Use the image proxy API
+      return `/api/image-proxy?path=${encodeURIComponent(mediaPath)}`;
+    } else if (originalUrl.startsWith('http')) {
+      // Direct external URLs can be used as-is
+      return originalUrl;
+    } else {
+      // Local asset path (starting with '/' or not)
+      return originalUrl.startsWith('/') ? originalUrl : `/${originalUrl}`;
     }
-  }, [service]);
+  };
 
-  // Handle image loading errors from the <img> tag itself
+  // Handle image loading errors
   const handleError = () => {
-    console.warn(`ServiceCardImage (${service?.title}): Image failed to load: ${imgSrc}`);
+    console.warn(`ServiceCardImage (${service?.title}): Image failed to load`);
     setHasError(true);
   };
   
-  // Common wrapper div with a 3:2 aspect ratio - better for service cards
+  // Container styles
   const containerClasses = "aspect-w-3 aspect-h-2 overflow-hidden rounded-t-lg relative h-48";
   
-  // Placeholder content shown when no image or error
+  // Placeholder content
   const placeholderContent = (
     <div className="w-full h-full bg-gray-200 flex items-center justify-center">
       <span className="text-gray-500 text-lg font-medium">
@@ -82,15 +98,18 @@ const ServiceCardImage: React.FC<ServiceCardImageProps> = ({
 
   return (
     <div className={containerClasses}>
-      {(!hasError && imgSrc && !imgSrc.includes('placeholder.jpg')) ? (
+      {hasError ? (
+        placeholderContent
+      ) : (
         <>
-          <img
-            key={imgSrc} // Helps React detect changes
-            src={imgSrc} 
+          <OptimizedImage
+            src={getImageSrc()}
             alt={service?.title || 'Service image'}
-            className="w-full h-full object-cover" 
+            fill={true}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover"
             onError={handleError}
-            loading={priority ? "eager" : "lazy"}
+            priority={priority}
           />
           {/* Overlay on hover */}
           {isHovering && (
@@ -99,7 +118,7 @@ const ServiceCardImage: React.FC<ServiceCardImageProps> = ({
             </div>
           )}
         </>
-      ) : placeholderContent}
+      )}
     </div>
   );
 };

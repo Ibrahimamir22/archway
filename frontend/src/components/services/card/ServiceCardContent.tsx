@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Service } from '@/lib/hooks/services/types';
 
@@ -58,8 +57,7 @@ const ServiceCardContent: React.FC<ServiceCardContentProps> = ({
         
         <div className="flex-grow"></div>
         
-        <Link 
-          href={`/${locale}/services/${service.slug}`}
+        <span 
           className="text-brand-blue hover:text-brand-blue-dark font-medium inline-flex items-center"
         >
           {isRtl ? (
@@ -71,7 +69,7 @@ const ServiceCardContent: React.FC<ServiceCardContentProps> = ({
               {t('viewDetails')} <span className="ms-1">→</span>
             </>
           )}
-        </Link>
+        </span>
       </div>
     </div>
   );

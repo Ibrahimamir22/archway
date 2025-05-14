@@ -560,14 +560,6 @@
       }
     }
   },
-  "newsletter": {
-    "description": "[Placeholder for newsletter.description]",
-    "title": "[Placeholder for newsletter.title]",
-    "emptyEmail": "Email field cannot be empty",
-    "invalidEmail": "Please enter a valid email address",
-    "thankYou": "Thank you for subscribing!",
-    "errorMessage": "Failed to subscribe. Please try again."
-  },
   "stat": {
     "client_satisfaction": "رضا العملاء",
     "client_satisfaction_desc": "عملاء راضون تمامًا عن خدماتنا",

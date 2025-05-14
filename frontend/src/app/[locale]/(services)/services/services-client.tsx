@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useServiceCategories, Service, ServiceCategory } from '@/lib/hooks';
 
-// Update imports to use our new server component and avoid direct imports from hooks
-import ServiceGrid from '@/components/services/list/ServiceGrid';
+// Direct import of ServiceCard instead of using ServiceGrid
+import ServiceCard from '@/components/services/card/ServiceCard';
 
 interface ServicesClientProps {
   initialServices: Service[];
@@ -27,6 +27,8 @@ export default function ServicesClient({
   const isRtl = locale === 'ar';
   
   const [category, setCategory] = useState<string | undefined>(selectedCategory);
+  const [services, setServices] = useState<Service[]>(initialServices);
+  const [loading, setLoading] = useState(false);
   
   // Just use service categories from props, we'll let ServiceGrid handle the services
   const { categories } = useServiceCategories(initialCategories);
@@ -100,14 +102,33 @@ export default function ServicesClient({
         </div>
       </section>
       
-      {/* Services Listing */}
+      {/* Services Listing - Direct implementation instead of using ServiceGrid */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <ServiceGrid
-            initialServices={initialServices}
-            category={category}
-            lang={locale}
-          />
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="animate-pulse bg-gray-200 h-80 rounded-lg"></div>
+              ))}
+            </div>
+          ) : initialServices.length === 0 ? (
+            <div className={`bg-gray-50 border border-gray-200 p-8 rounded-md text-center ${isRtl ? 'text-right' : ''}`}>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('noServices')}</h3>
+              <p className="text-gray-600 mb-2">{t('tryDifferentCategory')}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {initialServices.map((service: Service) => (
+                <div key={service.id || service.slug}>
+                  <ServiceCard
+                    service={service}
+                    priority={false}
+                    locale={locale}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
       

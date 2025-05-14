@@ -20,7 +20,17 @@
     "followUs": "Follow Us",
     "allRightsReserved": "All rights reserved.",
     "contactUs": "Contact Us",
-    "newsletter": "Newsletter",
+    "newsletter": {
+      "title": "Subscribe to our Newsletter",
+      "description": "Stay up to date with our latest news and offers",
+      "placeholder": "Enter your email address",
+      "subscribe": "Subscribe",
+      "subscribing": "Subscribing...",
+      "emptyEmail": "Email field cannot be empty",
+      "invalidEmail": "Please enter a valid email address",
+      "thankYou": "Thank you for subscribing!",
+      "errorMessage": "Failed to subscribe. Please try again."
+    },
     "viewOnMap": "View on Google Maps",
     "sendEmail": "Send email to",
     "callUs": "Call us at",
@@ -517,14 +527,6 @@
         "contact": "Contact"
       }
     }
-  },
-  "newsletter": {
-    "description": "Stay up to date with our latest news and offers",
-    "title": "Subscribe to our Newsletter",
-    "emptyEmail": "Email field cannot be empty",
-    "invalidEmail": "Please enter a valid email address",
-    "thankYou": "Thank you for subscribing!",
-    "errorMessage": "Failed to subscribe. Please try again."
   },
   "stat": {
     "client_satisfaction": "Client Satisfaction",

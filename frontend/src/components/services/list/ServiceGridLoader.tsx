@@ -5,7 +5,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { getApiBaseUrl } from '@/lib/api';
 import { Service } from '@/lib/hooks/services/types';
-import ServiceGridClient from './ServiceGrid.client';
+import ServiceGridClient from './ServiceGridClient';
 
 interface ServiceGridLoaderProps {
   initialServices: Service[];

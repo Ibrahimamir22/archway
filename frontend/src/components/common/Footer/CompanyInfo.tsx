@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import SocialMediaLink from './SocialMediaLink';
 import type { SocialMediaLink as SocialMediaLinkType } from '@/lib/hooks/footer/useFooter';
 
@@ -21,10 +22,17 @@ const CompanyInfo = ({
   fallbackName, 
   fallbackDescription 
 }: CompanyInfoProps): JSX.Element => {
+  // Add translations
+  const t = useTranslations('footer');
+  
+  // CRITICAL FIX: Always use direct translations for company info
+  const translatedName = t('companyInfo.name');
+  const translatedDescription = t('companyInfo.description');
+  
   // Extract company info from nested structure or directly
-  // Prioritize fallback props over settings data
-  const companyName = fallbackName || settings?.company_info?.company_name || settings?.company_name || '';
-  const description = fallbackDescription || settings?.company_info?.description || settings?.description || '';
+  // Prioritize translations over props or settings
+  const companyName = translatedName || fallbackName || settings?.company_info?.company_name || settings?.company_name || '';
+  const description = translatedDescription || fallbackDescription || settings?.company_info?.description || settings?.description || '';
   const logoUrl = settings?.logo_url || '/images/Archway.png';  
   const logoAlt = settings?.logo_alt || (companyName ? `${companyName} logo` : 'Company Logo');
   
@@ -40,10 +48,12 @@ const CompanyInfo = ({
   
   // Debug info 
   console.log('Company Info Data:', { 
+    translatedName,
+    translatedDescription,
     companyName,
     description,
-    rawSettings: settings,
-    props: { fallbackName, fallbackDescription }
+    isRtl,
+    locale: isRtl ? 'ar' : 'en'
   });
   
   return (
@@ -87,7 +97,7 @@ const CompanyInfo = ({
             justifyContent: isRtl ? 'flex-end' : 'flex-start',
             gap: '1rem'
           }}
-          aria-label="Social media links"
+          aria-label={t('followUs')}
         >
           {finalSocialMedia.map((item, index) => (
             <div 

@@ -27,23 +27,53 @@ const ProjectCardImage: React.FC<ProjectCardImageProps> = ({ project }) => {
   
   // Get image source with fallbacks
   const getImageSrc = () => {
+    let originalUrl = "";
+    
     if (project.cover_image_url) {
-      return project.cover_image_url;
+      originalUrl = project.cover_image_url;
+    } else if (project.cover_image) {
+      originalUrl = project.cover_image;
+    } else if (project.image) {
+      originalUrl = project.image;
+    } else if (project.images && Array.isArray(project.images) && project.images.length > 0) {
+      originalUrl = project.images[0].src || project.images[0].image_url || project.images[0].image || '';
     }
     
-    if (project.cover_image) {
-      return project.cover_image;
+    if (!originalUrl) {
+      return '/images/placeholder.jpg';
     }
     
-    if (project.image) {
-      return project.image;
+    // For Django media files, always use our image proxy
+    if (
+      originalUrl.includes('/media/') || 
+      originalUrl.includes('backend:8000') || 
+      originalUrl.includes('localhost:8000')
+    ) {
+      // Extract the media path
+      let mediaPath = "";
+      
+      if (originalUrl.includes('/media/')) {
+        // Extract everything after '/media/'
+        const parts = originalUrl.split('/media/');
+        if (parts.length > 1) {
+          mediaPath = '/media/' + parts[1];
+        } else {
+          mediaPath = '/media/' + originalUrl;
+        }
+      } else {
+        // If no /media/ in URL, use the full path
+        mediaPath = originalUrl;
+      }
+      
+      // Use the image proxy API
+      return `/api/image-proxy?path=${encodeURIComponent(mediaPath)}`;
+    } else if (originalUrl.startsWith('http')) {
+      // Direct external URLs can be used as-is
+      return originalUrl;
+    } else {
+      // Local asset path (starting with '/' or not)
+      return originalUrl.startsWith('/') ? originalUrl : `/${originalUrl}`;
     }
-    
-    if (project.images && Array.isArray(project.images) && project.images.length > 0) {
-      return project.images[0].src || project.images[0].image_url || project.images[0].image || '/images/placeholder.jpg';
-    }
-    
-    return '/images/placeholder.jpg';
   };
   
   const handleMouseEnter = () => setIsHovering(true);

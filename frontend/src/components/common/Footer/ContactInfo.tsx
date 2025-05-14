@@ -11,10 +11,13 @@ export interface ContactInfoProps {
   title: string;
 }
 
-const ContactInfo = ({ settings, isRtl, title }: ContactInfoProps): JSX.Element => {
+const ContactInfo = ({ settings, isRtl, title: propTitle }: ContactInfoProps): JSX.Element => {
   const params = useParams();
   const locale = params?.locale ? String(params.locale) : 'en';
   const t = useTranslations('footer');
+  
+  // CRITICAL FIX: Always use translation for the section title
+  const title = t('contactUs');
   
   // Extract contact information from contact_info array if available
   let email = '';
@@ -44,7 +47,17 @@ const ContactInfo = ({ settings, isRtl, title }: ContactInfoProps): JSX.Element 
   if (!phone) phone = t('phone');
   if (!address) address = t('address');
   
-  console.log('Contact info extracted:', { email, phone, address });
+  console.log('Contact info with translations:', { 
+    title,
+    propTitle,
+    translatedTitle: t('contactUs'),
+    email, 
+    phone, 
+    address,
+    translatedEmail: t('email'),
+    translatedPhone: t('phone'),
+    translatedAddress: t('address')
+  });
   
   // If no contact info at all, don't render the component
   if (!email && !phone && !address) {

@@ -51,6 +51,13 @@ export async function GET(request: Request) {
     // Get translated content from messages
     const footer = messages.footer || {};
     
+    // Debug the loaded message data to ensure we have correct translations
+    console.log(`[API/footer] Loaded message data for locale ${finalLang}:`, {
+      hasFooter: !!footer,
+      hasNewsletter: !!footer.newsletter,
+      newsletterKeys: footer.newsletter ? Object.keys(footer.newsletter) : []
+    });
+    
     // Construct response using translations
     const footerData = {
       settings: null,
@@ -104,10 +111,10 @@ export async function GET(request: Request) {
           ]
         }
       ],
-      social_media: [
-        { id: "facebook", name: "Facebook", url: "https://facebook.com/archway.egypt/", icon: "facebook" },
-        { id: "instagram", name: "Instagram", url: "https://instagram.com/archway.egypt", icon: "instagram" },
-        { id: "linkedin", name: "LinkedIn", url: "https://linkedin.com/company/archway-innovations", icon: "linkedin" }
+      social_links: [
+        { id: "facebook", platform: "Facebook", url: "https://facebook.com/archway.egypt/", icon: "facebook" },
+        { id: "instagram", platform: "Instagram", url: "https://instagram.com/archway.egypt", icon: "instagram" },
+        { id: "linkedin", platform: "LinkedIn", url: "https://linkedin.com/company/archway-innovations", icon: "linkedin" }
       ],
       bottom_links: [
         { 
@@ -148,6 +155,12 @@ export async function GET(request: Request) {
         }
       ]
     };
+
+    // Debug the constructed response
+    console.log(`[API/footer] Constructed response for locale ${finalLang}:`, {
+      newsletterLabel: footerData.newsletter_label,
+      newsletterText: footerData.newsletter_text
+    });
 
     // Return mock data
     return NextResponse.json(footerData);

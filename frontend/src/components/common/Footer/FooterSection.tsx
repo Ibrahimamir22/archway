@@ -26,26 +26,34 @@ const FooterSection = ({ section, isRtl }: FooterSectionProps): JSX.Element => {
     return <></>;
   }
   
-  // Log the incoming section data
-  console.log('Rendering FooterSection with:', typeof section.title, section);
-  
-  // Find translation keys based on section properties
-  let translationPrefix = '';
-  if (section.links && section.links.length > 0) {
-    const firstLink = section.links[0];
-    if (firstLink && firstLink.url) {
-      if (firstLink.url.includes('/about') || firstLink.url.includes('/services') || firstLink.url.includes('/portfolio')) {
-        translationPrefix = 'sections.company';
-      } else if (firstLink.url.includes('/blog') || firstLink.url.includes('/faq') || firstLink.url.includes('/contact')) {
-        translationPrefix = 'sections.resources';
-      }
-    }
+  // Find translation keys based on section ID or content
+  let sectionId = '';
+  if (section.id === 'company' || (section.links && section.links.some(link => 
+      link.url?.includes('/about') || link.url?.includes('/services') || link.url?.includes('/portfolio')))) {
+    sectionId = 'company';
+  } else if (section.id === 'resources' || (section.links && section.links.some(link => 
+      link.url?.includes('/blog') || link.url?.includes('/faq') || link.url?.includes('/contact')))) {
+    sectionId = 'resources';
   }
+
+  // Log information for debugging
+  console.log('Rendering FooterSection:', {
+    sectionId,
+    originalTitle: section.title,
+    translatedTitle: sectionId ? t(`sections.${sectionId}.title`) : null
+  });
   
-  // Make sure section title is a string, with fallback to translation
-  const sectionTitle = section.title 
-    ? section.title 
-    : translationPrefix ? t(`${translationPrefix}.title`) : 'Section';
+  // CRITICAL FIX: Always use direct translations for section titles
+  // Determine the section title from translations based on section ID
+  let sectionTitle;
+  if (sectionId === 'company') {
+    sectionTitle = t('sections.company.title');
+  } else if (sectionId === 'resources') {
+    sectionTitle = t('sections.resources.title');
+  } else {
+    // Fallback to the provided title
+    sectionTitle = section.title;
+  }
   
   // Make sure links are properly formatted
   const links = Array.isArray(section.links) 
@@ -87,8 +95,18 @@ const FooterSection = ({ section, isRtl }: FooterSectionProps): JSX.Element => {
       <h3 className="text-lg font-semibold mb-4">{sectionTitle}</h3>
       <ul className="space-y-2">
         {links.map((link) => {
-          // Get link text from either the link text or from translations
-          const linkText = link.text || (linkTranslations[link.url] ? t(linkTranslations[link.url]) : link.url);
+          // CRITICAL FIX: Always use direct translations for link texts when possible
+          let linkText = link.text;
+          
+          // Determine if this is a standard link with a translation
+          if (linkTranslations[link.url]) {
+            linkText = t(linkTranslations[link.url]);
+          }
+          
+          // Fallback to the original link text if no translation is found
+          if (!linkText) {
+            linkText = link.url;
+          }
           
           // Determine if this link should prefetch data
           const shouldPrefetchData = Object.keys(prefetchDataPaths).some(path => link.url.includes(path));

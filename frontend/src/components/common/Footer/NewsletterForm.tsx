@@ -15,8 +15,8 @@ export interface NewsletterFormProps {
 
 const NewsletterForm = ({ 
   isRtl = false, 
-  newsletterText, 
-  newsletterLabel 
+  newsletterText: propsText, // Rename so we can ignore it
+  newsletterLabel: propsLabel // Rename so we can ignore it
 }: NewsletterFormProps): JSX.Element => {
   const t = useTranslations('footer.newsletter');
   const [email, setEmail] = useState('');
@@ -26,6 +26,24 @@ const NewsletterForm = ({
   
   // Use the enhanced hook
   const { subscribeToNewsletter, status: hookStatus } = useNewsletterSubscription();
+  
+  // CRITICAL FIX: Always use translations directly, not props
+  // This ensures proper localization in all cases
+  const displayLabel = t('title');
+  const displayText = t('description');
+  const displaySubscribeText = t('subscribe'); // Fix for the button text
+  const displaySubmittingText = t('subscribing'); // Fix for the button submitting text
+  
+  // Log translation values for debugging
+  console.log("Newsletter direct translations:", {
+    isRtl,
+    title: t('title'),
+    description: t('description'),
+    placeholder: t('placeholder'),
+    subscribe: t('subscribe'),
+    subscribing: t('subscribing'),
+    buttonText: displaySubscribeText
+  });
   
   // Sync hook status with local status
   useEffect(() => {
@@ -98,15 +116,8 @@ const NewsletterForm = ({
   
   return (
     <div dir={isRtl ? 'rtl' : 'ltr'} className="newsletter-container">
-      <h3 className="text-lg font-semibold mb-4">{newsletterLabel || t('title')}</h3>
-      
-      {!newsletterText && (
-        <p className="text-gray-400 mb-5 text-sm">{t('description')}</p>
-      )}
-      
-      {newsletterText && (
-        <p className="text-gray-400 mb-5 text-sm">{newsletterText}</p>
-      )}
+      <h3 className="text-lg font-semibold mb-4">{displayLabel}</h3>
+      <p className="text-gray-400 mb-5 text-sm">{displayText}</p>
       
       {localStatus === 'success' ? (
         <div 
@@ -114,7 +125,7 @@ const NewsletterForm = ({
           role="alert"
           aria-live="polite"
         >
-          <MdCheck className="mr-2 text-green-400" size={18} />
+          <MdCheck className={`${isRtl ? 'ml-2' : 'mr-2'} text-green-400`} size={18} />
           <span className="text-sm">{successMessage || t('thankYou')}</span>
         </div>
       ) : localStatus === 'error' && errorMessage.includes('unavailable') ? (
@@ -191,10 +202,10 @@ const NewsletterForm = ({
             {localStatus === 'submitting' ? (
               <>
                 <FaSpinner className={`animate-spin ${isRtl ? 'ml-2' : 'mr-2'}`} aria-hidden="true" />
-                {t('subscribing')}
+                {displaySubmittingText}
               </>
             ) : (
-              t('subscribe')
+              displaySubscribeText
             )}
           </button>
         </form>

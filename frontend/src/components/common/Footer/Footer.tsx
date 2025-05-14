@@ -126,10 +126,11 @@ const Footer = (props: FooterProps): JSX.Element => {
   
   // For debugging raw Django response
   console.log("Django raw footer data:", footerData);
+  console.log("Current locale:", locale);
 
   // Get the name from the Django Admin or from translations
-  const archwayName = locale === 'ar' ? t('companyInfo.name') : t('companyInfo.name');
-  const archwayDescription = locale === 'ar' ? t('companyInfo.description') : t('companyInfo.description');
+  const archwayName = t('companyInfo.name');
+  const archwayDescription = t('companyInfo.description');
   
   // Get the correct company info with better fallbacks
   let actualCompanyName = footerData?.company_name || "";
@@ -252,17 +253,22 @@ const Footer = (props: FooterProps): JSX.Element => {
   const sections = Array.isArray(footerData?.sections) ? footerData.sections : [];
   const copyrightText = footerData?.copyright_text || '';
   const showNewsletter = footerData?.show_newsletter !== false;
-  const newsletterText = footerData?.newsletter_text || t('newsletter.description');
-  const contactTitle = footerData?.contact_title || t('contactUs');
-  const newsletterLabel = footerData?.newsletter_label || t('newsletter.title');
+  
+  // CRITICAL FIX: Always use translations directly from the locale files, not from API
+  // This ensures proper localization regardless of API data
+  const newsletterText = t('newsletter.description');
+  const contactTitle = t('contactUs');
+  const newsletterLabel = t('newsletter.title');
   
   // Add debugging logs for newsletter values
-  console.log('Newsletter values from backend:', {
+  console.log('Newsletter values (fixed):', {
+    locale,
+    isRtl,
     newsletterText, 
     newsletterLabel,
-    raw: {
-      newsletterText: footerData?.newsletter_text,
-      newsletterLabel: footerData?.newsletter_label
+    directTranslations: {
+      description: t('newsletter.description'),
+      title: t('newsletter.title')
     }
   });
   
@@ -316,6 +322,31 @@ const Footer = (props: FooterProps): JSX.Element => {
       ]
     }
   ];
+
+  // CRITICAL FIX: Always use direct translations for hardcoded section titles
+  // Replace API-loaded section titles with direct translations
+  finalSections.forEach(section => {
+    if (section.id === 'company') {
+      section.title = t('sections.company.title');
+      
+      // Also update link texts for this section
+      section.links.forEach(link => {
+        if (link.id === 'about') link.text = t('sections.company.links.about_us');
+        if (link.id === 'services') link.text = t('sections.company.links.services');
+        if (link.id === 'portfolio') link.text = t('sections.company.links.portfolio');
+      });
+    }
+    else if (section.id === 'resources') {
+      section.title = t('sections.resources.title');
+      
+      // Also update link texts for this section
+      section.links.forEach(link => {
+        if (link.id === 'blog') link.text = t('sections.resources.links.blog');
+        if (link.id === 'faq') link.text = t('sections.resources.links.faq');
+        if (link.id === 'contact') link.text = t('sections.resources.links.contact');
+      });
+    }
+  });
                         
   // Calculate the grid columns based on available sections + newsletter + contact info
   const hasCompanyInfo = Boolean(footerData?.company_info || footerData?.company_name || actualCompanyName);
@@ -383,7 +414,7 @@ const Footer = (props: FooterProps): JSX.Element => {
                   socialMedia={socialLinks} 
                   isRtl={isRtl} 
                   fallbackName={actualCompanyName}
-                  fallbackDescription={actualDescription || (locale === 'ar' ? t('companyInfo.description') : t('companyInfo.description'))}
+                  fallbackDescription={actualDescription}
                 />
               </div>
             )}
@@ -428,57 +459,25 @@ const Footer = (props: FooterProps): JSX.Element => {
         {/* Copyright */}
         <div className="border-t border-gray-700 mt-10 pt-8 text-center text-gray-400">
           <p dangerouslySetInnerHTML={{ 
-            __html: formattedCopyright || t('copyright').replace(/\d{4}/g, currentYear.toString())
+            __html: t('copyright').replace(/\d{4}/g, currentYear.toString())
           }} />
           
-          {/* Bottom links - use from API or fallback */}
-          {footerData?.bottom_links && footerData.bottom_links.length > 0 ? (
-            <div className="mt-4 text-sm" style={{ 
-              display: 'flex', 
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              gap: '1rem',
-              direction: isRtl ? 'rtl' : 'ltr'
-            }}>
-              {footerData.bottom_links.map((link) => {
-                // Use translation if text is empty
-                const linkText = link.text || (
-                  link.url.includes('/terms') ? t('termsOfService') : 
-                  link.url.includes('/privacy') ? t('privacyPolicy') : 
-                  link.url
-                );
-                
-                return (
-                  <a 
-                    key={link.id}
-                    href={link.url} 
-                    className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:underline"
-                    target={link.open_in_new_tab ? "_blank" : "_self"}
-                    rel={link.open_in_new_tab ? "noopener noreferrer" : ""}
-                  >
-                    {linkText}
-                  </a>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="mt-4 text-sm" style={{ 
-              display: 'flex', 
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              gap: '1rem',
-              direction: isRtl ? 'rtl' : 'ltr'
-            }}>
-              <a href="/terms" className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:underline">
-                {t('termsOfService')}
-              </a>
-              <a href="/privacy" className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:underline">
-                {t('privacyPolicy')}
-              </a>
-            </div>
-          )}
+          {/* Bottom links - use direct translations instead of API data */}
+          <div className="mt-4 text-sm" style={{ 
+            display: 'flex', 
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: '1rem',
+            direction: isRtl ? 'rtl' : 'ltr'
+          }}>
+            <a href="/terms" className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:underline">
+              {t('termsOfService')}
+            </a>
+            <a href="/privacy" className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:underline">
+              {t('privacyPolicy')}
+            </a>
+          </div>
         </div>
       </div>
     </footer>
